@@ -1,53 +1,53 @@
-specialty,brand,city,type,aliases
-dental,Clínica Torres,Vigo,independent,"Clinica Torres;clinicatorresvigo"
-dental,Clínica Dental Grandío Pazos,Vigo,independent,"Grandío Pazos;Grandio Pazos"
-dental,Clínica Hernández Vallejo,Vigo,independent,"Hernández Vallejo;Hernandez Vallejo"
-dental,Clínica Guitián,Vigo,independent,"Clinica Guitian;Guitián"
-dental,Titanium Clínica Dental,Vigo,independent,"Titanium;implantesvigo"
-dental,Clínica Bastida,Vigo,independent,"Bastida"
-dental,Sanitas Milenium Vigo,Vigo,chain,"Sanitas Dental;Milenium"
-dental,Adeslas Dental Vigo,Vigo,chain,"Adeslas Dental"
-dental,Vitaldent Vigo,Vigo,chain,"Vitaldent"
-dental,Clínica Dental Gamero,Pontevedra,independent,"Gamero"
-dental,Garrido Madarnás,Pontevedra,independent,"Garrido Madarnas"
-dental,Clínica Monteporreiro,Pontevedra,independent,"Monteporreiro"
-dental,Clínica Sorrisos,Pontevedra,independent,"Sorrisos"
-dental,Castro&Umaña Ortodoncia,Pontevedra,independent,"Castro & Umaña;Castro y Umaña"
-dental,Clínica Dental Domínguez,Pontevedra,independent,"Policlínico Dental Domínguez"
-dental,Vitaldent Pontevedra,Pontevedra,chain,"Vitaldent"
-fertility,IVI Vigo,Vigo,chain,"IVI;IVIRMA"
-fertility,Clínica NIDA,Vigo,independent,"NIDA"
-fertility,Vithas Vigo Reproducción,Vigo,hospital,"Vithas;Vithas Fátima;Nuestra Señora de Fátima"
-fertility,Ribera Povisa,Vigo,hospital,"Povisa"
-ophthalmology,Clínica Villoria,Vigo,independent,"Villoria"
-ophthalmology,Clínica Oftalmológica Malvar y Pérez,Vigo,independent,"Malvar;Pérez Leirós"
-ophthalmology,Vithas Clínica Cadarso,Vigo,hospital,"Cadarso;Vithas Oftalmología"
-ophthalmology,Ribera Povisa Oftalmología,Vigo,hospital,"Povisa"
-ophthalmology,Fernández-Vigo,Vigo,independent,"Fernandez-Vigo;Fernández Vigo"
-ophthalmology,Quirónsalud Miguel Domínguez,Pontevedra,hospital,"Quirón;Quirónsalud;Miguel Domínguez"
-aesthetic,Clínica Villoria L'Essence,Vigo,independent,"L'Essence;Villoria"
-aesthetic,Clínica Dra. Helga Rivera,Vigo,independent,"Helga Rivera"
-aesthetic,Clínica Femme,Vigo,independent,"Femme"
-aesthetic,Centro Láser Vigo,Vigo,independent,"Centro Laser Vigo"
-aesthetic,Clínica MIA,Vigo,independent,"MIA"
-aesthetic,Clínica Rey,Vigo,independent,"Clinica Rey"
-aesthetic,Clínica Murillo,Vigo,independent,"Murillo"
-aesthetic,Único Life Clinics,Vigo,chain,"Unico Life"
-aesthetic,DeCastro Medicina Estética,Vigo,independent,"DeCastro;De Castro"
-aesthetic,Garden Clinic,Vigo,independent,"Garden Clinic"
-aesthetic,Dra. Adriana Antesola,Vigo,independent,"Antesola"
-aesthetic,Centros Bellum,Vigo,chain,"Bellum"
-physio,Fisioterapia Gulpari,Vigo,independent,"Gulpari;Clínica Vida"
-physio,Centro Vibar,Vigo,independent,"Vibar"
-physio,C1dema,Vigo,independent,"Cidema;C1dema"
-physio,Pablo Losada Crespo,Vigo,independent,"Losada Crespo"
-physio,Fisioterapia Ficas,Vigo,independent,"Ficas"
-directory,Doctoralia,ALL,directory,"doctoralia"
-directory,Top Doctors,ALL,directory,"topdoctors;TopDoctors"
-directory,reproduccionasistida.org,ALL,directory,"reproduccionasistida"
-directory,mundofertilidad,ALL,directory,"mundofertilidad"
-directory,mejoresdevigo.es,ALL,directory,"mejoresdevigo"
-directory,SaludOnNet,ALL,directory,"saludonnet"
-directory,ClinicPoint,ALL,directory,"clinicpoint"
-directory,Multiestetica,ALL,directory,"multiestetica"
-directory,docdental,ALL,directory,"docdental;zonadental"
+specialty,brand,city,type,aliases,exact_aliases
+dental,Clínica Torres,Vigo,independent,"Clinica Torres;clinicatorresvigo",
+dental,Clínica Dental Grandío Pazos,Vigo,independent,"Grandío Pazos;Grandio Pazos",
+dental,Clínica Hernández Vallejo,Vigo,independent,"Hernández Vallejo;Hernandez Vallejo",
+dental,Clínica Guitián,Vigo,independent,"Clinica Guitian;Guitián",
+dental,Titanium Clínica Dental,Vigo,independent,"Titanium;implantesvigo",
+dental,Clínica Bastida,Vigo,independent,"Bastida",
+dental,Sanitas Milenium Vigo,Vigo,chain,"Sanitas Dental;Milenium",
+dental,Adeslas Dental Vigo,Vigo,chain,"Adeslas Dental",
+dental,Vitaldent Vigo,Vigo,chain,"Vitaldent",
+dental,Clínica Dental Gamero,Pontevedra,independent,"Gamero",
+dental,Garrido Madarnás,Pontevedra,independent,"Garrido Madarnas",
+dental,Clínica Monteporreiro,Pontevedra,independent,"Monteporreiro",
+dental,Clínica Sorrisos,Pontevedra,independent,"Sorrisos",
+dental,Castro&Umaña Ortodoncia,Pontevedra,independent,"Castro & Umaña;Castro y Umaña",
+dental,Clínica Dental Domínguez,Pontevedra,independent,"Policlínico Dental Domínguez",
+dental,Vitaldent Pontevedra,Pontevedra,chain,"Vitaldent",
+fertility,IVI Vigo,Vigo,chain,"IVIRMA",IVI
+fertility,Clínica NIDA,Vigo,independent,"NIDA",
+fertility,Vithas Vigo Reproducción,Vigo,hospital,"Vithas;Vithas Fátima;Nuestra Señora de Fátima",
+fertility,Ribera Povisa,Vigo,hospital,"Povisa",
+ophthalmology,Clínica Villoria,Vigo,independent,"Villoria",
+ophthalmology,Clínica Oftalmológica Malvar y Pérez,Vigo,independent,"Malvar;Pérez Leirós",
+ophthalmology,Vithas Clínica Cadarso,Vigo,hospital,"Cadarso;Vithas Oftalmología",
+ophthalmology,Ribera Povisa Oftalmología,Vigo,hospital,"Povisa",
+ophthalmology,Fernández-Vigo,Vigo,independent,"Fernandez-Vigo;Fernández Vigo",
+ophthalmology,Quirónsalud Miguel Domínguez,Pontevedra,hospital,"Quirón;Quirónsalud;Miguel Domínguez",
+aesthetic,Clínica Villoria L'Essence,Vigo,independent,"L'Essence;Villoria",
+aesthetic,Clínica Dra. Helga Rivera,Vigo,independent,"Helga Rivera",
+aesthetic,Clínica Femme,Vigo,independent,"Femme",
+aesthetic,Centro Láser Vigo,Vigo,independent,"Centro Laser Vigo",
+aesthetic,Clínica MIA,Vigo,independent,"MIA",
+aesthetic,Clínica Rey,Vigo,independent,"Clinica Rey",
+aesthetic,Clínica Murillo,Vigo,independent,"Murillo",
+aesthetic,Único Life Clinics,Vigo,chain,"Unico Life",
+aesthetic,DeCastro Medicina Estética,Vigo,independent,"DeCastro;De Castro",
+aesthetic,Garden Clinic,Vigo,independent,"Garden Clinic",
+aesthetic,Dra. Adriana Antesola,Vigo,independent,"Antesola",
+aesthetic,Centros Bellum,Vigo,chain,"Bellum",
+physio,Fisioterapia Gulpari,Vigo,independent,"Gulpari;Clínica Vida",
+physio,Centro Vibar,Vigo,independent,"Vibar",
+physio,C1dema,Vigo,independent,"Cidema;C1dema",
+physio,Pablo Losada Crespo,Vigo,independent,"Losada Crespo",
+physio,Fisioterapia Ficas,Vigo,independent,"Ficas",
+directory,Doctoralia,ALL,directory,"doctoralia",
+directory,Top Doctors,ALL,directory,"topdoctors;TopDoctors",
+directory,reproduccionasistida.org,ALL,directory,"reproduccionasistida",
+directory,mundofertilidad,ALL,directory,"mundofertilidad",
+directory,mejoresdevigo.es,ALL,directory,"mejoresdevigo",
+directory,SaludOnNet,ALL,directory,"saludonnet",
+directory,ClinicPoint,ALL,directory,"clinicpoint",
+directory,Multiestetica,ALL,directory,"multiestetica",
+directory,docdental,ALL,directory,"docdental;zonadental",

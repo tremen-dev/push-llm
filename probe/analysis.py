@@ -79,7 +79,8 @@ def analyze(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
     return {"cells": dict(cells), "weighted": weighted, "leaders": leaders,
             "directories": {sp: dict(c) for sp, c in directories.items()},
             "short_alias": dict(short_alias), "valid_by_spec": dict(valid_by_spec),
-            "cost_eur": dict(cost)}
+            "cost_eur": dict(cost),
+            "exact_aliases": [(a, b["brand"]) for b in brands for a in b.get("exact_aliases", [])]}
 
 
 def _fmt(p):
@@ -111,7 +112,10 @@ def render_summary(res: dict, cfg: dict) -> str:
     for sp in sorted(res["directories"]):
         for d, n in sorted(res["directories"][sp].items(), key=lambda x: (-x[1], x[0])):
             out.append(f"| {sp} | {d} | {n} | {_fmt(_pct(n, res['valid_by_spec'][sp]))} |")
-    out += ["", "## Sesgo RN-01: respuestas con alias < 4 caracteres no contados (p. ej. \"IVI\")", "",
+    active = ", ".join(f"{a} → {b}" for a, b in res.get("exact_aliases", [])) or "ninguna"
+    out += ["", "## Sesgo RN-01: respuestas con alias < 4 caracteres no contados (p. ej. \"MIA\")", "",
+            f"Siglas cortas que sí cuentan (RN-11/ADR-002, columna exact_aliases, solo en "
+            f"mayúsculas y como palabra completa): {active}.", "",
             "| Especialidad | Respuestas |", "|---|---|"]
     for sp in sorted(res["short_alias"]):
         out.append(f"| {sp} | {res['short_alias'][sp]} |")

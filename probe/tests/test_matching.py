@@ -10,16 +10,16 @@ def names(text, specialty=None, city=None):
     return [b["brand"] for b in matching.find_mentions(text, BRANDS, specialty, city)]
 
 
-def test_short_alias_alone_does_not_count_rn01():
-    assert names("Te recomiendo IVI, es la mejor.", "fertility", "Vigo") == []
-
+# SPEC-001 afirmaba aquí que "IVI" solo no cuenta (RN-01). ADR-002 / RN-11 lo sustituye:
+# IVI es sigla corta inequívoca de IVI Vigo (ver CA-3 y CA-4 de SPEC-006 más abajo).
 
 def test_ivi_vigo_counts_via_brand_name():
     assert names("La referencia es IVI Vigo.", "fertility", "Vigo") == ["IVI Vigo"]
 
 
 def test_short_alias_hits_are_reported_when_brand_not_counted():
-    text = "Te recomiendo IVI o MIA."
+    # ADR-002: "IVI" en mayúsculas ya cuenta; "ivi" en minúsculas no, y sigue siendo sesgo.
+    text = "Te recomiendo ivi o MIA."
     matched = matching.find_mentions(text, BRANDS, "fertility", "Vigo")
     assert matching.short_alias_hits(text, BRANDS, matched) == ["IVI Vigo", "Clínica MIA"]
 
@@ -72,3 +72,86 @@ def test_accent_and_case_insensitive_whole_words():
 def test_is_local_clinic(brand, expected):
     b = next(x for x in BRANDS if x["brand"] == brand)
     assert matching.is_local_clinic(b) is expected
+
+
+# ---------- SPEC-006 (ADR-002 / RN-11): siglas cortas inequívocas ----------
+
+HEADER = "specialty,brand,city,type,aliases,exact_aliases\n"
+
+
+def write_csv(tmp_path, body, header=HEADER):
+    p = tmp_path / "brands.csv"
+    p.write_text(header + body, encoding="utf-8")
+    return p
+
+
+def test_spec006_ca1_catalog_exact_aliases_only_ivi():
+    by_brand = {b["brand"]: b for b in BRANDS}
+    assert {b["brand"]: b["exact_aliases"] for b in BRANDS if b["exact_aliases"]} == {
+        "IVI Vigo": ["IVI"]}
+    ivi_aliases = [a.strip() for a in by_brand["IVI Vigo"]["aliases"].split(";")]
+    assert "IVI" not in ivi_aliases and "IVIRMA" in ivi_aliases
+    assert "MIA" in [a.strip() for a in by_brand["Clínica MIA"]["aliases"].split(";")]
+    assert by_brand["Clínica MIA"]["exact_aliases"] == []
+
+
+@pytest.mark.parametrize("bad", ["Ivi", "IVIR", "I", "IV I", "ÍVI"])
+def test_spec006_ca2_invalid_form_rejected(tmp_path, bad):
+    p = write_csv(tmp_path, f"fertility,Marca X,Vigo,independent,Marca Equis,{bad}\n")
+    with pytest.raises(ValueError) as e:
+        matching.load_brands(p)
+    assert "Marca X" in str(e.value) and bad in str(e.value)
+
+
+def test_spec006_ca2_sigla_repeated_in_other_brand_exact_aliases(tmp_path):
+    p = write_csv(tmp_path, "fertility,Marca X,Vigo,independent,Marca Equis,ABC\n"
+                            "dental,Marca Y,Vigo,independent,Marca Ye,ABC\n")
+    with pytest.raises(ValueError) as e:
+        matching.load_brands(p)
+    assert "Marca Y" in str(e.value) and "ABC" in str(e.value)
+
+
+def test_spec006_ca2_sigla_repeated_as_alias_of_other_brand(tmp_path):
+    p = write_csv(tmp_path, "fertility,Marca X,Vigo,independent,Marca Equis,ABC\n"
+                            "dental,Marca Y,Vigo,independent,abc;Marca Ye,\n")
+    with pytest.raises(ValueError) as e:
+        matching.load_brands(p)
+    assert "Marca X" in str(e.value) and "ABC" in str(e.value)
+
+
+def test_spec006_ca2_csv_without_exact_aliases_column_still_loads(tmp_path):
+    p = write_csv(tmp_path, "dental,Marca X,Vigo,independent,Marca Equis\n",
+                  header="specialty,brand,city,type,aliases\n")
+    rows = matching.load_brands(p)
+    assert rows[0]["exact_aliases"] == []
+    assert names_in("Marca Equis", rows) == ["Marca X"]
+
+
+def names_in(text, brands, specialty=None, city=None):
+    return [b["brand"] for b in matching.find_mentions(text, brands, specialty, city)]
+
+
+@pytest.mark.parametrize("text", ["Te recomiendo IVI, es la mejor.", "Opciones: (IVI) y NIDA",
+                                  "IVI-RMA en Vigo", "Mira IVI."])
+def test_spec006_ca3_ivi_uppercase_whole_word_counts(text):
+    assert "IVI Vigo" in names(text, "fertility", "Vigo")
+
+
+@pytest.mark.parametrize("text", ["te recomiendo ivi", "Ivi es buena", "IVIS", "XIVI", "IVI2",
+                                  "ÁIVI", "IVIñ"])
+def test_spec006_ca3_ivi_not_counted_when_case_or_word_differs(text):
+    assert "IVI Vigo" not in names(text, "fertility", "Vigo")
+
+
+def test_spec006_ca4_mia_still_does_not_count():
+    # ADR-002 §5: MIA queda fuera de la excepción ("mía").
+    assert names("Te recomiendo MIA", "aesthetic", "Vigo") == []
+
+
+def test_spec006_ca4_brand_name_and_sigla_count_once():
+    assert names("IVI Vigo, también conocida como IVI", "fertility", "Vigo") == ["IVI Vigo"]
+
+
+def test_spec006_ca4_sigla_keeps_first_appearance_order():
+    assert names("Opciones: (IVI) y NIDA", "fertility", "Vigo") == ["IVI Vigo", "Clínica NIDA"]
+    assert names("Clínica NIDA o bien IVI.", "fertility", "Vigo") == ["Clínica NIDA", "IVI Vigo"]
