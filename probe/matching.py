@@ -42,23 +42,29 @@ def _exact_aliases(row: dict) -> list[str]:
 
 
 def _check_exact_aliases(rows: list[dict]) -> None:
-    """ADR-002 §1 (a) form and (d) exclusivity; a violation fails loudly."""
-    owner: dict[str, str] = {}   # normalised name/alias/acronym -> brand
+    """ADR-002 §1 (a) form, (d) exclusivity and §2 (not also in own aliases); fails loudly.
+
+    Every brand using a normalised name/alias/acronym is recorded, so the check does not
+    depend on the order of the rows.
+    """
+    users: dict[str, set[str]] = {}   # normalised name/alias/acronym -> brands using it
     for r in rows:
-        for n in _names(r):
-            owner.setdefault(norm(n), r["brand"])
-    seen: dict[str, str] = {}
+        for n in _names(r) + r["exact_aliases"]:
+            users.setdefault(norm(n), set()).add(r["brand"])
     for r in rows:
+        own_aliases = {norm(a) for a in _names(r)[1:]}
         for a in r["exact_aliases"]:
             if not EXACT_ALIAS_RE.fullmatch(a):
                 raise ValueError(f"brands.csv: exact alias {a!r} of {r['brand']!r} must be "
                                  "2-3 characters, only uppercase A-Z or digits (ADR-002)")
             key = norm(a)
-            other = seen.get(key) or (owner[key] if owner.get(key, r["brand"]) != r["brand"] else None)
-            if other:
+            if key in own_aliases:
+                raise ValueError(f"brands.csv: exact alias {a!r} of {r['brand']!r} must not "
+                                 "also be in its own aliases (ADR-002 §2)")
+            others = sorted(users[key] - {r["brand"]})
+            if others:
                 raise ValueError(f"brands.csv: exact alias {a!r} of {r['brand']!r} repeats a "
-                                 f"name, alias or acronym of {other!r} (ADR-002)")
-            seen[key] = r["brand"]
+                                 f"name, alias or acronym of {others[0]!r} (ADR-002)")
 
 
 def load_brands(path: str | Path | None = None) -> list[dict]:
@@ -89,8 +95,20 @@ def _occurrences(t: str, pattern: str):
 
 
 def _exact_occurrences(text: str, acronym: str):
-    """Spans, in norm(text) coordinates, of case-sensitive whole-word matches in raw text."""
+    """Spans, in norm(text) coordinates, of case-sensitive whole-word matches in raw text.
+
+    The text is NFC-composed first so an accented letter written as letter + combining
+    mark (NFD) is one letter, not a word boundary (ADR-002 §3). Any combining mark (Unicode
+    category M*) left next to the acronym also glues it to a letter. norm() is unaffected.
+    """
+    text = unicodedata.normalize("NFC", text)
+
+    def is_mark(i: int) -> bool:
+        return 0 <= i < len(text) and unicodedata.category(text[i]).startswith("M")
+
     for m in re.finditer(rf"(?<![^\W_]){re.escape(acronym)}(?![^\W_])", text):
+        if is_mark(m.start() - 1) or is_mark(m.end()):
+            continue
         prefix = norm(text[:m.start()])
         start = len(prefix) + 1 if prefix else 0
         yield (start, start + len(norm(acronym)))

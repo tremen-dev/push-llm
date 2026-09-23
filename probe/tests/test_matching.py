@@ -119,6 +119,45 @@ def test_spec006_ca2_sigla_repeated_as_alias_of_other_brand(tmp_path):
     assert "Marca X" in str(e.value) and "ABC" in str(e.value)
 
 
+# R-1 (verificador): la exclusividad (ADR-002 §1(d)) no depende del orden de filas, aunque
+# la marca de la sigla tenga ese mismo nombre normalizado (como nombre o alias propio).
+@pytest.mark.parametrize("rows", [
+    ["fertility,ABC,Vigo,independent,Xxxx,ABC\n", "dental,Y,Vigo,independent,ABC,\n"],
+    ["dental,Y,Vigo,independent,ABC,\n", "fertility,ABC,Vigo,independent,Xxxx,ABC\n"],
+    ["fertility,Marca X,Vigo,independent,Xxxx,ABC\n", "dental,Y,Vigo,independent,ABC,\n"],
+    ["dental,Y,Vigo,independent,ABC,\n", "fertility,Marca X,Vigo,independent,Xxxx,ABC\n"],
+], ids=["own-name-first", "own-name-last", "sigla-first", "other-first"])
+def test_spec006_ca2_exclusivity_independent_of_row_order(tmp_path, rows):
+    p = write_csv(tmp_path, "".join(rows))
+    with pytest.raises(ValueError) as e:
+        matching.load_brands(p)
+    assert "ABC" in str(e.value) and "'Y'" in str(e.value)
+
+
+# F-SPEC-006-4 / ADR-002 §2: la sigla no figura también en los aliases de su propia marca.
+@pytest.mark.parametrize("aliases", ["ABC;Marca Equis", "Marca Equis;abc"])
+def test_spec006_ca2_sigla_repeated_in_own_aliases_rejected(tmp_path, aliases):
+    p = write_csv(tmp_path, f'fertility,Marca X,Vigo,independent,"{aliases}",ABC\n')
+    with pytest.raises(ValueError) as e:
+        matching.load_brands(p)
+    assert "Marca X" in str(e.value) and "ABC" in str(e.value)
+
+
+def test_spec006_ca2_own_alias_and_other_brand_alias_rejected_in_both_orders(tmp_path):
+    # Repro del verificador con alias propio: falla sea cual sea el orden.
+    own = 'fertility,Marca X,Vigo,independent,"abc;Xxxx",ABC\n'
+    other = "dental,Y,Vigo,independent,ABC,\n"
+    for body in (own + other, other + own):
+        with pytest.raises(ValueError):
+            matching.load_brands(write_csv(tmp_path, body))
+
+
+def test_spec006_ca2_brand_named_like_its_own_sigla_loads(tmp_path):
+    # El nombre de la marca no es un alias: una marca "ABC" con sigla ABC es válida.
+    rows = matching.load_brands(write_csv(tmp_path, "fertility,ABC,Vigo,independent,Xxxx,ABC\n"))
+    assert rows[0]["exact_aliases"] == ["ABC"]
+
+
 def test_spec006_ca2_csv_without_exact_aliases_column_still_loads(tmp_path):
     p = write_csv(tmp_path, "dental,Marca X,Vigo,independent,Marca Equis\n",
                   header="specialty,brand,city,type,aliases\n")
@@ -138,7 +177,11 @@ def test_spec006_ca3_ivi_uppercase_whole_word_counts(text):
 
 
 @pytest.mark.parametrize("text", ["te recomiendo ivi", "Ivi es buena", "IVIS", "XIVI", "IVI2",
-                                  "ÁIVI", "IVIñ"])
+                                  "ÁIVI", "IVIñ",
+                                  # R-2: letras acentuadas en NFD (letra + U+0301) pegadas
+                                  "IVÍ es buena", "Mira ÁIVI",
+                                  # ... y marcas combinantes sin forma precompuesta en NFC
+                                  "Mira Q́IVI", "IVI̲ y NIDA"])
 def test_spec006_ca3_ivi_not_counted_when_case_or_word_differs(text):
     assert "IVI Vigo" not in names(text, "fertility", "Vigo")
 
