@@ -2,13 +2,14 @@
 id: SPEC-006
 tipo: spec
 epica: EPIC-001
-estado: en-revision
+estado: en-progreso
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-24, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-23, por: Alberto Fojo}
   - {estado: en-progreso, fecha: 2026-09-23, por: sdd-implementador}
   - {estado: en-revision, fecha: 2026-09-23, por: sdd-implementador}
+  - {estado: en-progreso, fecha: 2026-09-23, por: sdd-verificador}
 ---
 # SPEC-006 — Siglas cortas inequívocas en el matching del probe
 
