@@ -1,0 +1,15 @@
+# Secrets
+.env
+.env.*
+
+# Probe outputs (regenerable, may contain raw provider answers)
+probe/results.csv
+probe/summary.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local Claude settings
+.claude/settings.local.json

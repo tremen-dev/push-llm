@@ -1,0 +1,45 @@
+id,specialty,city,intent,prompt
+D01,dental,Vigo,discovery,¿Cuál es la mejor clínica dental de Vigo para ponerme implantes?
+D02,dental,Vigo,price,¿Cuánto cuesta un implante dental en Vigo y qué clínica me recomiendas?
+D03,dental,Vigo,comparison,Recomiéndame tres clínicas dentales en Vigo con buenas opiniones para ortodoncia invisible.
+D04,dental,Vigo,urgent,Necesito un dentista de urgencia en Vigo un sábado. ¿A dónde voy?
+D05,dental,Vigo,trust,¿Es mejor una franquicia dental o una clínica independiente en Vigo? Dame nombres.
+D06,dental,Vigo,galician,Cal é a mellor clínica dental de Vigo para implantes?
+D07,dental,Pontevedra,discovery,¿Qué clínica dental de Pontevedra me recomiendas para implantes de carga inmediata?
+D08,dental,Pontevedra,comparison,Mejores ortodoncistas en Pontevedra ciudad para Invisalign.
+D09,dental,Pontevedra,price,¿Dónde ponerse implantes dentales baratos pero de calidad en Pontevedra?
+D10,dental,Pontevedra,galician,Onde poño unha ortodoncia invisible en Pontevedra? Recoméndame clínicas.
+F01,fertility,Vigo,discovery,¿Cuál es la mejor clínica de fertilidad en Vigo?
+F02,fertility,Vigo,comparison,Compara IVI Vigo con otras clínicas de reproducción asistida de Vigo.
+F03,fertility,Vigo,price,¿Cuánto cuesta una FIV en Vigo y en qué clínica?
+F04,fertility,Vigo,trust,¿Qué clínica de reproducción asistida de Galicia tiene mejores tasas de éxito?
+F05,fertility,Vigo,specific,Tengo 40 años y quiero ovodonación en Vigo. ¿Qué clínica me recomiendas?
+F06,fertility,Pontevedra,discovery,¿Hay clínicas de fertilidad en Pontevedra o tengo que ir a Vigo? Recomiéndame.
+F07,fertility,Vigo,galician,Cal é a mellor clínica de reprodución asistida en Vigo?
+F08,fertility,Vigo,specific,Preservación de la fertilidad (vitrificación de óvulos) en Vigo: ¿dónde y cuánto cuesta?
+O01,ophthalmology,Vigo,discovery,¿Dónde me opero de miopía en Vigo? Recomiéndame clínicas.
+O02,ophthalmology,Vigo,price,¿Cuánto cuesta la cirugía láser de miopía en Vigo y cuál es la mejor clínica?
+O03,ophthalmology,Vigo,comparison,Clínica Villoria vs Vithas Cadarso para operarme la vista en Vigo, ¿cuál es mejor?
+O04,ophthalmology,Vigo,specific,Quiero operarme de presbicia (vista cansada) en Vigo. ¿Qué clínica me recomiendas?
+O05,ophthalmology,Vigo,trust,¿Quién es el mejor oftalmólogo de Vigo para cataratas?
+O06,ophthalmology,Pontevedra,discovery,¿Dónde operarse de la vista en Pontevedra?
+O07,ophthalmology,Vigo,galician,Onde me podo operar de miopía en Vigo? Recoméndame unha clínica.
+E01,aesthetic,Vigo,discovery,¿Cuál es la mejor clínica de medicina estética en Vigo?
+E02,aesthetic,Vigo,specific,¿Dónde ponerse bótox en Vigo con un médico de confianza?
+E03,aesthetic,Vigo,price,Precio de ácido hialurónico en labios en Vigo y clínica recomendada.
+E04,aesthetic,Vigo,specific,Mejor cirujano plástico en Vigo para aumento de pecho.
+E05,aesthetic,Vigo,specific,Depilación láser en Vigo: ¿qué centro es el mejor?
+E06,aesthetic,Pontevedra,discovery,Clínicas de medicina estética recomendadas en Pontevedra.
+E07,aesthetic,Vigo,galician,Cal é a mellor clínica de estética en Vigo para bótox?
+E08,aesthetic,Vigo,trust,¿Qué clínicas estéticas de Vigo tienen médicos colegiados y buenas opiniones?
+P01,physio,Vigo,discovery,¿Cuál es el mejor fisioterapeuta de Vigo?
+P02,physio,Vigo,specific,Fisioterapeuta en Vigo especializado en lesiones deportivas, ¿a quién voy?
+P03,physio,Vigo,specific,Fisioterapia de suelo pélvico en Vigo: ¿qué centro me recomiendas?
+P04,physio,Vigo,specific,Tratamiento de lipedema en Galicia, ¿dónde?
+P05,physio,Pontevedra,discovery,Mejor clínica de fisioterapia en Pontevedra.
+P06,physio,Vigo,galician,Recoméndame un bo fisioterapeuta en Vigo para a lumbalxia.
+H01,hospital,Vigo,discovery,¿Cuál es el mejor hospital privado de Vigo?
+H02,hospital,Pontevedra,discovery,¿Qué hospital privado hay en Pontevedra y qué tal es?
+H03,hospital,Vigo,specific,¿Dónde hacerme un chequeo médico completo privado en Vigo?
+H04,hospital,Vigo,specific,Mejor traumatólogo privado en Vigo para una rodilla.
+H05,hospital,Vigo,specific,Dermatólogo privado en Vigo sin lista de espera, ¿cuál?
