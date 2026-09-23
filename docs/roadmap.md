@@ -5,10 +5,10 @@ tipo: roadmap
 
 > Curado por sdd-producto. Secuencia de épicas, horizonte y criterios de corte.
 > El estado fino por spec vive en el tablero; aquí vive la INTENCIÓN.
-> Base: `05-lean-plan.md` (ciclos 0–3). Aún no hay épicas creadas.
+> Base: `05-lean-plan.md` (ciclos 0–3).
 
 ## Ahora (en curso)
-- Ciclo 0 — Baseline y problema (semanas 1–2): ejecutar `probe/`, 15 entrevistas. Sin producto.
+- **EPIC-001** — Ciclo 0: baseline y validación del problema. Probe ejecutado + 10 entrevistas con enfoque *datos primero* para un fundador no comercial. Va primero porque H1–H2 son las hipótesis más baratas de comprobar y las que pueden matar la idea (D-4); su criterio Go abre o cierra todo lo demás.
 
 ## Después (comprometido, sin empezar)
 - Ciclo 1 — Vender antes de construir (semanas 3–6): informe gratuito a 12 clínicas, 3 pilotos de pago.
