@@ -1,0 +1,70 @@
+{
+  "_comment": "Probe configuration (SPEC-001 CA-1/CA-2). Model ids, runs, prices and weights are configuration, not code (FOUNDATION No-negociables). Values follow the sdd-probe dictamen recorded in docs/epicas/EPIC-001-ciclo-0-baseline-y-validacion-del-problema/SPEC-001-ajustes-del-probe-para-el-baseline.ledger.md. Re-check each app's default model before every probe run.",
+  "dictamen_date": "2026-09-23",
+  "user_location": {
+    "city": "Vigo",
+    "region": "Galicia",
+    "country": "ES",
+    "timezone": "Europe/Madrid"
+  },
+  "currency": {
+    "usd_per_eur": 1.1411,
+    "date": "2026-09-23",
+    "source": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html"
+  },
+  "providers": {
+    "claude": {
+      "model": "claude-sonnet-5",
+      "model_env": "CLAUDE_MODEL",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "runs": 3,
+      "weight": 0.10,
+      "web_search_tool": "web_search_20260209",
+      "max_searches": 5,
+      "effort": "low",
+      "max_tokens": 4000,
+      "price": {
+        "input_usd_per_mtok": 2.0,
+        "output_usd_per_mtok": 10.0,
+        "search_usd": 0.01,
+        "date": "2026-09-23",
+        "source": "https://platform.claude.com/docs/en/about-claude/models/overview ; https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool"
+      },
+      "model_source": "https://www.anthropic.com/news/claude-sonnet-5 (Sonnet 5 = default model for Free and Pro plans)"
+    },
+    "openai": {
+      "model": "gpt-5.6-luna",
+      "model_env": "OPENAI_MODEL",
+      "api_key_env": "OPENAI_API_KEY",
+      "runs": 3,
+      "weight": 0.55,
+      "web_search_tool": "web_search",
+      "effort": "low",
+      "price": {
+        "input_usd_per_mtok": 0.20,
+        "output_usd_per_mtok": 1.20,
+        "search_usd": 0.01,
+        "date": "2026-09-23",
+        "source": "https://developers.openai.com/api/docs/models/gpt-5.6-luna ; https://developers.openai.com/api/docs/pricing"
+      },
+      "model_source": "https://www.macrumors.com/2026/08/06/chatgpt-free-unlimited-text-chats/ (GPT-5.6 Luna = default for Free and Go since 2026-08-06); GPT-6 Luna announced 2026-09-22, not yet in Chat: https://techcrunch.com/2026/09/22/openai-launches-gpt-6-sol-and-luna/"
+    },
+    "gemini": {
+      "model": "gemini-3.6-flash",
+      "model_env": "GEMINI_MODEL",
+      "api_key_env": "GEMINI_API_KEY",
+      "runs": 3,
+      "weight": 0.25,
+      "web_search_tool": "google_search",
+      "effort": null,
+      "price": {
+        "input_usd_per_mtok": 0.75,
+        "output_usd_per_mtok": 3.75,
+        "search_usd": 0.014,
+        "date": "2026-09-23",
+        "source": "https://ai.google.dev/gemini-api/docs/pricing (price valid through 2026-12-31; 5,000 free searches/month ignored, conservative)"
+      },
+      "model_source": "https://gemini.google/release-notes/ (2026-07-21: Gemini 3.6 Flash for all Gemini app users); https://ai.google.dev/gemini-api/docs/models"
+    }
+  }
+}
