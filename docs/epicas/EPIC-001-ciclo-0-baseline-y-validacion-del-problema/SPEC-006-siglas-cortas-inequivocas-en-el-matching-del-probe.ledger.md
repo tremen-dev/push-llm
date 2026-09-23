@@ -97,11 +97,12 @@ E01/openai/2 "Te recomiendo MIA." (MIA sigue sin contar).
 
 ## Salvedades / follow-ups
 <!-- IDs F-SPEC-006-1, F-SPEC-006-2… con destino (spec futura o EPIC-MEJORA). -->
-- **F-SPEC-006-1** (drift de dominio): `docs/fundacion/dominio.md`, entidad Mention, no menciona la excepción RN-11 (siglas cortas). Destino: sdd-arquitecto / humano (documento de verdad, no lo edita el implementador).
-- **F-SPEC-006-2** (drift de reglas): RN-01 y RN-11 en `docs/fundacion/reglas.md` dicen "ADR-002 en borrador"; ADR-002 está `aprobada`. Destino: sdd-arquitecto / humano.
+- **F-SPEC-006-1** — RESUELTA 2026-09-24 (sdd-arquitecto): `dominio.md`, Mention, cita ya la excepción RN-11 y ADR-002. Texto original (drift de dominio): `docs/fundacion/dominio.md`, entidad Mention, no menciona la excepción RN-11 (siglas cortas). Destino: sdd-arquitecto / humano (documento de verdad, no lo edita el implementador).
+- **F-SPEC-006-2** — RESUELTA 2026-09-24 (sdd-arquitecto): RN-01 y RN-11 dicen ya "ADR-002 aprobada el 2026-09-24" y RN-11 vigente; el cuerpo de ADR-002 (Deciders) refleja la aprobación humana. Texto original (drift de reglas): RN-01 y RN-11 en `docs/fundacion/reglas.md` dicen "ADR-002 en borrador"; ADR-002 está `aprobada`. Destino: sdd-arquitecto / humano.
 - **F-SPEC-006-4** — RESUELTA en iteración 2 (2026-09-24): `load_brands` ahora rechaza con `ValueError` la sigla repetida en los `aliases` propios (`test_spec006_ca2_sigla_repeated_in_own_aliases_rejected`). Texto original: `load_brands` no rechaza que una sigla de `exact_aliases` figure también en `aliases` de su propia marca (ADR-002 §2 lo prohíbe como convención del catálogo; CA-2 solo exige forma y exclusividad entre marcas). El catálogo actual lo cumple (test CA-1). Destino: spec futura si se quiere forzar.
 - **F-SPEC-006-5** (limitación de juicio, ya en ADR-002): "IVI" de la cadena se atribuye a IVI Vigo; y una sigla en mayúsculas de énfasis ("MIA") no cuenta por diseño. Destino: veredicto de SPEC-002 (CA-5).
 - **F-SPEC-006-3** (historial): en SPEC-006 y ADR-002 la entrada `aprobada` (2026-09-23) tiene fecha anterior a la de `borrador` (2026-09-24). No afecta al código; revisar fechas. Destino: sdd-arquitecto / humano.
+  - Causa (sdd-arquitecto, 2026-09-24): los scripts del plugin (`estado.mjs`, también `scaffold.mjs` y `tablero.mjs`) fechan con `new Date().toISOString()`, es decir, en UTC; las transiciones se ejecutaron pasada la medianoche local (CEST, UTC+2), cuando en UTC aún era 2026-09-23. Las fechas reales de todas las entradas son 2026-09-24. El historial es append-only y lo escribe el script: NO se corrige a mano; la nota queda aquí y en el cuerpo de ADR-002. Arreglo de fondo en el plugin tremen-sdd (fecha local), fuera de este proyecto.
 
 ## Cómo retomar (handoff)
 <!-- Estado real del trabajo para la siguiente sesión: qué está hecho, qué falta, dónde seguir. -->

@@ -12,7 +12,7 @@ Actualizado: 2026-09-23
 | SPEC-003 — extracto-de-hallazgos-por-clinica | borrador | 2026-09-23 (sdd-arquitecto) |
 | SPEC-004 — kit-de-contacto-y-entrevista-para-un-fundador-no-comercial | borrador | 2026-09-23 (sdd-arquitecto) |
 | SPEC-005 — registro-y-evaluacion-de-las-entrevistas | borrador | 2026-09-23 (sdd-arquitecto) |
-| SPEC-006 — siglas-cortas-inequivocas-en-el-matching-del-probe | aprobada | 2026-09-23 (Alberto Fojo) |
+| SPEC-006 — siglas-cortas-inequivocas-en-el-matching-del-probe | hecho | 2026-09-23 (sdd-verificador) |
 
 ## ADRs
 
@@ -23,6 +23,6 @@ Actualizado: 2026-09-23
 
 ## Resumen
 
-- hecho: 1
-- aprobada: 2
+- hecho: 2
+- aprobada: 1
 - borrador: 3
