@@ -113,4 +113,8 @@ manual propenso a errores y a afirmaciones no respaldadas por el dato.
   tras la ejecución se recuenta offline sin coste (SPEC-001 CA-5).
 - ¿Hace falta versión en gallego del extracto? D-8 dice "gallego/castellano" para
   material de cliente; propongo solo castellano en Ciclo 0.
+- **F-SPEC-001-2** (destino esta spec, decidido al refinar SPEC-002 el 2026-09-24): las URLs
+  citadas por Gemini (`grounding_chunks[].web.uri`) son redirecciones
+  `vertexaisearch.cloud.google.com`; si un extracto muestra fuentes citadas, hay que resolverlas
+  a la URL final o marcarlas como no resueltas. Incorporarlo como CA al refinar esta spec.
 - Depende de: SPEC-001 (duro), SPEC-002 (para CA-9). Bloquea: SPEC-004 CA-10 (envío).

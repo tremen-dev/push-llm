@@ -8,18 +8,21 @@ Actualizado: 2026-09-23
 | Spec | Estado | Último cambio |
 |---|---|---|
 | SPEC-001 — ajustes-del-probe-para-el-baseline | hecho | 2026-09-23 (sdd-verificador) |
-| SPEC-002 — ejecucion-del-probe-baseline-y-veredicto-de-la-hipotesis | borrador | 2026-09-23 (sdd-arquitecto) |
+| SPEC-002 — ejecucion-del-probe-baseline-y-veredicto-de-la-hipotesis | aprobada | 2026-09-23 (Alberto Fojo) |
 | SPEC-003 — extracto-de-hallazgos-por-clinica | borrador | 2026-09-23 (sdd-arquitecto) |
 | SPEC-004 — kit-de-contacto-y-entrevista-para-un-fundador-no-comercial | borrador | 2026-09-23 (sdd-arquitecto) |
 | SPEC-005 — registro-y-evaluacion-de-las-entrevistas | borrador | 2026-09-23 (sdd-arquitecto) |
+| SPEC-006 — siglas-cortas-inequivocas-en-el-matching-del-probe | aprobada | 2026-09-23 (Alberto Fojo) |
 
 ## ADRs
 
 | ADR | Estado | Título | Último cambio |
 |---|---|---|---|
 | ADR-001 | aprobada | frontera-de-datos-del-ciclo-0-entre-el-repo-publico-y-el-espacio-privado | 2026-09-23 (Alberto Fojo) |
+| ADR-002 | aprobada | excepcion-a-rn-01-para-siglas-cortas-inequivocas | 2026-09-23 (Alberto Fojo) |
 
 ## Resumen
 
 - hecho: 1
-- borrador: 4
+- aprobada: 2
+- borrador: 3

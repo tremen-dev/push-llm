@@ -1,13 +1,13 @@
 ---
-id: SPEC-002
+id: SPEC-006
 tipo: ledger
 epica: EPIC-001
 ---
-# Ledger — SPEC-002 Ejecución del probe baseline y veredicto de la hipótesis
+# Ledger — SPEC-006 Siglas cortas inequívocas en el matching del probe
 
 ## Resumen
 - Fase: <!-- refleja el estado de la spec; la fuente de verdad es el frontmatter de la spec -->
-- Rama: `ft/SPEC-002-ejecucion-del-probe-baseline-y-veredicto-de-la-hipotesis`
+- Rama: `ft/SPEC-006-siglas-cortas-inequivocas-en-el-matching-del-probe`
 
 ## Matriz de criterios de aceptación
 <!-- Escritores: sdd-implementador rellena Implementado y Test; sdd-verificador rellena Verif. y Estado. Nunca al revés. -->
@@ -15,6 +15,7 @@ epica: EPIC-001
 <!-- Un CA está ✅ solo cuando Implementado + Test + Verif. aplicables están en verde. Una salvedad se marca ⚠️, nunca ✅. -->
 | CA | Implementado (fichero) | Test (fichero/caso) | Verif. | Estado |
 |---|---|---|---|---|
+| CA-0 | | | | ❌ |
 | CA-1 | | | | ❌ |
 | CA-2 | | | | ❌ |
 | CA-3 | | | | ❌ |
@@ -22,18 +23,15 @@ epica: EPIC-001
 | CA-5 | | | | ❌ |
 | CA-6 | | | | ❌ |
 | CA-7 | | | | ❌ |
-| CA-8 | | | | ❌ |
-| CA-9 | | | | ❌ |
-| CA-10 | | | | ❌ |
 
 ## Veredicto del verificador
 <!-- GREEN/RED + fecha + resumen. Lo escribe SOLO sdd-verificador. -->
 
 ## Evidencia visual
-<!-- Tabla CA → captura en _qa/SPEC-002/. Informe HTML opcional: _qa/SPEC-002/informe.html -->
+<!-- Tabla CA → captura en _qa/SPEC-006/. Informe HTML opcional: _qa/SPEC-006/informe.html -->
 
 ## Salvedades / follow-ups
-<!-- IDs F-SPEC-002-1, F-SPEC-002-2… con destino (spec futura o EPIC-MEJORA). -->
+<!-- IDs F-SPEC-006-1, F-SPEC-006-2… con destino (spec futura o EPIC-MEJORA). -->
 
 ## Cómo retomar (handoff)
 <!-- Estado real del trabajo para la siguiente sesión: qué está hecho, qué falta, dónde seguir. -->
