@@ -7,7 +7,7 @@ Actualizado: 2026-09-23
 
 | Spec | Estado | Último cambio |
 |---|---|---|
-| SPEC-001 — ajustes-del-probe-para-el-baseline | aprobada | 2026-09-23 (Alberto Fojo) |
+| SPEC-001 — ajustes-del-probe-para-el-baseline | hecho | 2026-09-23 (sdd-verificador) |
 | SPEC-002 — ejecucion-del-probe-baseline-y-veredicto-de-la-hipotesis | borrador | 2026-09-23 (sdd-arquitecto) |
 | SPEC-003 — extracto-de-hallazgos-por-clinica | borrador | 2026-09-23 (sdd-arquitecto) |
 | SPEC-004 — kit-de-contacto-y-entrevista-para-un-fundador-no-comercial | borrador | 2026-09-23 (sdd-arquitecto) |
@@ -21,5 +21,5 @@ Actualizado: 2026-09-23
 
 ## Resumen
 
-- aprobada: 1
+- hecho: 1
 - borrador: 4
