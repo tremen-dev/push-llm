@@ -1,174 +1,143 @@
 """Probe which Vigo/Pontevedra clinics the main assistants recommend.
 
 Runs every prompt in prompts.csv N times against each configured provider,
-counts brand mentions (brands.csv), and writes results.csv + summary.md.
+stores the raw answer plus usage/cost metadata per row in results.csv, and
+writes summary.md with the offline analysis (see analysis.py).
 
-Providers are enabled by the presence of their API key:
-  ANTHROPIC_API_KEY  -> Claude (Anthropic SDK, web search tool on)
-  OPENAI_API_KEY     -> ChatGPT (openai SDK, Responses API, web_search tool)
-  GEMINI_API_KEY     -> Gemini (google-genai SDK, Google Search grounding)
+Model ids, runs per provider, prices and weights: probe_config.json
+(override the model with CLAUDE_MODEL / OPENAI_MODEL / GEMINI_MODEL).
+Providers are enabled by the presence of their API key.
+Output directory: --out, else $PUSHLLM_PRIVADO/probe, else probe/out (gitignored).
 
-    pip install anthropic openai google-genai
-    python run_probe.py --runs 3 --providers claude,openai,gemini
+    python run_probe.py --only D01,E01,F01,O01 --runs 1   # smoke: 12 calls
+    python run_probe.py                                   # full: 44 x 3 x 3
+    python run_probe.py --resume                          # continue a cut run
+    python run_probe.py --analyze                         # recount offline, no calls
 """
 from __future__ import annotations
 
 import argparse
 import csv
 import os
-import re
 import sys
 import time
-import unicodedata
-from collections import defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
 
-HERE = Path(__file__).parent
-SYSTEM = (
-    "Eres un asistente que ayuda a una persona que vive en Galicia a elegir "
-    "una clínica. Responde como lo harías normalmente, nombrando clínicas "
-    "concretas cuando puedas."
-)
-USER_LOCATION = {"type": "approximate", "city": "Vigo", "region": "Galicia",
-                 "country": "ES", "timezone": "Europe/Madrid"}
+import analysis
+import matching
+import providers
+import settings
+
+HERE = Path(__file__).resolve().parent
+COLUMNS = ["timestamp_utc", "prompt_id", "specialty", "city", "provider", "run", "model",
+           "status", "input_tokens", "output_tokens", "web_searches", "cost_eur",
+           "brands_mentioned", "directories_mentioned", "cited_urls", "answer"]
 
 
-def norm(s: str) -> str:
-    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()
-    return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
+def output_dir(option: str | None, env) -> Path:
+    if option:
+        return Path(option)
+    if env.get("PUSHLLM_PRIVADO"):
+        return Path(env["PUSHLLM_PRIVADO"]) / "probe"
+    return HERE / "out"
 
 
-def load_brands():
-    rows = list(csv.DictReader(open(HERE / "brands.csv", encoding="utf-8")))
-    for r in rows:
-        names = [r["brand"]] + [a for a in r["aliases"].split(";") if a]
-        r["patterns"] = [norm(n) for n in names if len(norm(n)) >= 4]
-    return rows
-
-
-def mentions(text: str, brands):
-    t = norm(text)
-    return [b for b in brands if any(f" {p} " in f" {t} " for p in b["patterns"])]
-
-
-# ---------------- providers ----------------
-
-def ask_claude(prompt: str, model: str) -> str:
-    import anthropic
-    client = anthropic.Anthropic()
-    messages = [{"role": "user", "content": prompt}]
-    tools = [{"type": "web_search_20260209", "name": "web_search",
-              "max_uses": 5, "user_location": USER_LOCATION}]
-    for _ in range(4):  # resume pause_turn if the server tool loop pauses
-        resp = client.messages.create(
-            model=model, max_tokens=4000, system=SYSTEM,
-            tools=tools, messages=messages,
-            output_config={"effort": "low"},
-        )
-        if resp.stop_reason == "refusal":
-            return "[refusal]"
-        if resp.stop_reason != "pause_turn":
-            break
-        messages.append({"role": "assistant", "content": resp.content})
-    return "\n".join(b.text for b in resp.content if b.type == "text")
-
-
-def ask_openai(prompt: str, model: str) -> str:
-    from openai import OpenAI
-    client = OpenAI()
-    resp = client.responses.create(
-        model=model, instructions=SYSTEM, input=prompt,
-        tools=[{"type": "web_search",
-                "user_location": {"type": "approximate", "city": "Vigo",
-                                  "region": "Galicia", "country": "ES"}}],
-    )
-    return resp.output_text
-
-
-def ask_gemini(prompt: str, model: str) -> str:
-    from google import genai
-    from google.genai import types
-    client = genai.Client()
-    resp = client.models.generate_content(
-        model=model, contents=prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM,
-            tools=[types.Tool(google_search=types.GoogleSearch())]),
-    )
-    return resp.text or ""
-
-
-PROVIDERS = {
-    "claude": (ask_claude, "ANTHROPIC_API_KEY", os.getenv("CLAUDE_MODEL", "claude-opus-5")),
-    "openai": (ask_openai, "OPENAI_API_KEY", os.getenv("OPENAI_MODEL", "gpt-5")),
-    "gemini": (ask_gemini, "GEMINI_API_KEY", os.getenv("GEMINI_MODEL", "gemini-2.5-flash")),
-}
-
-
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--runs", type=int, default=3)
+def parse_args(argv):
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--runs", type=int, default=None, help="runs per prompt (default: config per provider)")
     ap.add_argument("--providers", default="claude,openai,gemini")
     ap.add_argument("--only", default="", help="comma list of prompt ids")
-    args = ap.parse_args()
+    ap.add_argument("--out", default=None, help="output directory (default: $PUSHLLM_PRIVADO/probe or probe/out)")
+    ap.add_argument("--config", default=None, help="config file (default: probe_config.json)")
+    ap.add_argument("--resume", action="store_true",
+                    help="append to existing results.csv; only call (prompt, provider, run) without a status=ok row")
+    ap.add_argument("--analyze", action="store_true", help="recompute summary.md from results.csv; no provider calls")
+    ap.add_argument("--sleep", type=float, default=0.5, help="seconds between calls")
+    return ap.parse_args(argv)
 
-    brands = load_brands()
-    prompts = list(csv.DictReader(open(HERE / "prompts.csv", encoding="utf-8")))
+
+def _blank(v):
+    return "" if v is None else v
+
+
+def write_summary(out: Path, cfg: dict, brands) -> None:
+    res = analysis.analyze(analysis.read_results(out / "results.csv"), brands, cfg)
+    (out / "summary.md").write_text(analysis.render_summary(res, cfg), encoding="utf-8")
+
+
+def main(argv=None, env=None, ask=None):
+    args = parse_args(argv)
+    env = os.environ if env is None else env
+    ask = ask or providers.ask
+    cfg = settings.load_config(args.config)
+    brands = matching.load_brands()
+    out = output_dir(args.out, env)
+    results = out / "results.csv"
+
+    if args.analyze:
+        if not results.exists():
+            sys.exit(f"no results file at {results}")
+        write_summary(out, cfg, brands)
+        print(f"wrote {out / 'summary.md'}")
+        return
+
+    with open(HERE / "prompts.csv", encoding="utf-8") as f:
+        prompts = list(csv.DictReader(f))
     if args.only:
         keep = set(args.only.split(","))
         prompts = [p for p in prompts if p["id"] in keep]
 
     active = []
     for name in args.providers.split(","):
-        fn, key, model = PROVIDERS[name]
-        if os.getenv(key):
-            active.append((name, fn, model))
+        pcfg = cfg["providers"][name]
+        if env.get(pcfg["api_key_env"]):
+            active.append((name, settings.resolve_model(name, cfg, env), args.runs or pcfg["runs"]))
         else:
-            print(f"skip {name}: {key} not set", file=sys.stderr)
+            print(f"skip {name}: {pcfg['api_key_env']} not set", file=sys.stderr)
     if not active:
         sys.exit("no provider configured")
 
-    out = open(HERE / "results.csv", "w", newline="", encoding="utf-8")
-    w = csv.writer(out)
-    w.writerow(["prompt_id", "specialty", "city", "provider", "run",
-                "brands_mentioned", "directories_mentioned", "answer"])
-    tally = defaultdict(lambda: defaultdict(int))     # provider -> brand -> n
-    coverage = defaultdict(lambda: defaultdict(int))  # provider -> specialty -> answers with >=1 clinic
-    total = defaultdict(lambda: defaultdict(int))
+    done = set()
+    if results.exists():
+        if not args.resume:
+            sys.exit(f"{results} exists: use --resume to continue it or --out for a new directory")
+        done = {(r["prompt_id"], r["provider"], r["run"]) for r in analysis.read_results(results)
+                if r.get("status") == "ok"}
+    out.mkdir(parents=True, exist_ok=True)
+    new_file = not results.exists()
 
-    for p in prompts:
-        for name, fn, model in active:
-            for run in range(1, args.runs + 1):
-                try:
-                    answer = fn(p["prompt"], model)
-                except Exception as e:  # keep going, log the failure
-                    answer = f"[error] {e}"
-                hits = mentions(answer, brands)
-                clinics = [b["brand"] for b in hits if b["type"] != "directory"]
-                dirs = [b["brand"] for b in hits if b["type"] == "directory"]
-                w.writerow([p["id"], p["specialty"], p["city"], name, run,
-                            ";".join(clinics), ";".join(dirs), answer.replace("\n", " ")])
-                out.flush()
-                for b in hits:
-                    tally[name][b["brand"]] += 1
-                total[name][p["specialty"]] += 1
-                if clinics:
-                    coverage[name][p["specialty"]] += 1
-                print(f"{p['id']} {name} r{run}: {clinics or '-'} | dirs {dirs or '-'}")
-                time.sleep(0.5)
+    with open(results, "a", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=COLUMNS)
+        if new_file:
+            w.writeheader()
+        for p in prompts:
+            for name, model, runs in active:
+                for run in range(1, runs + 1):
+                    if (p["id"], name, str(run)) in done:
+                        continue
+                    r = ask(name, p["prompt"], cfg, model)
+                    hits = matching.find_mentions(r.text, brands, p["specialty"], p["city"])
+                    clinics = [b["brand"] for b in hits if b["type"] != "directory"]
+                    dirs = [b["brand"] for b in hits if b["type"] == "directory"]
+                    answer = r.text if r.status != "error" else f"[error] {r.error}"
+                    w.writerow({
+                        "timestamp_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "prompt_id": p["id"], "specialty": p["specialty"], "city": p["city"],
+                        "provider": name, "run": run, "model": r.model or model, "status": r.status,
+                        "input_tokens": _blank(r.input_tokens), "output_tokens": _blank(r.output_tokens),
+                        "web_searches": _blank(r.web_searches),
+                        "cost_eur": f"{providers.cost_eur(r, name, cfg):.6f}",
+                        "brands_mentioned": ";".join(clinics), "directories_mentioned": ";".join(dirs),
+                        "cited_urls": ";".join(r.cited_urls), "answer": answer,
+                    })
+                    fh.flush()
+                    print(f"{p['id']} {name} r{run} [{r.status}]: {clinics or '-'} | dirs {dirs or '-'}")
+                    if args.sleep:
+                        time.sleep(args.sleep)
 
-    with open(HERE / "summary.md", "w", encoding="utf-8") as s:
-        s.write("# Resumo da sonda Vigo/Pontevedra\n\n")
-        for name, _, model in active:
-            s.write(f"## {name} ({model})\n\n")
-            s.write("| Especialidade | Respostas con clínica nomeada | Total |\n|---|---|---|\n")
-            for sp in sorted(total[name]):
-                s.write(f"| {sp} | {coverage[name][sp]} | {total[name][sp]} |\n")
-            s.write("\n| Marca | Mencións |\n|---|---|\n")
-            for brand, n in sorted(tally[name].items(), key=lambda x: -x[1]):
-                s.write(f"| {brand} | {n} |\n")
-            s.write("\n")
-    print("wrote results.csv and summary.md")
+    write_summary(out, cfg, brands)
+    print(f"wrote {results} and {out / 'summary.md'}")
 
 
 if __name__ == "__main__":
