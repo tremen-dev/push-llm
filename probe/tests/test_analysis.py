@@ -120,8 +120,8 @@ def test_spec006_ca5_ivi_alone_counts_and_mia_alone_is_bias():
 def test_spec006_ca5_summary_lists_active_exact_aliases(result):
     md = analysis.render_summary(result, CFG)
     lines = md.splitlines()
-    bias = next(i for i, l in enumerate(lines) if l.startswith("## Sesgo RN-01"))
-    active = next(i for i, l in enumerate(lines) if "IVI → IVI Vigo" in l)
+    bias = next(i for i, ln in enumerate(lines) if ln.startswith("## Sesgo RN-01"))
+    active = next(i for i, ln in enumerate(lines) if "IVI → IVI Vigo" in ln)
     assert "RN-11" in lines[active] and "ADR-002" in lines[active]
     assert 0 < active - bias <= 3  # right next to the short-alias bias section
 
