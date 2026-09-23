@@ -11,8 +11,15 @@ aprobada-por: Alberto Fojo
 
 - Deciders: el humano (Alberto Fojo) decidió el 2026-09-24 que haya una excepción a RN-01 para
   alias cortos inequívocos (respuesta a F-SPEC-001-4). sdd-arquitecto propone la redacción
-  operativa de este ADR (2026-09-24). Aprueba: humano (pendiente de revisar esta redacción).
-  Antes de aprobar se pide dictamen de `sdd-metricas` (SPEC-006 CA-0).
+  operativa de este ADR (2026-09-24). Aprueba: humano (Alberto Fojo), que aprobó esta
+  redacción el 2026-09-24, con el dictamen de `sdd-metricas` (SPEC-006 CA-0) ya emitido:
+  correcto en las reglas 1–5 (emitido por sdd-implementador aplicando la skill; ver ledger
+  de SPEC-006).
+- Nota sobre el historial: la entrada `aprobada` figura con fecha 2026-09-23, anterior a la
+  de `borrador` (2026-09-24). No es real: la aprobación fue el 2026-09-24 (hora local); el
+  script de transición de estado del plugin fecha en UTC (`toISOString`) y se ejecutó pasada
+  la medianoche local (CEST, UTC+2), cuando en UTC aún era 2026-09-23. El historial es
+  append-only y no se corrige a mano (F-SPEC-006-3).
 - Specs relacionadas: SPEC-001 (origen: dictamen sdd-metricas punto 3 y F-SPEC-001-4),
   SPEC-006 (implementación), SPEC-002 (consume el matching en el baseline).
 

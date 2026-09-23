@@ -27,10 +27,11 @@ FIXTURE = [
     row("D01", "dental", "gemini", 2, "empty", ""),
     # fertility
     row("F01", "fertility", "openai", 1, "ok", "IVI Vigo es la referencia, también IVI."),
-    row("F01", "fertility", "openai", 2, "ok", "IVI es la mejor opción."),
+    row("F01", "fertility", "openai", 2, "ok", "IVI es la mejor opción."),  # counts: RN-11/ADR-002
     row("F01", "fertility", "claude", 1, "ok", "Clínica NIDA y reproduccionasistida.org"),
     # aesthetic / ophthalmology: shared alias "Villoria"
     row("E01", "aesthetic", "openai", 1, "ok", "Villoria."),
+    row("E01", "aesthetic", "openai", 2, "ok", "Te recomiendo MIA."),  # MIA: bias, not a mention
     row("O01", "ophthalmology", "openai", 1, "ok",
         "Clínica Villoria es la referencia; Villoria opera también en Pontevedra."),
 ]
@@ -70,21 +71,23 @@ def test_ca5_coverage_percentages(result):
     assert c["dental", "openai"]["pct"] == pytest.approx(0.5)
     assert c["dental", "claude"]["pct"] == pytest.approx(1.0)
     assert c["dental", "gemini"]["pct"] == pytest.approx(0.0)
-    assert c["fertility", "openai"]["pct"] == pytest.approx(0.5)  # "IVI" alone does not count
+    # SPEC-006: "IVI" alone now counts (RN-11/ADR-002) -> 2/2 (was 1/2 under SPEC-001)
+    assert c["fertility", "openai"]["pct"] == pytest.approx(1.0)
 
 
 def test_ca5_weighted_aggregate_normalised_to_probed_providers(result):
     # dental: (0.5*0.55 + 1.0*0.10 + 0.0*0.25) / (0.55+0.10+0.25)
     assert result["weighted"]["dental"] == pytest.approx(0.375 / 0.90)
-    # fertility: gemini not probed -> (0.5*0.55 + 1.0*0.10) / (0.55+0.10)
-    assert result["weighted"]["fertility"] == pytest.approx(0.375 / 0.65)
+    # fertility: gemini not probed -> (1.0*0.55 + 1.0*0.10) / (0.55+0.10) = 1.0 (SPEC-006)
+    assert result["weighted"]["fertility"] == pytest.approx(0.65 / 0.65)
 
 
 def test_ca5_leader_per_specialty(result):
     L = result["leaders"]
     assert L["dental"] == {"brands": ["Clínica Torres"], "count": 2, "valid": 4, "pct": 0.5}
-    assert L["fertility"]["brands"] == ["Clínica NIDA", "IVI Vigo"]  # tie, both listed
-    assert L["fertility"]["count"] == 1 and L["fertility"]["pct"] == pytest.approx(1 / 3)
+    # SPEC-006: IVI Vigo named in 2 of 3 valid fertility answers (was a 1-1 tie with NIDA)
+    assert L["fertility"]["brands"] == ["IVI Vigo"]
+    assert L["fertility"]["count"] == 2 and L["fertility"]["pct"] == pytest.approx(2 / 3)
     assert L["aesthetic"]["brands"] == ["Clínica Villoria L'Essence"]
     assert L["ophthalmology"] == {"brands": ["Clínica Villoria"], "count": 1, "valid": 1, "pct": 1.0}
 
@@ -95,8 +98,32 @@ def test_ca5_directory_distribution(result):
 
 
 def test_ca6_short_alias_bias_reported(result):
-    assert result["short_alias"]["fertility"] == 1
+    # SPEC-006: "IVI" now counts, so fertility has no bias left; "MIA" still does not.
+    assert result["short_alias"].get("fertility", 0) == 0
+    assert result["short_alias"]["aesthetic"] == 1
     assert result["short_alias"].get("dental", 0) == 0
+
+
+# ---------- SPEC-006 CA-5 ----------
+
+def test_spec006_ca5_ivi_alone_counts_and_mia_alone_is_bias():
+    rows = [row("F01", "fertility", "openai", 1, "ok", "IVI es la mejor opción."),
+            row("E01", "aesthetic", "openai", 1, "ok", "Te recomiendo MIA.")]
+    res = analysis.analyze(rows, BRANDS, CFG)
+    assert res["cells"]["fertility", "openai"]["with_clinic"] == 1
+    assert res["leaders"]["fertility"]["brands"] == ["IVI Vigo"]
+    assert res["short_alias"].get("fertility", 0) == 0
+    assert res["cells"]["aesthetic", "openai"]["with_clinic"] == 0
+    assert res["short_alias"]["aesthetic"] == 1
+
+
+def test_spec006_ca5_summary_lists_active_exact_aliases(result):
+    md = analysis.render_summary(result, CFG)
+    lines = md.splitlines()
+    bias = next(i for i, ln in enumerate(lines) if ln.startswith("## Sesgo RN-01"))
+    active = next(i for i, ln in enumerate(lines) if "IVI → IVI Vigo" in ln)
+    assert "RN-11" in lines[active] and "ADR-002" in lines[active]
+    assert 0 < active - bias <= 3  # right next to the short-alias bias section
 
 
 def test_ca5_recomputes_from_text_ignoring_stored_mention_columns():

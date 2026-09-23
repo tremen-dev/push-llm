@@ -6,8 +6,8 @@ Runs every prompt in `prompts.csv` N times against each configured provider (web
 
 - `run_probe.py` — CLI (probe, resume, offline analysis).
 - `probe_config.json` — **configuration, not code**: model id per provider, runs per provider, prices (USD per M input/output tokens and per web search, with date and source), USD/EUR rate, usage weights (RN-04), web search tool version, effort. Values follow the `sdd-probe` dictamen in the SPEC-001 ledger. **Re-check each app's default model before every run.**
-- `providers.py` (adapters), `matching.py` (RN-01 matching), `analysis.py` (coverage, weighted aggregate, leader, directories), `settings.py` (config loader).
-- `prompts.csv`: 44 prompts (es + gl) across dental, fertility, ophthalmology, aesthetic, physio, hospital. `brands.csv`: 43 clinics/hospitals + 9 directories with aliases.
+- `providers.py` (adapters), `matching.py` (RN-01 matching + RN-11 short acronyms), `analysis.py` (coverage, weighted aggregate, leader, directories), `settings.py` (config loader).
+- `prompts.csv`: 44 prompts (es + gl) across dental, fertility, ophthalmology, aesthetic, physio, hospital. `brands.csv`: 43 clinics/hospitals + 9 directories with aliases (columns `specialty, brand, city, type, aliases, exact_aliases`; see *Brand matching* below).
 - `tests/` — offline tests (no keys, no network).
 
 ## Install (Windows PowerShell)
@@ -70,7 +70,13 @@ The same commands work in bash (`--out "$PUSHLLM_PRIVADO/probe-smoke"`). Without
 
 `results.csv`, one row per call: `timestamp_utc, prompt_id, specialty, city, provider, run, model` (served model if the API exposes it, else configured), `status` (ok / error / refusal / empty), `input_tokens, output_tokens, web_searches` (blank if not exposed), `cost_eur` (from config prices), `brands_mentioned, directories_mentioned, cited_urls` (`;`-separated), `answer` (raw text).
 
-`summary.md`: per specialty × provider, valid answers (status=ok only), answers naming ≥ 1 local clinic and %, excluded rows by status; weighted aggregate (RN-03/RN-04, normalised to the providers probed); per specialty, the leading brand of that specialty and its % of answers; directory mentions; answers where only a < 4-char alias (e.g. "IVI") appeared, which RN-01 does not count; estimated cost. Definitions: `sdd-metricas` dictamen in the SPEC-001 ledger.
+`summary.md`: per specialty × provider, valid answers (status=ok only), answers naming ≥ 1 local clinic and %, excluded rows by status; weighted aggregate (RN-03/RN-04, normalised to the providers probed); per specialty, the leading brand of that specialty and its % of answers; directory mentions; answers where only a < 4-char alias (e.g. "MIA", or "ivi" in lower case) appeared, which RN-01 does not count, next to the list of active `exact_aliases` that do count (RN-11/ADR-002); estimated cost. Definitions: `sdd-metricas` dictamen in the SPEC-001 ledger.
+
+## Brand matching (RN-01, RN-11)
+
+- `aliases` (`;`-separated): compared on normalised text (no accents, no case), whole words; only names/aliases of ≥ 4 characters count (RN-01).
+- `exact_aliases` (`;`-separated): short unambiguous acronyms, exception RN-11 / `docs/adr/ADR-002-excepcion-a-rn-01-para-siglas-cortas-inequivocas.md`. Each entry must be 2–3 characters, only uppercase A–Z or digits, and not a name, alias or acronym of any other brand; otherwise loading `brands.csv` fails with an error naming the brand and the acronym. They are matched on the raw answer text, case-sensitively and as a whole word (not glued to a letter, accented or not, or to a digit): `IVI`, `(IVI)`, `IVI.`, `IVI-RMA` count; `ivi`, `Ivi`, `IVIS`, `XIVI`, `IVI2` do not. A match counts as a mention of its brand like any other. An acronym listed in `exact_aliases` is not also listed in `aliases`. A `brands.csv` without the column still loads.
+- Today only `IVI` → IVI Vigo. `MIA` (Clínica MIA) stays in `aliases` and does not count ("mía" is a common word); it is reported in the RN-01 bias section of `summary.md`. Adding a new acronym requires citing ADR-002 (§6).
 
 ## Caveats
 

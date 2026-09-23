@@ -172,3 +172,13 @@ def test_ca8_default_inside_repo_is_gitignored():
         rel = (default / name).relative_to(REPO_DIR).as_posix()
         res = subprocess.run(["git", "check-ignore", "-q", rel], cwd=REPO_DIR)
         assert res.returncode == 0, f"{rel} not ignored"
+
+
+# ---------- SPEC-006 CA-6 ----------
+
+def test_spec006_ca6_ivi_alone_goes_to_brands_mentioned(tmp_path):
+    run(tmp_path, "--only", "F01", "--providers", "openai", "--runs", "1",
+        ask=FakeAsk(text="IVI es la referencia"))
+    rows = read_rows(tmp_path / "results.csv")
+    assert rows[0]["specialty"] == "fertility"
+    assert "IVI Vigo" in rows[0]["brands_mentioned"].split(";")

@@ -13,7 +13,7 @@
 | Prompt catalogue | Conjunto curado de prompts por especialidad × ciudad × idioma | |
 | Provider | Asistente sondeado: chatgpt, gemini, claude, perplexity, google_ai_overviews; con modelo, peso y runs por prompt | "Asistente" en UI |
 | Probe / ProbeRun | Lote programado de prompts a proveedores / una respuesta concreta con menciones, URLs citadas y coste | |
-| Mention | La clínica (o un alias ≥ 4 caracteres) aparece nombrada en una respuesta; matching sin acentos ni mayúsculas | |
+| Mention | La clínica (o un alias ≥ 4 caracteres) aparece nombrada en una respuesta; matching sin acentos ni mayúsculas (RN-01). Excepción RN-11: una sigla corta inequívoca de la marca (columna `exact_aliases` del catálogo, hoy solo `IVI`) también cuenta, con coincidencia sensible a mayúsculas y por palabra completa sobre el texto original | Ver ADR-002 |
 | Position | Orden (base 1) de la clínica entre las clínicas nombradas en una respuesta | |
 | Share of voice (SoV) | Respuestas que mencionan la clínica ÷ total de respuestas de su set de prompts, por proveedor y semana | |
 | Weighted SoV | Σ SoV_proveedor × peso_proveedor, normalizado a los proveedores sondeados. Métrica principal | |
