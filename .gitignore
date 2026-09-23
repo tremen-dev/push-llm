@@ -13,3 +13,6 @@ __pycache__/
 
 # Local Claude settings
 .claude/settings.local.json
+
+# Probe default output dir (SPEC-001 CA-8, ADR-001). Real runs go to $PUSHLLM_PRIVADO/probe
+probe/out/
