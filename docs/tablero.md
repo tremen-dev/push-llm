@@ -18,9 +18,9 @@ Actualizado: 2026-09-28
 
 | Spec | Estado | Último cambio |
 |---|---|---|
-| SPEC-007 — baseline-antes-manual-de-clinica-artica-desde-el-movil | borrador | 2026-09-28 (sdd-arquitecto) |
-| SPEC-008 — catalogo-de-viveiro-y-a-marina-en-el-probe | borrador | 2026-09-28 (sdd-arquitecto) |
-| SPEC-009 — reunion-de-descubrimiento-y-propuesta-para-clinica-artica | borrador | 2026-09-28 (sdd-arquitecto) |
+| SPEC-007 — baseline-antes-manual-de-clinica-artica-desde-el-movil | aprobada | 2026-09-28 (Alberto Fojo) |
+| SPEC-008 — catalogo-de-viveiro-y-a-marina-en-el-probe | aprobada | 2026-09-28 (Alberto Fojo) |
+| SPEC-009 — reunion-de-descubrimiento-y-propuesta-para-clinica-artica | aprobada | 2026-09-28 (Alberto Fojo) |
 | SPEC-010 — instalacion-de-la-atribucion-del-piloto | borrador | 2026-09-28 (sdd-arquitecto) |
 | SPEC-011 — diagnostico-por-palancas-y-plan-de-acciones-de-clinica-artica | borrador | 2026-09-28 (sdd-arquitecto) |
 | SPEC-012 — ejecucion-medicion-semanal-y-cierre-del-piloto | borrador | 2026-09-28 (sdd-arquitecto) |
@@ -31,11 +31,11 @@ Actualizado: 2026-09-28
 |---|---|---|---|
 | ADR-001 | aprobada | frontera-de-datos-del-ciclo-0-entre-el-repo-publico-y-el-espacio-privado | 2026-09-23 (Alberto Fojo) |
 | ADR-002 | aprobada | excepcion-a-rn-01-para-siglas-cortas-inequivocas | 2026-09-23 (Alberto Fojo) |
-| ADR-003 | borrador | piloto-de-clinica-artica-en-viveiro-como-excepcion-acotada-a-d-2 | 2026-09-28 (sdd-arquitecto) |
-| ADR-004 | borrador | frontera-de-datos-de-adr-001-aplicada-al-piloto-de-clinica-artica | 2026-09-28 (sdd-arquitecto) |
+| ADR-003 | aprobada | piloto-de-clinica-artica-en-viveiro-como-excepcion-acotada-a-d-2 | 2026-09-28 (Alberto Fojo) |
+| ADR-004 | aprobada | frontera-de-datos-de-adr-001-aplicada-al-piloto-de-clinica-artica | 2026-09-28 (Alberto Fojo) |
 
 ## Resumen
 
 - hecho: 2
-- aprobada: 1
-- borrador: 9
+- aprobada: 4
+- borrador: 6

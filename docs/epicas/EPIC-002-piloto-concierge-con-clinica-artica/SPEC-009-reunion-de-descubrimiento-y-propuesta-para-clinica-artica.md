@@ -2,10 +2,11 @@
 id: SPEC-009
 tipo: spec
 epica: EPIC-002
-estado: borrador
-aprobada-por:
+estado: aprobada
+aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-28, por: sdd-arquitecto}
+  - {estado: aprobada, fecha: 2026-09-28, por: Alberto Fojo}
 ---
 # SPEC-009 — Reunión de descubrimiento y propuesta para Clínica Ártica
 
