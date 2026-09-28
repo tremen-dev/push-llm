@@ -10,6 +10,8 @@ tipo: roadmap
 ## Ahora (en curso)
 - **EPIC-001** — Ciclo 0: baseline y validación del problema. Probe ejecutado + 10 entrevistas con enfoque *datos primero* para un fundador no comercial. Va primero porque H1–H2 son las hipótesis más baratas de comprobar y las que pueden matar la idea (D-4); su criterio Go abre o cierra todo lo demás.
 
+- **EPIC-002** — Piloto concierge con Clínica Ártica (estética, Viveiro). Es el Ciclo 2 adelantado: un cliente cálido que quiere invertir es justo la evidencia que el plan busca (H1, H3 y, si paga, H2). Va en paralelo a EPIC-001 porque su primer paso, el baseline desde el móvil, no depende de las claves. EPIC-001 no se abandona: su probe servirá también para medir el piloto.
+
 ## Después (comprometido, sin empezar)
 - Ciclo 1 — Vender antes de construir (semanas 3–6): informe gratuito a 12 clínicas, 3 pilotos de pago.
 - Ciclo 2 — Piloto concierge (semanas 7–18): acciones manuales + atribución; valida H1 y H3.
