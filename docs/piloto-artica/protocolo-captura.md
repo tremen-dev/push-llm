@@ -7,12 +7,15 @@
 ## Antes de empezar (una vez por pasada)
 1. Crea la carpeta de la pasada (fecha del primer día y `p1` o `p2`) con una copia de la
    plantilla y un fichero `desviaciones.txt` vacío (**registro de desviaciones**).
-2. Apunta la **cabecera de sesión**: municipio desde el que preguntas, si la ubicación del
-   móvil está activada, y la cuenta que usas en cada app (un alias corto, nunca el email).
-   Mide desde Viveiro o A Mariña, y las dos pasadas desde el mismo sitio; si un día no
-   puede ser, anótalo en `desviaciones.txt`. Estas condiciones (cuenta, plan, modo, móvil, municipio) son **las mismas
-   en todas las pasadas, incluidas las de SPEC-012**; lo que no puedas repetir, a
-   desviaciones.
+2. Apunta la **cabecera de sesión**: municipio, si la ubicación del móvil está activada y
+   la cuenta que usas en cada app (un alias corto, nunca el email). **Municipio fijo:
+   Vilaboa**, para todas las pasadas (antes y después). La ubicación del móvil, activada o
+   no, queda con un ajuste idéntico en todas las pasadas. Nada de VPN ni de simular el GPS.
+   Estas condiciones (cuenta, plan, modo, móvil, municipio) son **las mismas en todas las
+   pasadas, incluidas las de SPEC-012**; lo que no puedas repetir, a desviaciones.
+   *Limitación*: se pregunta por Viveiro desde otro sitio. Afecta sobre todo a Google (sus
+   resúmenes de IA y Maps pesan más la ubicación del dispositivo); en ChatGPT y Gemini
+   afecta poco, porque la pregunta ya nombra el lugar.
 3. Usa siempre la **cuenta gratuita** de cada app (lo que ve la mayoría de pacientes). Una
    cuenta de pago solo como observación aparte, con `plan_cuenta` = `pago`: no cuenta.
 4. Reserva 60–90 min seguidos. Si no te da, termina al día siguiente (máximo 2 días).
@@ -66,7 +69,7 @@ Obligatorios (los rellenas tú; se pueden copiar de la cabecera de sesión):
 - `cuenta`: alias corto de la cuenta, nunca el email.
 - `plan_cuenta`: `gratuito`, `sin_sesion` o `pago`.
 - `modelo_mostrado`: lo que enseña la app.
-- `municipio`: desde dónde preguntas.
+- `municipio`: `Vilaboa`.
 - `ubicacion_dispositivo`: `si` / `no`.
 - `idioma`: `es` o `gl` (el de la pregunta).
 
@@ -88,7 +91,11 @@ Los rellena el agente al hacer el recuento, leyendo tus capturas (tú revisas un
 - `dominios_citados`: dominios de las fuentes, separados por `;`.
 
 ## Pasada 2 y siguientes
-Igual que la 1: mismas apps, cuentas, modos, móvil y municipio, a una hora parecida
+Igual que la 1: mismas apps, cuentas, modos, móvil y municipio (Vilaboa), a una hora parecida
 (± 2 h). La pasada 2 va entre 3 y 10 días después de la 1 y **antes de la primera acción**
 del piloto. Claude (cuenta gratuita) es opcional y solo observación: si lo usas en una
 pasada, úsalo en todas.
+
+**Opcional**: si estás en Viveiro, puedes repetir solo el bloque de Google y Maps como
+**observación de sensibilidad a la ubicación**, con `municipio` = `Viveiro`, en una carpeta
+aparte (`AAAA-MM-DD-pN-sensibilidad/`). Queda fuera del cómputo.

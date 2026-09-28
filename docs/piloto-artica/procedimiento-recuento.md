@@ -28,9 +28,10 @@
 
 ## 1. Filtrar
 - **Cuenta** para las cifras principales: preguntas `AV`, `app` = `chatgpt`, `gemini` o
-  `google`, `plan_cuenta` = `gratuito` o `sin_sesion`.
-- **No cuenta** (se informa aparte, como observación): cuentas de pago, Claude y
-  cualquier otra app.
+  `google`, `plan_cuenta` = `gratuito` o `sin_sesion`, `municipio` = `Vilaboa`.
+- **No cuenta** (se informa aparte, como observación): cuentas de pago, Claude,
+  cualquier otra app y las filas con `municipio` distinto de Vilaboa (observación de
+  sensibilidad a la ubicación).
 - **Preguntas de marca** (`AM`): nunca en el SoV; se leen aparte.
 - **Respuestas válidas**: `respuesta_valida` = `si`. Las demás se cuentan como excluidas.
 

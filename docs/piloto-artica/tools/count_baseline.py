@@ -28,6 +28,9 @@ from matching import norm  # noqa: E402
 # observation in the manual baseline (CA-2 dictamen): it never enters the weighted figure.
 WEIGHTS = {"chatgpt": 0.55, "gemini": 0.25}
 MAIN_PLANS = {"gratuito", "sin_sesion"}
+# P-4 (revised by the human, 2026-09-29): every pass, before and after, from Vilaboa. Rows
+# taken elsewhere are a location-sensitivity observation, outside the computation.
+MAIN_MUNICIPIO = "Vilaboa"
 ADJECTIVE_FLAG = "#artica-adjetivo"      # P-1: counts (RN-01), reviewed by hand
 DOCTOR_ONLY_FLAG = "#medica-sin-clinica"  # P-2: not a mention, reported apart
 
@@ -53,14 +56,19 @@ def _split(cell: str) -> list[str]:
     return [x.strip() for x in cell.split(";") if x.strip()]
 
 
+def _other_place(r: dict) -> bool:
+    return bool(r["municipio"]) and norm(r["municipio"]) != norm(MAIN_MUNICIPIO)
+
+
 def _is_main(r: dict) -> bool:
-    return r["plan_cuenta"] in MAIN_PLANS and r["app"] in ({"google"} | set(WEIGHTS))
+    return (r["plan_cuenta"] in MAIN_PLANS and r["app"] in ({"google"} | set(WEIGHTS))
+            and not _other_place(r))
 
 
 def _check(rows: list[dict]) -> None:
     seen = set()
     for r in rows:
-        key = (r["pasada"], r["id_pregunta"], r["app"], r["plan_cuenta"])
+        key = (r["pasada"], r["id_pregunta"], r["app"], r["plan_cuenta"], norm(r["municipio"]))
         if key in seen:
             raise ValueError(f"fila duplicada: {key}")
         seen.add(key)
@@ -121,9 +129,16 @@ def count(rows: list[dict], aliases: dict[str, str] | None = None) -> dict:
             s[0] += r["artica_nombrada"] == "si"
             s[1] += 1
 
+    places = defaultdict(lambda: [0, 0])
+    for r in av:
+        if _other_place(r) and r["respuesta_valida"] == "si":
+            s = places[(r["municipio"], r["app"])]
+            s[0] += r["artica_nombrada"] == "si"
+            s[1] += 1
+
     obs = defaultdict(lambda: [0, 0])
     for r in av:
-        if not _is_main(r) and r["respuesta_valida"] == "si":
+        if not _is_main(r) and not _other_place(r) and r["respuesta_valida"] == "si":
             o = obs[(r["app"], r["plan_cuenta"])]
             o[0] += r["artica_nombrada"] == "si"
             o[1] += 1
@@ -133,6 +148,8 @@ def count(rows: list[dict], aliases: dict[str, str] | None = None) -> dict:
         "domains": domains.most_common(), "stability": {k: tuple(v) for k, v in stability.items()},
         "observations": [{"key": k, "mentions": m, "valid": n, "sov": m / n}
                          for k, (m, n) in sorted(obs.items())],
+        "location_sensitivity": [{"municipio": m, "app": a, "mentions": k, "valid": n}
+                                 for (m, a), (k, n) in sorted(places.items())],
         "brand_rows": [r for r in rows if r["id_pregunta"].startswith("AM")],
         "adjective_flags": sum(ADJECTIVE_FLAG in r["observaciones"] for r in main),
         "doctor_only_flags": sum(DOCTOR_ONLY_FLAG in r["observaciones"] for r in main),
@@ -177,6 +194,9 @@ def render(res: dict, sources: list[str]) -> str:
     out += ["", "## Observaciones (no cuentan: Claude, cuentas de pago)", ""]
     out += [f"- {a} ({plan}): {o['mentions']} de {o['valid']} ({_pct(o['sov'])})"
             for o in res["observations"] for a, plan in [o["key"]]] or ["- —"]
+    out += ["", f"## Observación de sensibilidad a la ubicación (fuera de {MAIN_MUNICIPIO}; no cuenta)", ""]
+    out += [f"- {s['app']} desde {s['municipio']}: {s['mentions']} de {s['valid']}"
+            for s in res["location_sensitivity"]] or ["- —"]
     out += ["", f"Filas marcadas `{ADJECTIVE_FLAG}` (cuentan; revisar a mano): "
             f"{res['adjective_flags']}",
             f"Filas marcadas `{DOCTOR_ONLY_FLAG}` (no cuentan como mención): "

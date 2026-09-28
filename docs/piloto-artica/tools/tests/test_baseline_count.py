@@ -21,7 +21,7 @@ def row(pasada, qid, app, named, valid="si", plan="gratuito", clinics="", pos=""
              artica_nombrada=named, clinicas_nombradas=clinics, posicion_artica=pos,
              dominios_citados=domains, resumen_ia=resumen, observaciones=obs,
              fecha_hora_local="2026-10-01 10:00", modo="temporal", sesion_iniciada="si",
-             cuenta="a", modelo_mostrado="x", municipio="Viveiro", ubicacion_dispositivo="si",
+             cuenta="a", modelo_mostrado="x", municipio="Vilaboa", ubicacion_dispositivo="si",
              idioma="es")
     return r
 
@@ -166,3 +166,20 @@ def test_doctor_without_clinic_flag_is_reported_apart(rows):
     assert res["doctor_only_flags"] == 1
     assert res["apps"]["chatgpt"]["mentions"] == 1   # unchanged: not a mention
     assert "#medica-sin-clinica" in cb.render(res, sources=["p1.csv"])
+
+
+def test_rows_from_another_municipality_are_location_sensitivity_observations(rows):
+    """P-4 revised (2026-09-29): the pilot measures from Vilaboa. Google/Maps rows taken
+    elsewhere (e.g. Viveiro) are a location-sensitivity observation, never counted, and do
+    not collide with the main row of the same question."""
+    extra = dict(rows[7])          # p1 AV01 google, mention
+    extra.update(municipio="Viveiro", artica_nombrada="no", resumen_ia="si")
+    res = cb.count(rows + [extra], ALIASES)
+    assert res["google"]["searches"] == 3 and res["google"]["mentions"] == 1
+    assert res["location_sensitivity"] == [
+        {"municipio": "Viveiro", "app": "google", "mentions": 0, "valid": 1}]
+    assert "sensibilidad a la ubicación" in cb.render(res, sources=["p1.csv"])
+
+
+def test_main_municipality_is_vilaboa():
+    assert cb.MAIN_MUNICIPIO == "Vilaboa"

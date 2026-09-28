@@ -78,7 +78,22 @@ def test_protocol_documents_every_template_column(protocol):
 
 @pytest.mark.parametrize("snippet", [
     "#artica-adjetivo", "#medica-sin-clinica",               # P-1, P-2
-    "desde viveiro o a mariña", "las dos pasadas desde el mismo sitio",   # P-4
 ])
 def test_protocol_reflects_human_answers(protocol, snippet):
     assert snippet in _flat(protocol)
+
+
+@pytest.mark.parametrize("snippet", [
+    # P-4 revised by the human on 2026-09-29: fixed municipality Vilaboa for every pass
+    "municipio fijo: vilaboa", "todas las pasadas (antes y después)",
+    "idéntico en todas las pasadas",                       # device location setting
+    "resúmenes de ia", "maps", "afecta poco",              # written limitation
+    "nada de vpn", "simular el gps",
+    "observación de sensibilidad a la ubicación", "fuera del cómputo",
+])
+def test_protocol_fixed_municipality_vilaboa(protocol, snippet):
+    assert snippet in _flat(protocol)
+
+
+def test_protocol_no_longer_asks_for_viveiro_as_measurement_place(protocol):
+    assert "mide desde viveiro o a mariña" not in _flat(protocol)

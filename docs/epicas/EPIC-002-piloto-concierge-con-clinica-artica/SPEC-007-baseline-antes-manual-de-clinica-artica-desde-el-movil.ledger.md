@@ -27,7 +27,7 @@ epica: EPIC-002
 | CA-10 | **Pendiente** de la pasada 1. Comprobador de términos prohibidos listo: `python docs/piloto-artica/tools/baseline_docs.py "$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md"` | `docs/piloto-artica/tools/tests/test_baseline_frontier.py::test_forbidden_meeting_terms` | | ❌ |
 | CA-11 | [Verificador]. Apoyo: `baseline_docs.py` sin argumentos revisa `docs/piloto-artica/` (emails, teléfonos, cifras junto a marcas) | `test_baseline_frontier.py::test_repo_docs_pass_the_frontier` y `::test_frontier_detects_email_phone_and_figure_next_to_brand` | | ❌ |
 
-Tests: `python -m pytest -q docs/piloto-artica/tools/tests` (94 en verde el 2026-09-29) y
+Tests: `python -m pytest -q docs/piloto-artica/tools/tests` (105 en verde el 2026-09-29) y
 `python -m pytest -q probe/tests` (106, sin cambios).
 
 ## Dictamen sdd-metricas (CA-2)
@@ -143,7 +143,7 @@ que el criterio Go exige estabilidad: la subida debe verse en las dos pasadas "d
 
 ## Instrucciones para el humano — pasada 1 (CA-5)
 Tiempo: 60–90 min de consultas (49) + 15–20 min para pasar capturas y rellenar el CSV.
-Mejor **antes de la reunión** de SPEC-009, desde Viveiro o A Mariña (P-4); la pasada 2, desde el mismo sitio.
+Mejor **antes de la reunión** de SPEC-009. Todas las pasadas desde Vilaboa (P-4 revisada).
 1. Imprime `docs/piloto-artica/protocolo-captura.md` y ábrete
    `$PUSHLLM_PRIVADO/piloto-artica/baseline/preguntas-en-orden.txt` (preguntas listas para
    copiar, en orden: 17 en ChatGPT, 17 en Gemini, 15 en Google).
@@ -153,9 +153,9 @@ Mejor **antes de la reunión** de SPEC-009, desde Viveiro o A Mariña (P-4); la 
 3. Crea `$PUSHLLM_PRIVADO/piloto-artica/baseline/AAAA-MM-DD-p1/` (fecha del primer día), y
    dentro: copia `captura-p1-prerrellenada.csv` como `captura-p1.csv`, un
    `desviaciones.txt` vacío y una carpeta `capturas/`.
-4. Anota la cabecera de sesión: municipio, ubicación del móvil sí/no, alias de cuenta,
-   modelo que muestra cada app. Si no estás en Viveiro o A Mariña, anótalo en
-   `desviaciones.txt` como limitación.
+4. Anota la cabecera de sesión: municipio (Vilaboa), ubicación del móvil sí/no (el mismo
+   ajuste en todas las pasadas), alias de cuenta y modelo que muestra cada app. Nada de
+   VPN ni de GPS simulado.
 5. Haz las consultas siguiendo el protocolo (chat temporal nuevo por pregunta, texto
    literal, captura completa; Google en incógnito). No pulses enlaces a la web de la clínica
    ni busques su nombre en Google.
@@ -186,9 +186,19 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
 - **P-3** (ruido frente a +15 pts): el criterio Go **exige estabilidad**: la subida tiene que
   verse en **las dos** pasadas "después". Afecta a SPEC-012 (borrador, del arquitecto): ver
   F-SPEC-007-5. El recuento "antes" ya da SoV por pasada y estabilidad por pregunta.
-- **P-4** (municipio): las pasadas se hacen desde **Viveiro o A Mariña**, y **las dos
-  desde el mismo sitio**. Reflejado en `protocolo-captura.md` ("Antes de empezar" 2);
-  test `test_protocol_reflects_human_answers`.
+- **P-4** (municipio) — **REVISADA el 2026-09-29, decidido por el humano (Alberto
+  Fojo)**: todas las pasadas, antes y después, se hacen desde **Vilaboa (Pontevedra)**, con
+  el mismo ajuste de ubicación del móvil, sin VPN ni GPS simulado. Es el método del piloto,
+  no una desviación. Motivo: todas las preguntas nombran el lugar y lo que importa es medir
+  antes y después desde el mismo sitio y con el mismo método. Limitación escrita en el
+  protocolo (pesa sobre todo en Google, sus resúmenes de IA y Maps). Opcional: bloque
+  Google/Maps desde Viveiro como observación de sensibilidad a la ubicación, fuera del
+  cómputo. Reflejado en `protocolo-captura.md`, `procedimiento-recuento.md` §1 y
+  `count_baseline.py` (`MAIN_MUNICIPIO`, `location_sensitivity`); tests
+  `test_protocol_fixed_municipality_vilaboa`,
+  `test_rows_from_another_municipality_are_location_sensitivity_observations`.
+  - Historial: ~~2026-09-29: desde Viveiro o A Mariña, las dos pasadas desde el mismo
+    sitio~~ (sustituida por la revisión anterior).
 
 ## Veredicto del verificador
 <!-- GREEN/RED + fecha + resumen. Lo escribe SOLO sdd-verificador. -->
