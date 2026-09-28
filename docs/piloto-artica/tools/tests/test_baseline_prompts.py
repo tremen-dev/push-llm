@@ -4,7 +4,7 @@ import re
 import pytest
 
 import baseline_docs as bd
-from conftest import PILOT_DIR
+from baseline_docs import PILOT_DIR
 
 PROMPTS_MD = PILOT_DIR / "prompts-baseline.md"
 # Candidate competitors of SPEC-008 (gate notes) + the clinic itself: none may appear in AV.

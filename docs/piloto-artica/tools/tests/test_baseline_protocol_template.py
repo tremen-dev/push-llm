@@ -4,7 +4,7 @@ import re
 import pytest
 
 import baseline_docs as bd
-from conftest import PILOT_DIR
+from baseline_docs import PILOT_DIR
 
 PROTOCOL = PILOT_DIR / "protocolo-captura.md"
 TEMPLATE = PILOT_DIR / "plantilla-captura.csv"
