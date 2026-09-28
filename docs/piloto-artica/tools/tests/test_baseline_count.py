@@ -156,3 +156,13 @@ def test_alias_file(tmp_path):
     p = tmp_path / "alias.csv"
     p.write_text("alias,canonico\nSur Estética,Clínica Sur\n", encoding="utf-8")
     assert cb.read_aliases(p) == {"sur estetica": "Clínica Sur"}
+
+
+def test_doctor_without_clinic_flag_is_reported_apart(rows):
+    """P-2 (human, 2026-09-29): the doctor's name without the clinic is not a mention;
+    it is tagged in observaciones and reported apart."""
+    rows[1]["observaciones"] = "#medica-sin-clinica"
+    res = cb.count(rows, ALIASES)
+    assert res["doctor_only_flags"] == 1
+    assert res["apps"]["chatgpt"]["mentions"] == 1   # unchanged: not a mention
+    assert "#medica-sin-clinica" in cb.render(res, sources=["p1.csv"])

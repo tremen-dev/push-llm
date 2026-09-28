@@ -27,7 +27,7 @@ epica: EPIC-002
 | CA-10 | **Pendiente** de la pasada 1. Comprobador de términos prohibidos listo: `python docs/piloto-artica/tools/baseline_docs.py "$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md"` | `docs/piloto-artica/tools/tests/test_baseline_frontier.py::test_forbidden_meeting_terms` | | ❌ |
 | CA-11 | [Verificador]. Apoyo: `baseline_docs.py` sin argumentos revisa `docs/piloto-artica/` (emails, teléfonos, cifras junto a marcas) | `test_baseline_frontier.py::test_repo_docs_pass_the_frontier` y `::test_frontier_detects_email_phone_and_figure_next_to_brand` | | ❌ |
 
-Tests: `python -m pytest -q docs/piloto-artica/tools/tests` (89 en verde el 2026-09-29) y
+Tests: `python -m pytest -q docs/piloto-artica/tools/tests` (94 en verde el 2026-09-29) y
 `python -m pytest -q probe/tests` (106, sin cambios).
 
 ## Dictamen sdd-metricas (CA-2)
@@ -49,14 +49,13 @@ Tests: `python -m pytest -q docs/piloto-artica/tools/tests` (89 en verde el 2026
 2. Riesgo de falso positivo: "ártica" como adjetivo (el masculino "ártico" no coincide).
    En este dominio es improbable. **Se cuenta igualmente** (RN-01 literal, coherente con
    lo que hará el probe con el mismo alias) y se marca `#artica-adjetivo` en
-   `observaciones`; el recuento informa cuántas hay. Si alguna vez hubiera una, se trae al
-   humano como pregunta (ver Preguntas abiertas, P-1): excluirla sería cambiar RN-01.
+   `observaciones`; el recuento informa cuántas hay y se revisan a mano.
+   Confirmado por el humano el 2026-09-29 (P-1).
 3. Una ficha de fuente o enlace que solo muestra el dominio **no** es mención: va a
    `dominios_citados` (como en el probe, donde las URLs citadas van aparte del texto).
 4. El nombre de la médica titular sin el de la clínica **no** cuenta como mención (no es
    alias de la marca en el catálogo); se anota en `observaciones` y se informa aparte.
-   Si se quiere que cuente, debe entrar como alias en `brands.csv` vía SPEC-008 CA-2
-   (P-2).
+   Marca `#medica-sin-clinica`. Confirmado por el humano el 2026-09-29 (P-2).
 5. Competidores: una clínica cuenta como nombrada cuando aparece su nombre o un alias
    distintivo de ≥ 4 caracteres referido a ella. Palabras comunes sueltas ("Luxury",
    "Ribera") solo cuentan si el contexto dice que es la clínica (en manual lo decide el
@@ -121,9 +120,9 @@ siempre iguales y la muestra efectiva es 15):
 Lectura: si la clínica parte de casi 0, +15 pts es distinguible del ruido; si parte de
 20–50 %, +15 pts está dentro del ruido. Condición: el recuento informa siempre la
 estabilidad por pregunta (cuántas `AV` × app pasan de "0 de 2" antes a "2 de 2" después) y
-la diferencia entre la pasada 1 y la 2 (ruido medido). Si el criterio Go debe exigir
-además estabilidad, es decisión del humano/arquitecto antes de la primera acción (P-3),
-junto con CA-8.
+la diferencia entre la pasada 1 y la 2 (ruido medido). El humano decidió el 2026-09-29 (P-3)
+que el criterio Go exige estabilidad: la subida debe verse en las dos pasadas "después"
+(follow-up F-SPEC-007-5 para SPEC-012).
 
 ### Tabla condición → cambio
 | Condición | Cambio | Dónde |
@@ -144,7 +143,7 @@ junto con CA-8.
 
 ## Instrucciones para el humano — pasada 1 (CA-5)
 Tiempo: 60–90 min de consultas (49) + 15–20 min para pasar capturas y rellenar el CSV.
-Mejor **antes de la reunión** de SPEC-009 y, si puede ser, desde Viveiro o su comarca.
+Mejor **antes de la reunión** de SPEC-009, desde Viveiro o A Mariña (P-4); la pasada 2, desde el mismo sitio.
 1. Imprime `docs/piloto-artica/protocolo-captura.md` y ábrete
    `$PUSHLLM_PRIVADO/piloto-artica/baseline/preguntas-en-orden.txt` (preguntas listas para
    copiar, en orden: 17 en ChatGPT, 17 en Gemini, 15 en Google).
@@ -175,14 +174,21 @@ Mejor **antes de la reunión** de SPEC-009 y, si puede ser, desde Viveiro o su c
    `captura-p2-prerrellenada.csv`, en `AAAA-MM-DD-p2/`, y **antes de la primera acción**.
 
 ## Preguntas abiertas
-- **P-1** (solo si ocurre): si aparece "ártica" como adjetivo que no se refiere a la
-  clínica, ¿se excluye? Hoy cuenta (RN-01 literal); excluirlo cambia RN-01 → arquitecto.
-- **P-2**: ¿el nombre de la médica titular sin el de la clínica debe contar como mención?
-  Hoy no. Si sí, alias en `brands.csv` vía SPEC-008 CA-2.
-- **P-3**: con el ruido de (f), ¿el criterio Go "+15 pts" debe exigir además estabilidad
-  (p. ej. la subida se ve en las dos pasadas "después")? Es criterio de EPIC-002; decidir
-  antes de la primera acción, junto con CA-8.
-- **P-4**: municipio de medición aún no decidido (el protocolo exige anotarlo).
+Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
+- **P-1** ("ártica" como adjetivo): **cuenta** (RN-01 literal) y se marca
+  `#artica-adjetivo` para revisarla a mano. Sin cambio de regla. Reflejado en
+  `protocolo-captura.md` (marcas en `observaciones`), `procedimiento-recuento.md` §0.3 y
+  `count_baseline.py` (`adjective_flags`).
+- **P-2** (nombre de la médica titular sin "Clínica Ártica"): **no cuenta** como mención;
+  se marca `#medica-sin-clinica` y se informa aparte como observación. Reflejado en
+  `protocolo-captura.md`, `procedimiento-recuento.md` §0.3 y `count_baseline.py`
+  (`doctor_only_flags`); test `test_doctor_without_clinic_flag_is_reported_apart`.
+- **P-3** (ruido frente a +15 pts): el criterio Go **exige estabilidad**: la subida tiene que
+  verse en **las dos** pasadas "después". Afecta a SPEC-012 (borrador, del arquitecto): ver
+  F-SPEC-007-5. El recuento "antes" ya da SoV por pasada y estabilidad por pregunta.
+- **P-4** (municipio): las pasadas se hacen desde **Viveiro o A Mariña**, y **las dos
+  desde el mismo sitio**. Reflejado en `protocolo-captura.md` ("Antes de empezar" 2);
+  test `test_protocol_reflects_human_answers`.
 
 ## Veredicto del verificador
 <!-- GREEN/RED + fecha + resumen. Lo escribe SOLO sdd-verificador. -->
@@ -202,6 +208,10 @@ Mejor **antes de la reunión** de SPEC-009 y, si puede ser, desde Viveiro o su c
 - **F-SPEC-007-4**: las herramientas de comprobación y recuento viven en
   `docs/piloto-artica/tools/` (no son producto ni probe; nada en `src/`). Se ejecutan con
   `python -m pytest -q docs/piloto-artica/tools/tests` y reutilizan `probe/matching.norm`.
+- **F-SPEC-007-5** (→ sdd-arquitecto, SPEC-012): por decisión del humano del 2026-09-29
+  (P-3), el criterio Go de +15 pts de SoV ponderado exige que la subida se vea en **cada
+  una de las dos** pasadas "después" (no solo en su media). SPEC-012 debe recogerlo antes
+  de la primera acción; no se ha editado SPEC-012.
 
 ## Cómo retomar (handoff)
 - Hecho (2026-09-29): CA-1, CA-3, CA-4 publicados; dictamen CA-2 en este ledger;

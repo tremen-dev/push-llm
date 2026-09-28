@@ -28,7 +28,8 @@ from matching import norm  # noqa: E402
 # observation in the manual baseline (CA-2 dictamen): it never enters the weighted figure.
 WEIGHTS = {"chatgpt": 0.55, "gemini": 0.25}
 MAIN_PLANS = {"gratuito", "sin_sesion"}
-ADJECTIVE_FLAG = "#artica-adjetivo"
+ADJECTIVE_FLAG = "#artica-adjetivo"      # P-1: counts (RN-01), reviewed by hand
+DOCTOR_ONLY_FLAG = "#medica-sin-clinica"  # P-2: not a mention, reported apart
 
 
 def read_rows(paths) -> list[dict]:
@@ -134,6 +135,7 @@ def count(rows: list[dict], aliases: dict[str, str] | None = None) -> dict:
                          for k, (m, n) in sorted(obs.items())],
         "brand_rows": [r for r in rows if r["id_pregunta"].startswith("AM")],
         "adjective_flags": sum(ADJECTIVE_FLAG in r["observaciones"] for r in main),
+        "doctor_only_flags": sum(DOCTOR_ONLY_FLAG in r["observaciones"] for r in main),
     }
 
 
@@ -175,7 +177,10 @@ def render(res: dict, sources: list[str]) -> str:
     out += ["", "## Observaciones (no cuentan: Claude, cuentas de pago)", ""]
     out += [f"- {a} ({plan}): {o['mentions']} de {o['valid']} ({_pct(o['sov'])})"
             for o in res["observations"] for a, plan in [o["key"]]] or ["- —"]
-    out += ["", f"Filas marcadas `{ADJECTIVE_FLAG}`: {res['adjective_flags']}", "",
+    out += ["", f"Filas marcadas `{ADJECTIVE_FLAG}` (cuentan; revisar a mano): "
+            f"{res['adjective_flags']}",
+            f"Filas marcadas `{DOCTOR_ONLY_FLAG}` (no cuentan como mención): "
+            f"{res['doctor_only_flags']}", "",
             "## Preguntas de marca (AM)", "",
             "| Pasada | Pregunta | App | Captura | Observaciones |", "|---|---|---|---|---|"]
     out += [f"| {r['pasada']} | {r['id_pregunta']} | {r['app']} | {r['fichero_captura']} | "

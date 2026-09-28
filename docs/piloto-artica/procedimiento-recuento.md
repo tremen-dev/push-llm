@@ -19,6 +19,8 @@
      `dominios_citados`;
    - un uso de "ártica" como adjetivo que no se refiere a la clínica cuenta igualmente
      (RN-01 literal) pero se marca `#artica-adjetivo` en `observaciones`;
+   - el nombre de la médica titular sin el de la clínica no es mención: se marca
+     `#medica-sin-clinica` en `observaciones` y se informa aparte;
    - la posición es el puesto de la clínica entre las clínicas o médicos nombrados, sin
      contar directorios (RN-06).
 4. Si una misma clínica aparece escrita de varias formas, crea `alias-canonicos.csv`

@@ -74,3 +74,11 @@ def test_template_crosses_protocol_fields_and_ca4_extras():
 def test_protocol_documents_every_template_column(protocol):
     for col in bd.TEMPLATE_COLUMNS:
         assert f"`{col}`" in protocol, col
+
+
+@pytest.mark.parametrize("snippet", [
+    "#artica-adjetivo", "#medica-sin-clinica",               # P-1, P-2
+    "desde viveiro o a mariña", "las dos pasadas desde el mismo sitio",   # P-4
+])
+def test_protocol_reflects_human_answers(protocol, snippet):
+    assert snippet in _flat(protocol)

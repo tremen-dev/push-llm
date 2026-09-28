@@ -9,8 +9,8 @@
    plantilla y un fichero `desviaciones.txt` vacío (**registro de desviaciones**).
 2. Apunta la **cabecera de sesión**: municipio desde el que preguntas, si la ubicación del
    móvil está activada, y la cuenta que usas en cada app (un alias corto, nunca el email).
-   Mide desde Viveiro o su comarca si puedes; si no, anótalo en `desviaciones.txt` como
-   limitación. Estas condiciones (cuenta, plan, modo, móvil, municipio) son **las mismas
+   Mide desde Viveiro o A Mariña, y las dos pasadas desde el mismo sitio; si un día no
+   puede ser, anótalo en `desviaciones.txt`. Estas condiciones (cuenta, plan, modo, móvil, municipio) son **las mismas
    en todas las pasadas, incluidas las de SPEC-012**; lo que no puedas repetir, a
    desviaciones.
 3. Usa siempre la **cuenta gratuita** de cada app (lo que ve la mayoría de pacientes). Una
@@ -75,7 +75,9 @@ También tuyos, al terminar cada pregunta:
   recomendar); `no` si falló, se cortó o la pregunta se pegó mal (explícalo).
 - `resumen_ia`: solo Google, `si` / `no`; en ChatGPT y Gemini, `n-a`.
 - `enlace_compartido`, `fichero_captura` (nombre del fichero o ficheros, separados por
-  `;`) y `observaciones`.
+  `;`) y `observaciones`. Marcas: `#artica-adjetivo` si "ártica" sale como adjetivo
+  (cuenta igual; se revisa a mano) y `#medica-sin-clinica` si sale la médica titular sin
+  la clínica (no cuenta como mención).
 
 Los rellena el agente al hacer el recuento, leyendo tus capturas (tú revisas una muestra):
 - `clinicas_nombradas`: clínicas o médicos nombrados, en orden de aparición, separados por
