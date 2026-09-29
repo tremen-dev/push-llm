@@ -322,6 +322,11 @@ Comprobado en clinicaartica.es el **2026-09-29** (HTTP 200; título y H1 de cada
   preguntan por los párpados superiores. No hizo falta sustituir el tratamiento.
 
 ## Instrucciones para el humano — pasada "antes" de calibración (CA-5)
+> **Obsoletas desde la enmienda 2026-09-29 (c) de SPEC-007 (sdd-arquitecto).** No empezar la
+> pasada con estas instrucciones: el reparto de las 49 consultas cambia (ChatGPT y Gemini:
+> `AV` → `AR` → `AM`; Google: solo `AR`) y hay dos ejecuciones del probe emparejadas. Tras la
+> re-aprobación, el implementador las reescribe (F-SPEC-007-11). Se conservan como historial.
+
 Vigentes desde el 2026-09-29 (enmienda (b), F-SPEC-007-8). 49 consultas: 60–90 min de
 preguntas + 20–25 min de CSV y capturas. Todo desde **Vilaboa**.
 0. **Orden** (tu decisión del 2026-09-29): **primero el baseline oficial del probe**
@@ -563,7 +568,72 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
   nombre o el formato de la columna, hay que pasar `--client` o ajustar
   `count_baseline.py`.
 
+- **F-SPEC-007-11** (→ sdd-implementador, **tras la re-aprobación humana** de la enmienda
+  2026-09-29 (c); sdd-arquitecto). La calibración pasa a ser **por nivel**: 49 consultas =
+  15 `AV` × (ChatGPT, Gemini) + 5 `AR` × (ChatGPT, Gemini, Google) + 2 `AM` × (ChatGPT,
+  Gemini). **No tocar nada de esta lista antes de la re-aprobación.** Después, en este orden:
+  1. **Dictamen**: pedir a `sdd-metricas` la tercera ampliación (o)–(s) de CA-2 y añadirla a
+     "Dictamen sdd-metricas (CA-2)" con fecha anterior a la pasada "antes"; filas (o)–(s) en
+     la tabla condición → cambio, marcando qué filas de (k)–(n) quedan sin objeto o
+     ajustadas (sobre todo k1, l, m y la fila "n (g)–(j)"). No emitirlo el arquitecto ni el
+     implementador por su cuenta: es de `sdd-metricas`.
+  2. **Set** `prompts-baseline.md`: **ninguna pregunta cambia** (congelado, CA-8). Solo la
+     entradilla: la manual calibra `AV` y `AM` en ChatGPT y Gemini y `AR` en ChatGPT, Gemini
+     y Google; `AG` solo lo mide el probe. `test_baseline_prompts.py` sigue comprobando `AV`
+     y el set congelado sin cambios.
+  3. **Protocolo** `protocolo-captura.md`: orden por app y bloque de CA-3 (c) — ChatGPT `AV`
+     (15) → `AR` (5) → `AM` (2); Gemini igual; Google solo `AR` (5), nunca `AV`/`AM`/`AG`;
+     corte entre apps; las dos ventanas (CA-2 o, q) y las dos ejecuciones emparejadas; la
+     limitación de ubicación reescrita para `AR` (preguntas formuladas desde Ferrolterra,
+     Lugo o Asturias, hechas desde Vilaboa); qué capturar en Google para `AR`; ≤ 2 páginas;
+     mismo tiempo estimado.
+  4. **Plantilla** `plantilla-captura.csv`: sin cambios salvo que el dictamen pida una
+     columna (p. ej. la ejecución del probe emparejada por nivel).
+  5. **Procedimiento** `procedimiento-recuento.md`: §2 "lo que ve el paciente" por app **y
+     por nivel**; §3 AI Overviews **solo `AR`** según CA-2 (r); §6 dividido en **6-AV** y
+     **6-AR**, cada uno con su emparejamiento, casillas, acuerdo y veredicto (CA-2 q y p),
+     reproducible a mano; ninguna cifra ni veredicto común; §7 con los dos veredictos y su
+     efecto sobre SPEC-009 (frase comercial ↔ `AV`; frase del objetivo ↔ `AR`).
+  6. **Herramienta** `tools/count_baseline.py`: recuento y comparación **por nivel**
+     (`AV` y `AR` por separado; hoy `_core` filtra solo `AV` y `compare_with_probe` usa las
+     constantes de (l) para 15 casillas); constantes de `AR` separadas de las de `AV` según
+     CA-2 (p); AI Overviews solo `AR`; un `results.csv` por nivel (p. ej. `--probe-av` y
+     `--probe-ar`, porque `AR` sale del directorio del "antes" de (C), SPEC-008 CA-12, si así
+     lo fija el dictamen), con su ventana cada uno; `_check` exige el reparto de 49 filas y
+     rechaza filas `AV`/`AM`/`AG` de Google y cualquier `AG`; render de
+     `calibracion-antes.md` con dos tablas y dos veredictos, sin cifra combinada.
+  7. **Prefill** (`baseline_docs.py --prefill`): `captura-antes-prerrellenada.csv` y
+     `captura-despues-prerrellenada.csv` con **49 filas en el orden de CA-3 (c)**, y
+     `preguntas-en-orden.txt` regenerado (ChatGPT 22, Gemini 22, Google 5) en
+     `$PUSHLLM_PRIVADO/piloto-artica/baseline/`. Los de la enmienda (b) se **renombran** con
+     sufijo `-obsoleto` (no se borran).
+  8. **Tests** (`tools/tests/`): `test_baseline_protocol_template.py` (orden exacto de las 49
+     entradas, sin `AV`/`AM` en Google, sin `AG`); `test_baseline_count.py` (fixtures
+     ficticias por nivel: comparación `AV` y `AR` separadas, umbrales de CA-2 p/q, ventana por
+     nivel, AI Overviews solo `AR`, **ningún número ni veredicto que combine niveles**,
+     rechazo de filas Google `AV`); `test_baseline_procedure.py` (secciones 6-AV/6-AR);
+     retirar o adaptar los tests de AI Overviews del núcleo (`test_google_*` sobre `AV`).
+  9. **Este ledger**: matriz de CA-3, CA-5, CA-7 y CA-10; reescribir "Instrucciones para el
+     humano — pasada 'antes'" (reparto nuevo, dos ejecuciones emparejadas y sus carpetas:
+     `…\piloto-artica\probe\` para `AV` y la que fije el dictamen para `AR`; fecha límite de
+     la ventana).
+  No se toca `probe/` desde aquí. Regla ADR-004 §2: ni en el ledger ni en los tests del repo
+  aparece ningún dato de visibilidad de Clínica Ártica; solo veredictos.
+- **F-SPEC-007-12** (→ sdd-arquitecto, tras fusionar la PR #5): notas sin re-aprobación en
+  **SPEC-009** (la frase "ya sois la clínica que la IA recomienda en A Mariña" se apoya en el
+  veredicto `AV` de SPEC-007 CA-7 y la del objetivo en el veredicto `AR`; un "no" en un
+  nivel revisa solo su frase), **SPEC-012** CA-3 (3) (la calibración "después" es la de
+  SPEC-007 CA-3 (c): 49 consultas por nivel; AI Overviews solo en `AR`; dos veredictos en el
+  cierre) y **SPEC-011** (ya no hay capturas de AI Overviews del núcleo; sí de `AR`). No se
+  editan en esta rama para no chocar con la PR #5, que ya enmienda esas specs.
+
 ## Cómo retomar (handoff)
+- **2026-09-29 (c) (sdd-arquitecto)**: la spec vuelve a `borrador` por la enmienda (c): la
+  calibración se reorienta al Go de ADR-009 (decisión del humano): `AR` en ChatGPT, Gemini y
+  Google, `AV` y `AM` solo en ChatGPT y Gemini, 49 consultas; comparación y veredicto por
+  nivel. La pasada "antes" no había empezado. **No empezar la pasada** (las instrucciones de
+  arriba están obsoletas). Tras la re-aprobación: F-SPEC-007-11. Después de la PR #5:
+  F-SPEC-007-12.
 - **2026-09-29 (sdd-implementador, calibración)**: F-SPEC-007-8 hecho en
   `ft/SPEC-007-calibracion`. Spec en `en-progreso`: faltan las pasadas humanas. Hecho:
   segunda ampliación del dictamen (k)–(n) con su tabla; set (solo entradilla y congelación),
