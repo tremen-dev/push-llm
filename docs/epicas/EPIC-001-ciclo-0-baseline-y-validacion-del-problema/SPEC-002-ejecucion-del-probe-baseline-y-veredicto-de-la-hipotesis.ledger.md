@@ -15,16 +15,16 @@ epica: EPIC-001
 <!-- Un CA está ✅ solo cuando Implementado + Test + Verif. aplicables están en verde. Una salvedad se marca ⚠️, nunca ✅. -->
 | CA | Implementado (fichero) | Test (fichero/caso) | Verif. | Estado |
 |---|---|---|---|---|
-| CA-1 | [Humano] comprobaciones (a)–(g) pendientes. Soporte del agente (F-SPEC-002-1): `probe/run_probe.py` carga el `.env` de la raíz (`parse_dotenv`, `load_dotenv`) sin escribir valores; `probe/README.md` (claves, comprobaciones (a)–(d)); `docs/ciclo-0/guia-claves-api.md` (Custodia) | `probe/tests/test_dotenv.py` (parser, no sobrescribe, sin `.env` igual que antes, valores ausentes de stdout/stderr/`results.csv`/`summary.md`; valores de fixture sin prefijos `sk-`/`sk-ant-`/`AIza` para no ensuciar las búsquedas (e)–(f)); `probe/tests/conftest.py` (ningún test lee el `.env` real) | | ❌ |
+| CA-1 | [Humano] (g) tipo de ubicación y respaldo de `PUSHLLM_PRIVADO` (P-1) por anotar. Soporte del agente (F-SPEC-002-1): `probe/run_probe.py` carga el `.env` de la raíz sin escribir valores; `probe/README.md`; `docs/ciclo-0/guia-claves-api.md`. Comprobaciones de git (a)–(g) ejecutadas por el agente el 2026-09-29, sin abrir `.env`: ver "Evidencia CA-1 y CA-10" | `probe/tests/test_dotenv.py`; `probe/tests/conftest.py` (ningún test lee el `.env` real) | | ❌ |
 | CA-2 | Dictamen sdd-probe (2026-09-29) en este ledger (Notas); `probe/probe_config.json` (Claude → `claude-sonnet-5-5`, fechas y fuentes, `dictamen_date` 2026-09-29, cambio BCE 1,1378 del 2026-09-28; OpenAI y Gemini sin cambio de modelo ni precio) | `probe/tests/test_config.py` — `vigente()` (dictamen fechado más reciente entre los ledgers de SPEC-002 y SPEC-001), `test_vigente_picks_most_recent_date_and_spec_002_on_tie`, `test_spec002_ca2_*` (vigente = SPEC-002, `dictamen_date`, effort, herencia del lote Viveiro), `test_ca1_config_matches_dictamen_literally` (ahora contra el vigente); `python -m pytest probe/tests` → 173 passed (2026-09-29, con F-SPEC-002-1) | | ❌ |
-| CA-3 | | | | ❌ |
-| CA-4 | | | | ❌ |
-| CA-5 | | | | ❌ |
-| CA-6 | | | | ❌ |
-| CA-7 | | | | ❌ |
-| CA-8 | | | | ❌ |
-| CA-9 | | | | ❌ |
-| CA-10 | | | | ❌ |
+| CA-3 | Humo Vigo ejecutado el 2026-09-29 (orquestador, a petición del humano) con el probe de esta rama; evidencia en "Evidencia CA-3 (humo)": 12/12 `ok` (4/4 por proveedor), modelos servidos = dictamen, coste medido 0,1050 € por pregunta × ejecución. **Pendiente**: aceptación del humo por el humano; salvedad F-SPEC-002-7 (Claude sin `cited_urls`) | Revisión a ojo de `D01` por proveedor (agente); recuento desde `$PUSHLLM_PRIVADO/probe-smoke/results.csv` | | ❌ |
+| CA-4 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
+| CA-5 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
+| CA-6 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
+| CA-7 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
+| CA-8 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
+| CA-9 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
+| CA-10 | [Verificador]. Agente, 2026-09-29: `git ls-files` sin `results.csv`, `summary.md` ni humo (solo el fixture sintético `probe/tests/fixtures/vigo_results.csv`); los humos están en `$PUSHLLM_PRIVADO` (fuera del repo); `git status --ignored` muestra `probe/out/` con datos sintéticos de tests anteriores, no de esta ejecución (F-SPEC-002-5). Ver "Evidencia CA-1 y CA-10" | — (comprobación por comandos) | | ❌ |
 
 ## Veredicto del verificador
 <!-- GREEN/RED + fecha + resumen. Lo escribe SOLO sdd-verificador. -->
@@ -126,6 +126,63 @@ Claude. El punto "Effort — se mantiene" de más arriba queda sustituido por es
   (0,133 €) sigue por debajo; el alto (0,252 €) sigue por encima, igual que antes. Lo único
   que cambia es la probabilidad: es algo más fácil caer en la rama de 2 runs en `AV`.
 
+## Evidencia CA-3 (humo)
+Ejecutados el 2026-09-29 por el orquestador a petición del humano, con el probe de esta rama
+(Claude `claude-sonnet-5-5`, effort `medium`, `max_tokens` 16000). Cifras recalculadas por
+el agente desde los `results.csv` privados (sin nombres de clínica junto a cifras).
+
+**Humo Vigo (CA-3)**: `run_probe.py --only D01,E01,F01,O01 --runs 1 --out "$PUSHLLM_PRIVADO\probe-smoke"`.
+
+| Proveedor | Filas | `ok` | Modelo servido | Σ `cost_eur` | € por pregunta × ejecución | Salida máx. (tokens) | Búsquedas | Filas con `cited_urls` |
+|---|---|---|---|---|---|---|---|---|
+| claude | 4 | 4 | `claude-sonnet-5-5` | 0,3019 € | 0,0755 € | 1356 | 5 | **0 de 4** |
+| openai | 4 | 4 | `gpt-5.6-luna` | 0,0474 € | 0,0119 € | 902 | 4 | 4 de 4 |
+| gemini | 4 | 4 | `gemini-3.6-flash` | 0,0705 € | 0,0176 € | 1827 | 4 | 3 de 4 |
+| **Total** | 12 | 12 | = dictamen de CA-2 | **0,4198 €** | **0,1050 €** | | | |
+
+- ≥ 3 de 4 `ok` por proveedor: sí (4/4). Modelo servido igual al dictamen: sí, los tres.
+- Claude sin filas `empty` ni cortadas: la salida máxima es de 1356 tokens, muy por debajo
+  del tope de 16000, y las cuatro respuestas terminan en frase completa.
+- Revisión a ojo de `D01` (implantes en Vigo), una respuesta por proveedor: las tres en
+  español, coherentes con la pregunta, nombran clínicas de Vigo y dan criterios de
+  elección. OpenAI cita URLs (directorios y webs de clínicas); Gemini da redirecciones
+  `vertexaisearch` (F-SPEC-001-2); **Claude no deja ninguna URL en `cited_urls`** aunque
+  busca, y su texto llega partido en fragmentos (F-SPEC-002-7). Gemini `O01`: sin búsqueda
+  registrada ni URLs (contestó sin grounding; la columna queda vacía, como está previsto).
+- Coste medido: **0,1050 € por pregunta × ejecución** con los tres proveedores (Claude el
+  72 %), por debajo de la estimación típica de la adenda (0,133 €).
+
+**Humo Viveiro (SPEC-008 CA-7; aquí solo informativo)**: `--config batches/viveiro.json
+--only AV01,AR01,AG01 --runs 1 --out "$PUSHLLM_PRIVADO\piloto-artica\probe-smoke"`: 9/9 `ok`
+(3/3 por proveedor), mismos modelos servidos, Σ 0,3425 € → **c = 0,1142 €** (Claude 0,2083 €,
+Gemini 0,0904 €, OpenAI 0,0437 €); salida máxima de Claude 1513 tokens; Claude de nuevo sin
+`cited_urls` (0 de 3). Con `c ≤ 0,19 €`, la regla de SPEC-008 permite `AV` con 3 runs.
+
+**Aceptación del humo: pendiente de firma humana** (la lleva el orquestador), con el punto
+F-SPEC-002-7 por decidir.
+
+## Evidencia CA-1 y CA-10
+Comandos ejecutados por sdd-implementador el 2026-09-29 desde la raíz del repo, **sin abrir
+`.env`** (solo órdenes de git sobre su ruta):
+- (a) `git check-ignore -v .env` → `.gitignore:2:.env	.env`.
+- (b) `git log --all --oneline -- .env` → vacío (0 líneas).
+- (c) `git status --porcelain` → no lista `.env`.
+- (d) `git ls-files` con `.env` en el nombre → solo `.env.example`. En `.env.example`,
+  `OPENAI_API_KEY=`, `ANTHROPIC_API_KEY=` y `GEMINI_API_KEY=` están vacías; `sk-`/`AIza`: 0
+  coincidencias en su contenido y 0 en `git log -p --all -- .env.example`.
+- (e) `git log -p --all` con patrones de clave (`sk-ant-` + 8, `sk-` + 16 o `AIza` + 20
+  caracteres de clave) → 0. La búsqueda literal de `sk-`/`sk-ant-`/`AIza` da 16 líneas, todas
+  prosa que nombra los prefijos (ADR-006, ADR-007, guía de claves, esta spec y su ledger).
+- (f) `git grep` con los mismos patrones de clave → 0; la búsqueda literal solo da esa prosa.
+- (g) `git -C "$PUSHLLM_PRIVADO" rev-parse --show-toplevel` → `fatal: not a git
+  repository`: no es este repo (raíz `D:/src/tremen-dev/push-llm`). Tipo de ubicación y
+  respaldo (P-1): **[Humano]**, pendiente de anotar.
+- CA-10: `git ls-files` sin `results.csv`, `summary.md` ni ficheros de humo (solo
+  `probe/tests/fixtures/vigo_results.csv`, fixture sintético de tests). `git status
+  --ignored` → `.env`, cachés y `probe/out/`; `probe/out/` solo contiene
+  `piloto-artica/probe/{results.csv,summary.md}` sintéticos del 2026-09-29 12:58 (tests
+  anteriores, F-SPEC-002-5), no los humos, que están en `$PUSHLLM_PRIVADO`.
+
 ## Salvedades / follow-ups
 <!-- IDs F-SPEC-002-1, F-SPEC-002-2… con destino (spec futura o EPIC-MEJORA). -->
 - **F-SPEC-002-1** (2026-09-29, enmienda de CA-1 / ADR-006; → sdd-implementador, tras la
@@ -184,6 +241,19 @@ Claude. El punto "Effort — se mantiene" de más arriba queda sustituido por es
   cuando sdd-probe sepa de un cambio de modelo por defecto en una app (p. ej. GPT-6 Luna en
   Chat). SPEC-008 está aprobada y no se enmienda aquí: se lleva como instrucción de
   ejecución; si se quiere vinculante, enmienda de SPEC-008 CA-7 o CA de SPEC-012.
+- **F-SPEC-002-7** (2026-09-29, humos; → humano / orquestador; posible arreglo en el
+  adaptador de Claude): en las 7 filas de Claude de los dos humos, `cited_urls` sale vacío
+  aunque hay búsquedas (1–2 por llamada), y el texto de la respuesta llega partido en
+  fragmentos unidos por saltos de línea. Hipótesis sin confirmar (no se guarda la respuesta
+  cruda): con `web_search_20260209` la búsqueda va por *dynamic filtering* (code execution)
+  y las citas no llegan como `web_search_result_location` con `url`, que es lo único que lee
+  `probe/providers.py`; además el adaptador une los bloques `text` con `\n`. No cambia las
+  menciones (se leen del texto) ni el coste, pero CA-3 pide "URLs en `cited_urls` si el
+  proveedor las da", y el piloto usará las fuentes. Opciones: (i) aceptar el humo con esta
+  salvedad y abrir un arreglo (leer las URLs de los bloques de resultados de búsqueda y unir
+  los fragmentos sin `\n`), con test sobre una respuesta grabada; (ii) fijar
+  `allowed_callers: ["direct"]` o volver a `web_search_20250305` (decisión de sdd-probe:
+  cambia lo que se sondea). No se ha tocado código.
 
 ## Cómo retomar (handoff)
 <!-- Estado real del trabajo para la siguiente sesión: qué está hecho, qué falta, dónde seguir. -->
@@ -205,6 +275,14 @@ Claude. El punto "Effort — se mantiene" de más arriba queda sustituido por es
   (ADR-008)"). Necesita **re-aprobación humana** (y ADR-008). Después: sdd-implementador
   pasa a `en-progreso` y rellena CA-3 con el humo de Vigo ya ejecutado el 2026-09-29;
   humano: comprobaciones de CA-1; verificador: CA-1, CA-2, CA-3, CA-10.
+
+- **2026-09-29 (sdd-implementador)**: tras la re-aprobación con alcance reducido, spec en
+  `en-progreso` y después `en-revision`. CA-3 rellenado con los humos reales (12/12 y 9/9
+  `ok`, modelos = dictamen, 0,1050 € y 0,1142 € por pregunta × ejecución); aceptación del
+  humo **pendiente de firma humana**, con la salvedad F-SPEC-002-7. CA-1: comprobaciones de
+  git (a)–(g) hechas por el agente; falta que el humano anote P-1. CA-10: evidencia
+  preliminar. CA-4…CA-9 `n-a` en mis columnas (el Estado es del verificador). Siguiente:
+  sdd-verificador (CA-1, CA-2, CA-3, CA-10).
 
 ## Instrucciones para el humano (humos, CA-3)
 Claves en el `.env` de la raíz del repo (copia de `.env.example` con los valores
