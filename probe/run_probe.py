@@ -7,6 +7,9 @@ writes summary.md with the offline analysis (see analysis.py).
 Model ids, runs per provider, prices and weights: probe_config.json
 (override the model with CLAUDE_MODEL / OPENAI_MODEL / GEMINI_MODEL).
 Providers are enabled by the presence of their API key.
+Keys: session/user environment, or a .env at the repo root (git-ignored, ADR-006/ADR-007;
+template .env.example). The .env is loaded when present; it never overrides a variable
+already set in the environment, empty values are skipped and values are never printed.
 Output directory: --out, else $PUSHLLM_PRIVADO/<batch output_subdir>, else probe/out
 (gitignored). Batches (SPEC-008, ADR-003): the default config is the Vigo/Pontevedra
 batch; --config batches/viveiro.json runs the Clinica Artica pilot batch (AV/AR/AG
@@ -23,6 +26,7 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -34,9 +38,47 @@ import providers
 import settings
 
 HERE = Path(__file__).resolve().parent
+REPO_ROOT = HERE.parent
+DOTENV_NAME = ".env"
+DOTENV_PATH = REPO_ROOT / DOTENV_NAME
+_DOTENV_LINE = re.compile(r"^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$")
 COLUMNS = ["timestamp_utc", "prompt_id", "specialty", "city", "provider", "run", "model",
            "status", "input_tokens", "output_tokens", "web_searches", "cost_eur",
            "brands_mentioned", "directories_mentioned", "cited_urls", "answer"]
+
+
+def parse_dotenv(text: str) -> dict[str, str]:
+    """Minimal NAME=value parser (F-SPEC-002-1): full-line # comments, blank lines, optional
+    `export ` and matching quotes. Lines that do not parse and empty values are skipped."""
+    out = {}
+    for line in text.lstrip("\ufeff").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        m = _DOTENV_LINE.match(line)
+        if not m:
+            continue
+        name, value = m.groups()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        if value:
+            out[name] = value
+    return out
+
+
+def load_dotenv(path: Path, env) -> list[str]:
+    """Copy the .env values into env for names not already in env; returns the names set.
+    No file: nothing happens. Values are never printed or returned."""
+    try:
+        text = Path(path).read_text(encoding="utf-8-sig")
+    except FileNotFoundError:
+        return []
+    loaded = []
+    for name, value in parse_dotenv(text).items():
+        if name not in env:
+            env[name] = value
+            loaded.append(name)
+    return loaded
 
 
 def output_dir(option: str | None, env, batch: dict | None = None) -> Path:
@@ -97,12 +139,19 @@ def write_summary(out: Path, cfg: dict, brands) -> None:
     (out / "summary.md").write_text(analysis.render_summary(res, cfg), encoding="utf-8")
 
 
-def main(argv=None, env=None, ask=None):
+def main(argv=None, env=None, ask=None, dotenv=None):
     args = parse_args(argv)
     if args.out is not None and unsafe_out(args.out):
         sys.exit(f"refusing --out {args.out!r}: empty or a drive/filesystem root "
                  "(is PUSHLLM_PRIVADO set?)")
+    if dotenv is None and env is None:
+        dotenv = DOTENV_PATH  # only a real run reads the repo-root .env
     env = os.environ if env is None else env
+    if dotenv is not None:
+        loaded = load_dotenv(dotenv, env)
+        if loaded:
+            print(f"loaded from {DOTENV_NAME}: {', '.join(sorted(loaded))} (values not shown)",
+                  file=sys.stderr)
     ask = ask or providers.ask
     cfg = settings.load_config(args.config)
     batch = settings.batch(cfg)
