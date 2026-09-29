@@ -19,7 +19,7 @@ Actualizado: 2026-09-29
 | Spec | Estado | Último cambio |
 |---|---|---|
 | SPEC-007 — baseline-antes-manual-de-clinica-artica-desde-el-movil | aprobada | 2026-09-29 (Alberto Fojo) |
-| SPEC-008 — catalogo-de-viveiro-y-a-marina-en-el-probe | aprobada | 2026-09-29 (Alberto Fojo) |
+| SPEC-008 — catalogo-de-viveiro-y-a-marina-en-el-probe | en-progreso | 2026-09-29 (sdd-implementador) |
 | SPEC-009 — reunion-de-descubrimiento-y-propuesta-para-clinica-artica | aprobada | 2026-09-29 (Alberto Fojo) |
 | SPEC-010 — instalacion-de-la-atribucion-del-piloto | borrador | 2026-09-28 (sdd-arquitecto) |
 | SPEC-011 — diagnostico-por-palancas-y-plan-de-acciones-de-clinica-artica | borrador | 2026-09-28 (sdd-arquitecto) |
@@ -49,5 +49,6 @@ Actualizado: 2026-09-29
 
 - hecho: 4
 - bloqueada: 3
-- aprobada: 3
+- aprobada: 2
+- en-progreso: 1
 - borrador: 3

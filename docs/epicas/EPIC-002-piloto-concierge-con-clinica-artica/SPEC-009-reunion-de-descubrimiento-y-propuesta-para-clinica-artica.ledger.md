@@ -24,6 +24,10 @@ epica: EPIC-002
 
 ## Salvedades / follow-ups
 <!-- IDs F-SPEC-009-1, F-SPEC-009-2… con destino (spec futura o EPIC-MEJORA). -->
+- **F-SPEC-009-1** (sdd-arquitecto, 2026-09-29) — ¿la propuesta cuenta el Go de ADR-009?
+  **Cerrado 2026-09-29**: el humano (Alberto Fojo) decidió que sí, sin garantía y sin
+  cifras; recogido en la enmienda (d) de la spec (CA-1, CA-3, CA-5, CA-10). Spec en
+  `borrador`, pendiente de re-aprobación.
 
 ## Cómo retomar (handoff)
 <!-- Estado real del trabajo para la siguiente sesión: qué está hecho, qué falta, dónde seguir. -->

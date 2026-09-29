@@ -6,8 +6,10 @@ in the SPEC-001 ledger.
 
 Batches (SPEC-008): rows outside the batch prompt prefixes are ignored and "local clinic"
 uses the batch local cities. A batch with `levels` (Clinica Artica pilot, ADR-005) is
-reported per level: the client's raw SoV per provider, the weighted SoV only for the core
-level and only "x de n" counts outside the core (sdd-metricas (g)-(j), SPEC-007 ledger).
+reported per level: the client's raw SoV per provider, the weighted SoV of the core level
+(condition (D) of the Go) and, since ADR-009 / SPEC-008 CA-11, the weighted SoV of the growth
+level AR computed only with AR rows (condition (C)); "x de n" counts elsewhere. No figure
+combines levels. `growth_verdict` and `defense_verdict` compare measurements (CA-11 dictamen).
 """
 from __future__ import annotations
 
@@ -197,7 +199,9 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
     review = []
     per_cell = defaultdict(lambda: [0, 0])  # (level, pid, provider) -> [valid runs, with client]
     per_run = defaultdict(lambda: defaultdict(lambda: [0, 0]))  # core run -> prov -> [valid, hit]
-    rows_core = Counter()                   # core rows per provider, any status
+    rows_by = {lv["prefix"]: Counter() for lv in levels}  # level -> provider -> rows, any status
+    runs_seen = defaultdict(set)            # (level, pid, provider) -> run labels, any status
+    growth_level = b.get("go", {}).get("growth", {}).get("level")
     models = defaultdict(set)
     bare = {lv["prefix"]: [] for lv in levels}
     client_row = next((x for x in brands if x["brand"] == client), None)
@@ -212,8 +216,8 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
         cell = cells[lv][prov]
         if r.get("model"):
             models[prov].add(r["model"])
-        if lv == core:
-            rows_core[prov] += 1
+        rows_by[lv][prov] += 1
+        runs_seen[lv, r.get("prompt_id"), prov].add(str(r.get("run")))
         try:
             cost[lv][prov] += float(r.get("cost_eur") or 0)
         except ValueError:
@@ -250,14 +254,8 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
         for cell in lv_cells.values():
             cell["pct"] = _pct(cell["with_client"], cell["valid"])
 
-    def weighted(by_prov):  # RN-03 normalised to the providers with valid answers
-        num = den = 0.0
-        for prov, (n_valid, n_hit) in by_prov.items():
-            if n_valid:
-                w = cfg["providers"].get(prov, {}).get("weight", 0)
-                num += n_hit / n_valid * w
-                den += w
-        return num / den if den else None
+    def weighted(by_prov):
+        return _weighted(by_prov, cfg)
 
     # RN-03 on the core level only (ADR-005 §4); runs pooled per provider (CA-9 (b))
     core_weighted = weighted({p: (c["valid"], c["with_client"]) for p, c in cells[core].items()})
@@ -271,19 +269,160 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
             with_client_cells[lv].append((pid, prov, n_hit, n_valid))
     share = b.get("go", {}).get("min_valid_share", 0)
     weighted_provs = [p for p, pc in cfg["providers"].items() if pc.get("weight", 0) > 0]
-    complete = bool(rows_core) and all(
-        rows_core[p] and cells[core][p]["valid"] / rows_core[p] >= share for p in weighted_provs)
+
+    def complete(lv):  # every weighted provider with >= share of its rows ok (CA-9 (a).2)
+        return bool(rows_by[lv]) and all(
+            rows_by[lv][p] and cells[lv][p]["valid"] / rows_by[lv][p] >= share
+            for p in weighted_provs)
+
+    def uniform_runs(lv):  # runs per question x provider when equal everywhere, else None
+        counts = {len(v) for (lv2, _, _), v in runs_seen.items() if lv2 == lv}
+        return counts.pop() if len(counts) == 1 else None
+
+    growth = None
+    if growth_level in cells:
+        by_q = defaultdict(dict)
+        for (lv, pid, prov), (n_valid, n_hit) in per_cell.items():
+            if lv == growth_level:
+                by_q[pid][prov] = (n_valid, n_hit)
+        growth = {"level": growth_level, "runs": uniform_runs(growth_level),
+                  "complete": complete(growth_level), "by_question": dict(by_q),
+                  "weighted": weighted({p: (c["valid"], c["with_client"])
+                                        for p, c in cells[growth_level].items()})}
 
     return {"levels": {k: dict(v) for k, v in cells.items()}, "core": core, "client": client,
             "core_weighted": core_weighted,
             "core_weighted_by_run": {run: weighted(bp) for run, bp in sorted(per_run.items())},
             "core_stability": stability, "cells_with_client": with_client_cells,
-            "go_complete": complete, "bare_client": bare,
+            "go_complete": complete(core), "core_runs": uniform_runs(core), "growth": growth,
+            "bare_client": bare,
             "models": {p: sorted(m) for p, m in models.items()},
             "named": {k: dict(v) for k, v in named.items()},
             "directories": {k: dict(v) for k, v in directories.items()},
             "short_alias": dict(short_alias), "valid": dict(valid),
             "cost_eur": {k: dict(v) for k, v in cost.items()}, "review": review}
+
+
+def _weighted(by_prov: dict, cfg: dict):
+    """RN-03/RN-04: sum of raw SoV x weight, normalised to the providers with valid answers."""
+    num = den = 0.0
+    for prov, (n_valid, n_hit) in by_prov.items():
+        if n_valid:
+            w = cfg["providers"].get(prov, {}).get("weight", 0)
+            num += n_hit / n_valid * w
+            den += w
+    return num / den if den else None
+
+
+def _pooled(by_question: dict, skip=None) -> dict:
+    """provider -> (valid, hit) summed over the questions, leaving out `skip`."""
+    out = defaultdict(lambda: [0, 0])
+    for pid, by_prov in by_question.items():
+        if pid == skip:
+            continue
+        for prov, (n_valid, n_hit) in by_prov.items():
+            out[prov][0] += n_valid
+            out[prov][1] += n_hit
+    return {p: tuple(v) for p, v in out.items()}
+
+
+EPS = 1e-9  # thresholds are inclusive and compared without rounding
+
+
+def growth_verdict(before: dict, afters: list[dict], cfg: dict) -> dict:
+    """Condition (C) of the Go (ADR-009; SPEC-008 CA-11 dictamen), only with growth-level rows.
+
+    Yes iff, in EACH of the `after_measurements` measurements, the weighted SoV of the level
+    rises >= min_rise_pts over the "before" and the rise stays > 0 when any single question
+    is left out on both sides. Not decidable (verdict None) unless every measurement is
+    complete and has the design runs, and the number of "after" measurements is the one fixed.
+    """
+    g = _batch(cfg)["go"]["growth"]
+
+    def w(res, skip=None):
+        return _weighted(_pooled(res["growth"]["by_question"], skip), cfg) or 0.0
+
+    def valid_design(res):
+        gr = res.get("growth") or {}
+        return bool(gr.get("complete")) and gr.get("runs") == g["runs"]
+
+    measurements = []
+    for a in afters:
+        qs = sorted(set(before["growth"]["by_question"]) | set(a["growth"]["by_question"]))
+        delta = (w(a) - w(before)) * 100
+        loo = min((w(a, q) - w(before, q)) * 100 for q in qs) if len(qs) > 1 else None
+        rise = delta >= g["min_rise_pts"] - EPS
+        broad = loo is not None and loo > EPS
+        measurements.append({"delta_pts": delta, "loo_min_pts": loo, "rise": rise,
+                             "broad": broad, "ok": rise and broad,
+                             "valid_design": valid_design(a)})
+    decidable = (valid_design(before) and len(afters) == g["after_measurements"]
+                 and all(m["valid_design"] for m in measurements))
+    return {"level": g["level"], "threshold_pts": g["min_rise_pts"], "runs": g["runs"],
+            "decidable": decidable, "measurements": measurements,
+            "verdict": all(m["ok"] for m in measurements) if decidable else None}
+
+
+def defense_verdict(baseline: dict, afters: list[dict], cfg: dict) -> dict:
+    """Condition (D) of the Go (ADR-009; SPEC-008 CA-11 dictamen), only with core rows.
+
+    The core weighted SoV counts as a significant drop iff it falls >= max_drop_pts against
+    the official baseline in EVERY "after" measurement; (D) holds otherwise. Not decidable
+    unless every measurement is complete with the core design runs.
+    """
+    b = _batch(cfg)
+    d = b["go"]["defense"]
+    runs = next(lv.get("runs") for lv in b["levels"] if lv["prefix"] == d["level"])
+
+    def valid_design(res):
+        return bool(res.get("go_complete")) and res.get("core_runs") == runs
+
+    measurements = []
+    for a in afters:
+        delta = ((a["core_weighted"] or 0.0) - (baseline["core_weighted"] or 0.0)) * 100
+        measurements.append({"delta_pts": delta, "drop": delta <= -d["max_drop_pts"] + EPS,
+                             "valid_design": valid_design(a)})
+    decidable = (valid_design(baseline) and len(afters) == d["after_measurements"]
+                 and all(m["valid_design"] for m in measurements))
+    return {"level": d["level"], "threshold_pts": d["max_drop_pts"], "runs": runs,
+            "decidable": decidable, "measurements": measurements,
+            "verdict": (not all(m["drop"] for m in measurements)) if decidable else None}
+
+
+def _yes_no(v):
+    return "no decidible" if v is None else "sí" if v else "no"
+
+
+def render_go_verdict(growth: dict, defense: dict, cfg: dict) -> str:
+    """Go verdict of the pilot: three yes/no conditions reported apart (ADR-009 §1-§2)."""
+    gl, dl = growth["level"], defense["level"]
+    out = ["# Veredicto del Go del piloto (ADR-009; SPEC-008 CA-11)", "",
+           "Tres condiciones sí/no que se exigen a la vez; ninguna cifra combina niveles "
+           "(ADR-009 §2). Umbrales inclusivos y sin redondear.", "",
+           f"## (C) Crecer — solo filas {gl}", "",
+           f"Regla: en cada medición \"después\", Δ del SoV ponderado de {gl} frente al "
+           f"\"antes\" ≥ +{growth['threshold_pts']:g} pts y, quitando cualquier pregunta "
+           f"{gl} en los dos lados, Δ sigue > 0 ({growth['runs']} runs por pregunta en todas).",
+           "", "| Medición | Δ (pts) | Δ mínimo sin una pregunta (pts) | Umbral | Amplitud | "
+           "Diseño válido |", "|---|---|---|---|---|---|"]
+    for i, m in enumerate(growth["measurements"], 1):
+        loo = "—" if m["loo_min_pts"] is None else f"{m['loo_min_pts']:+.1f}"
+        out.append(f"| {i} | {m['delta_pts']:+.1f} | {loo} | {_yes_no(m['rise'])} | "
+                   f"{_yes_no(m['broad'])} | {_yes_no(m['valid_design'])} |")
+    out += ["", f"Condición (C): **{_yes_no(growth['verdict'])}**", "",
+            f"## (D) Defender — solo filas {dl}", "",
+            "Regla: caída significativa ⇔ Δ del SoV ponderado del núcleo frente al baseline "
+            f"oficial ≤ −{defense['threshold_pts']:g} pts en cada medición \"después\" "
+            f"({defense['runs']} runs por pregunta en todas).", "",
+            "| Medición | Δ (pts) | Caída | Diseño válido |", "|---|---|---|---|"]
+    for i, m in enumerate(defense["measurements"], 1):
+        out.append(f"| {i} | {m['delta_pts']:+.1f} | {_yes_no(m['drop'])} | "
+                   f"{_yes_no(m['valid_design'])} |")
+    out += ["", f"Condición (D): **{_yes_no(defense['verdict'])}**", "",
+            "## (A) Atribución", "",
+            "≥ 1 paciente atribuido al canal IA (RN-07, H3): no sale del probe; lo registra "
+            "SPEC-012."]
+    return "\n".join(out) + "\n"
 
 
 SENTENCE_RE = re.compile(r"(?<=[.!?;])\s+|\n+")
@@ -321,9 +460,9 @@ def _ceiling_warning(res: dict, b: dict) -> list[str]:
         return []
     return ["", f"> **Aviso de techo (SPEC-008 CA-10)**: el SoV ponderado del núcleo es "
                 f"≥ {ceiling * 100:.0f} %, a menos de {100 - ceiling * 100:.0f} pts de su techo. "
-                "Antes de la primera acción, el humano decide y deja registrado en el ledger si "
-                "se mantiene el criterio Go, se mide sobre un subconjunto de `AV` o se cambia el "
-                "umbral; nunca después de ver el efecto."]
+                "Decidido por el humano el 2026-09-29, antes de la primera acción (ADR-009): el "
+                "núcleo es la condición (D) de defensa y el crecimiento se mide en `AR` "
+                "(condición (C)). Si vuelve a salir en otra medición, la regla no cambia."]
 
 
 def _core_go_lines(res: dict, b: dict, client: str) -> list[str]:
@@ -341,10 +480,31 @@ def _core_go_lines(res: dict, b: dict, client: str) -> list[str]:
     share = b.get("go", {}).get("min_valid_share")
     if share is not None:
         verdict = "sí" if res["go_complete"] else "no"
-        out += ["", f"Medición completa para el criterio Go: **{verdict}** (cada proveedor "
+        out += ["", f"Medición completa para la condición (D) del Go: **{verdict}** (cada proveedor "
                     f"con peso tiene ≥ {share * 100:.0f} % de sus filas del núcleo con "
                     "status=ok; si no, `--resume` en la misma semana)."]
     return out
+
+
+def _growth_lines(res: dict, b: dict, level: str) -> list[str]:
+    """Condition (C) figures of one measurement (SPEC-008 CA-11): only the growth level."""
+    go = b.get("go", {})
+    gr = res.get("growth")
+    if not gr or gr["level"] != level:
+        return []
+    runs = go.get("growth", {}).get("runs")
+    if gr["runs"] != runs:
+        return ["", f"SoV ponderado de {level}: no se da (esta medición no tiene {runs} runs en "
+                    "cada pregunta × proveedor, el diseño de la condición (C) de CA-11; solo "
+                    "recuentos)."]
+    share = go.get("min_valid_share", 0)
+    return ["", f"SoV ponderado de {level} (solo filas {level}; RN-03/RN-04 normalizado a los "
+                "proveedores sondeados; runs sumados por proveedor; condición (C) del Go, "
+                f"ADR-009; se compara solo con el \"antes\" de {level} de CA-12): "
+                f"**{_fmt(gr['weighted'])}**",
+            "", "Medición completa para la condición (C) del Go: "
+                f"**{'sí' if gr['complete'] else 'no'}** (cada proveedor con peso tiene "
+                f"≥ {share * 100:.0f} % de sus filas {level} con status=ok)."]
 
 
 def _bare_lines(res: dict, level: str, client: str, aliases: list[str]) -> list[str]:
@@ -366,10 +526,11 @@ def render_levels(res: dict, cfg: dict) -> str:
            "Recalculado offline desde results.csv con el brands.csv actual y solo las marcas "
            "del lote. Solo cuentan las respuestas con status=ok; las demás se listan como "
            "excluidas.", "",
-           "Cada nivel se informa por separado (ADR-005 §4): ninguna cifra suma, promedia ni "
-           f"pondera niveles. El SoV ponderado es solo del núcleo {core} (criterio Go). Fuera "
-           "del núcleo, solo recuentos \"x de n\" (dictamen sdd-metricas (j), ledger de "
-           "SPEC-007)."]
+           "Cada nivel se informa por separado (ADR-005 §4, ADR-009 §2): ninguna cifra suma, "
+           f"promedia ni pondera niveles. El SoV ponderado del núcleo {core} usa solo sus filas "
+           "(condición (D) del Go) y el del área de influencia, solo las suyas (condición (C), "
+           "si la medición tiene los runs del diseño). En el resto, solo recuentos \"x de n\" "
+           "(dictamen sdd-metricas (j), ledger de SPEC-007)."]
     for lv in b["levels"]:
         k = lv["prefix"]
         is_core = k == core
@@ -396,6 +557,7 @@ def render_levels(res: dict, cfg: dict) -> str:
             listed = "; ".join(f"{pid} × {prov} ({_of(h, v)} runs)" for pid, prov, h, v in cw)
             out += ["", f"Casillas pregunta × proveedor con {client} (para comparar periodos "
                         f"a mano, dictamen CA-9 (g) del ledger de SPEC-008): {listed or 'ninguna'}."]
+            out += _growth_lines(res, b, k)
         out += _bare_lines(res, k, client, b.get("client_review_aliases", []))
         n = res["valid"].get(k, 0)
         out += ["", f"Clínicas nombradas en {k} (respuestas válidas que la nombran):", "",

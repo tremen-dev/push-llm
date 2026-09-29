@@ -9,6 +9,13 @@ historial:
 ---
 # SPEC-012 — Ejecución, medición semanal y cierre del piloto
 
+> **Nota 2026-09-29 (d) (sdd-arquitecto) — decisiones del humano sobre `AR` y coste.**
+> ADR-009 aprobado. El humano (Alberto Fojo, 2026-09-29) eligió la **opción A** para `AR`
+> (más runs, las mismas 5 preguntas; SPEC-008 CA-12) y fijó la **regla de recorte**: si el
+> mes de cierre supera 20 €, lo primero que se recorta es `AG`, que pasa a medirse cada 8
+> semanas. Recogido en CA-3 y en las notas; el fondo del resto no cambia. La spec sigue en
+> `borrador`.
+
 > **Nota 2026-09-29 (c) (sdd-arquitecto) — Go "crecer fuera, defender dentro" (ADR-009,
 > borrador).** Tras el aviso de techo del baseline oficial (SPEC-008 CA-10), el humano
 > decidió antes de la primera acción que el Go del piloto son tres condiciones sí/no:
@@ -69,7 +76,13 @@ honesto sobre H1 y H3, incluido decir "no ha funcionado" a un cliente de confian
   preguntas y los runs que fije SPEC-008 CA-11** para la condición de crecimiento (el
   "cada 4 semanas con 1 run" anterior deja de valer para `AR` si CA-11 pide otra cosa; como
   mínimo, las mediciones "después" que CA-11 exija, con la forma del "antes" de SPEC-008
-  CA-12); `AG` **cada 4 semanas con 1 run** (sin objetivo); todo con la configuración del
+  CA-12); por decisión del humano (2026-09-29) `AR` usa la **opción A** de SPEC-008 CA-12:
+  **las mismas 5 preguntas `AR` congeladas, con más runs** (los que fije CA-11), sin
+  ampliar el set; `AG` **cada 4 semanas con 1 run** (sin objetivo), con la **regla de
+  recorte**: si el coste previsto del mes de cierre (SPEC-008 CA-5 (d)) supera 20 €, lo
+  **primero** que se recorta es `AG`, que pasa a **cada 8 semanas con 1 run** en todo el
+  piloto (decidido antes de la primera acción y anotado en el ledger); solo si con eso
+  aún no cabe se aplica la palanca que proponga `sdd-probe`, nunca bajando runs del Go; todo con la configuración del
   lote de Viveiro sin cambios respecto al baseline salvo lo que CA-11 cambie antes de la
   primera acción; (2) **mediciones "después" del Go**: las de `AR` (crecimiento) y las del
   núcleo (defensa) con la forma, las semanas y la separación que fije SPEC-008 CA-11 (para
@@ -81,7 +94,9 @@ honesto sobre H1 y H3, incluido decir "no ha funcionado" a un cliente de confian
   AI Overviews del cierre; (4) cada medición guarda sus datos en el espacio privado con
   fecha, y cualquier cambio de modelo por defecto de un proveedor se anota con fecha
   (SPEC-008 CA-9 f). *Evidencia*: fechas y ficheros de cada ejecución y de la pasada;
-  semanas sin hueco en `AV`; runs por ejecución; desviaciones anotadas.
+  semanas sin hueco en `AV`; runs por ejecución; ejecuciones `AR` con las 5 preguntas del
+  set congelado; cadencia de `AG` (4 u 8 semanas) coherente con la decisión de recorte
+  anotada en el ledger; desviaciones anotadas.
 - **CA-4 (atribución semanal) [Humano]**: Dado SPEC-010 CA-6, cuando pase cada semana,
   entonces la hoja privada de AttributionEvent tiene las tres señales de esa semana (o la
   causa de su ausencia). *Evidencia*: semanas sin hueco.
@@ -155,6 +170,8 @@ honesto sobre H1 y H3, incluido decir "no ha funcionado" a un cliente de confian
   defiende; si la regla de P-3 ("en cada una, no en la media") se mantiene para `AR` lo
   fija SPEC-008 CA-11 (ii). (4) La cadencia de `AR` deja de ser "cada 4 semanas" fija:
   será la que pida el Go (SPEC-008 CA-11), probablemente mediciones de varios runs al
-  final; el coste del mes de cierre lo recalcula SPEC-008 CA-5. (3) Si la calibración "después" no
+  final; el coste del mes de cierre lo recalcula SPEC-008 CA-5. **Decidido (nota (d))**:
+  opción A (mismas 5 preguntas `AR`, más runs) y, si el mes de cierre supera 20 €, `AG`
+  pasa a cada 8 semanas antes que tocar nada más. (3) Si la calibración "después" no
   coincide con el probe, el veredicto se da igual con el probe, pero con la salvedad escrita
   en el cierre.

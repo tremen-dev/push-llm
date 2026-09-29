@@ -1,5 +1,5 @@
 {
-  "_comment": "Clinica Artica pilot batch (EPIC-002, SPEC-008 CA-3; ADR-003 §3-§4, ADR-005). Extends probe_config.json: providers, prices, currency and weights are inherited unchanged; this file replaces user_location and batch as a whole. Levels are read from the prompt id prefix (AV core, AR area of influence, AG Galicia) and are reported apart: the weighted SoV uses only AV. Brands take part by membership (the list below), not by city: pilot brands based in Vigo or Pontevedra stay out of the Vigo batch (ADR-005 §5). Competitor sources and dates: SPEC-008 ledger.",
+  "_comment": "Clinica Artica pilot batch (EPIC-002, SPEC-008 CA-3; ADR-003 §3-§4, ADR-005). Extends probe_config.json: providers, prices, currency and weights are inherited unchanged; this file replaces user_location and batch as a whole. Levels are read from the prompt id prefix (AV core, AR area of influence, AG Galicia) and are reported apart: each weighted SoV uses only its own level (AV for condition (D), AR for condition (C); ADR-009), AG only counts. Brands take part by membership (the list below), not by city: pilot brands based in Vigo or Pontevedra stay out of the Vigo batch (ADR-005 §5). Competitor sources and dates: SPEC-008 ledger.",
   "extends": "../probe_config.json",
   "user_location": {
     "city": "Viveiro",
@@ -12,15 +12,19 @@
     "title": "Resumen del probe — piloto Clínica Ártica (lote Viveiro)",
     "prompt_prefixes": ["AV", "AR", "AG"],
     "levels": [
-      {"prefix": "AV", "label": "núcleo: Viveiro y A Mariña (único nivel del criterio Go)", "core": true, "runs": 3},
-      {"prefix": "AR", "label": "área de influencia (indicador aparte, no cuenta para el Go)", "runs": 1},
+      {"prefix": "AV", "label": "núcleo: Viveiro y A Mariña (condición (D) del Go: defender)", "core": true, "runs": 3},
+      {"prefix": "AR", "label": "área de influencia (condición (C) del Go: crecer; cifra solo de AR)", "runs": 3},
       {"prefix": "AG", "label": "Galicia (indicador aparte, sin objetivo)", "runs": 1}
     ],
-    "_runs_comment": "Runs per level (SPEC-008 CA-5 and CA-9 dictamen, 2026-09-29): the plain command is the official baseline of the Go criterion (AV 3 runs, smoke c = 0.1142 EUR <= 0.19; AR/AG 1 run) and --levels AV is each Go 'after' measurement (same 3 runs). Weekly tracking overrides with --levels AV --runs 1. --runs overrides every selected level.",
+    "_runs_comment": "Runs per level (SPEC-008 CA-5, CA-9 and CA-11 dictamens, 2026-09-29): AV 3 runs (official baseline and each Go 'after' measurement, condition (D)); AR 3 runs (the CA-12 'before' and each Go 'after' measurement of condition (C): same design on both sides); AG 1 run. Go 'after' measurement: --levels AV,AR. Tracking overrides with --runs 1 (weekly AV; AR/AG every 4 weeks). --runs overrides every selected level.",
     "go": {
-      "_comment": "Go criterion with the probe (SPEC-008 CA-9 dictamen, CA-10): ceiling warning when the core weighted SoV is >= ceiling (only AV, only the probe); a Go measurement is complete when every weighted provider has >= min_valid_share of its AV rows with status=ok (relaunch with --resume in the same week otherwise).",
+      "_comment": "Go criterion with the probe (SPEC-008 CA-9 and CA-11 dictamens, CA-10; ADR-009): ceiling warning when the core weighted SoV is >= ceiling (only AV, only the probe); a Go measurement is complete when every weighted provider has >= min_valid_share of its AV rows with status=ok (relaunch with --resume in the same week otherwise).",
       "ceiling": 0.85,
-      "min_valid_share": 0.9
+      "min_valid_share": 0.9,
+      "_growth_comment": "Condition (C), SPEC-008 CA-11 dictamen (ADR-009): weighted SoV of AR only (RN-03/RN-04 formula, runs pooled per provider), 'before' (CA-12) and two 'after' measurements with the same runs; Go of growth iff in EACH 'after' the rise is >= min_rise_pts (unrounded) and stays > 0 when any single AR question is left out on both sides.",
+      "growth": {"level": "AR", "runs": 3, "min_rise_pts": 12.0, "after_measurements": 2},
+      "_defense_comment": "Condition (D), SPEC-008 CA-11 dictamen: weighted core SoV (AV only) against the official baseline; significant drop iff it falls by >= max_drop_pts in BOTH 'after' measurements.",
+      "defense": {"level": "AV", "max_drop_pts": 10.0, "after_measurements": 2}
     },
     "_client_review_aliases_comment": "Client aliases that are also a common word (F-SPEC-008-3, CA-9 (h)): answers naming the client only through them still count (RN-01 literal) and are listed in summary.md for manual review.",
     "client_review_aliases": ["Ártica"],
