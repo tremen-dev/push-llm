@@ -1,9 +1,10 @@
 ---
 id: EPIC-001
 tipo: epica
-estado: borrador
+estado: bloqueada
 historial:
   - {estado: borrador, fecha: 2026-09-23, por: sdd-producto}
+  - {estado: bloqueada, fecha: 2026-09-29, por: Alberto Fojo}
 ---
 # EPIC-001 — Ciclo 0 — Baseline y validación del problema
 
@@ -108,3 +109,18 @@ especulación.
 | 2 | Extracto de hallazgos por clínica | Media página por clínica objetivo, generada desde los resultados |
 | 3 | Kit de entrevistas para no-comerciales | Mensajes, guion, plantilla de notas, hoja de puntuación, lista de objetivos |
 | 4 | Registro y evaluación de las entrevistas | Agregado anonimizado y veredicto Go/No-go |
+
+## Cierre (2026-09-29, decisión del humano)
+Épica **cerrada sin completar** por **cambio de nicho**. El humano decide que Vigo y
+Pontevedra quedan aparcados y que el foco pasa a A Mariña, después resto de Galicia,
+Asturias y León (ver `docs/fundacion/vision.md` y `docs/roadmap.md`). El plugin no
+tiene estado "cancelada", así que la épica queda en `bloqueada`.
+- Se conserva: SPEC-001 y SPEC-006 (`hecho`) y el trabajo ya hecho en SPEC-002
+  (modelos re-comprobados, effort `medium` en Claude, carga del `.env`). Ese trabajo
+  lo necesita el probe del piloto de EPIC-002; sdd-arquitecto decide cómo cerrarlo
+  sin la ejecución de Vigo.
+- No se hace: la ejecución completa del lote Vigo, el veredicto de la hipótesis de
+  Vigo, el extracto por clínica ni las 10 entrevistas (SPEC-003, SPEC-004, SPEC-005).
+  Su material se puede rescatar para la futura épica de validación del nicho nuevo.
+- Humo del lote Vigo ejecutado el 2026-09-29: 12/12 respuestas válidas y 0,105 € por
+  pregunta y ejecución. Cifras en el espacio privado.
