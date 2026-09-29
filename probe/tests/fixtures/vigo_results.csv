@@ -1,0 +1,20 @@
+prompt_id,specialty,city,provider,run,status,answer,cost_eur
+D01,dental,Vigo,openai,1,ok,Te recomiendo Clínica Torres y Vitaldent.,0.010000
+D01,dental,Vigo,openai,2,ok,Busca en Doctoralia.,0.020000
+D01,dental,Vigo,openai,3,error,[error] RateLimitError: Clínica Bastida,0.030000
+D01,dental,Vigo,claude,1,ok,"Clínica Torres, Clínica Torres otra vez; mira Top Doctors",0.040000
+D01,dental,Vigo,claude,2,refusal,No puedo recomendar Clínica Bastida,0.050000
+D01,dental,Vigo,gemini,1,ok,No conozco ninguna.,0.060000
+D01,dental,Vigo,gemini,2,empty,,0.070000
+F01,fertility,Vigo,openai,1,ok,"IVI Vigo es la referencia, también IVI.",0.080000
+F01,fertility,Vigo,openai,2,ok,IVI es la mejor opción.,0.090000
+F01,fertility,Vigo,claude,1,ok,Clínica NIDA y reproduccionasistida.org,0.100000
+E01,aesthetic,Vigo,openai,1,ok,Villoria.,0.110000
+E01,aesthetic,Vigo,openai,2,ok,Te recomiendo MIA.,0.120000
+O01,ophthalmology,Vigo,openai,1,ok,Clínica Villoria es la referencia; Villoria opera también en Pontevedra.,0.130000
+E01,aesthetic,Vigo,claude,1,ok,"En Vigo: Medical Hair, Clínica Novoa y Villoria. También Dorsia.",0.140000
+E01,aesthetic,Vigo,gemini,1,ok,"Clínica Ártica está en Viveiro; en Vigo, Clínica Femme y Avance Capilar.",0.150000
+E06,aesthetic,Pontevedra,openai,1,ok,"En Pontevedra, Hospital Capilar y Doctoralia.",0.160000
+E02,aesthetic,Vigo,openai,1,ok,Luxury Clínica o Gaia Pro Aging; mira Páxinas Galegas y Multiestetica.,0.170000
+H01,hospital,Vigo,claude,1,ok,Ribera Povisa y Ribera Polusa son buenos hospitales.,0.180000
+D02,dental,Vigo,gemini,1,ok,Clínica Torres o el Dr. Torres en A Coruña.,0.190000
