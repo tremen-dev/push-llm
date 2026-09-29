@@ -29,7 +29,7 @@ Actualizado: 2026-09-29
 
 | Spec | Estado | Último cambio |
 |---|---|---|
-| SPEC-013 — respuesta-cruda-del-proveedor-y-citas-de-claude-en-el-probe | aprobada | 2026-09-29 (Alberto Fojo) |
+| SPEC-013 — respuesta-cruda-del-proveedor-y-citas-de-claude-en-el-probe | hecho | 2026-09-29 (sdd-verificador) |
 
 ## ADRs
 
@@ -46,7 +46,7 @@ Actualizado: 2026-09-29
 
 ## Resumen
 
-- hecho: 3
+- hecho: 4
 - bloqueada: 3
-- aprobada: 4
+- aprobada: 3
 - borrador: 3

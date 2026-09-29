@@ -7,8 +7,8 @@ epica: EPIC-FIX
 
 ## Resumen
 - Fase: <!-- refleja el estado de la spec; la fuente de verdad es el frontmatter de la spec -->
-- Rama: `ft/SPEC-013-respuesta-cruda-y-citas-de-claude` (apilada sobre `ft/SPEC-002-…`, aún
-  sin merge)
+- Rama: `ft/SPEC-013-respuesta-cruda-y-citas-de-claude` (sale de
+  `ft/EPIC-002-calibracion-manual`, aún sin merge)
 
 ## Matriz de criterios de aceptación
 <!-- Escritores: sdd-implementador rellena Implementado y Test; sdd-verificador rellena Verif. y Estado. Nunca al revés. -->
@@ -268,6 +268,13 @@ n-a: sin UI (probe de línea de comandos).
     citación;
   - dejar en SPEC-011 una nota con los puntos 2–4 del dictamen.
   Lo prevé CA-7 ("el arquitecto añade…").
+  **Resuelto** (sdd-arquitecto, 2026-09-29): `dominio.md` añade "URLs citadas"
+  (`cited_urls`) y "URLs consultadas" (`searched_urls`) con su definición por proveedor
+  (CA-3), ProbeRun las nombra a las dos y Source citation weight/RN-08 usan solo las
+  citadas; ninguna regla cambia de fondo. La nota (c) de SPEC-011 recoge el tratamiento
+  confirmado: indicador "consultada por" aparte y sin peso, Claude aporta 0 mientras no
+  cite (y el informe lo dice), CSV antiguos reclasificados al leerlos. Sin cambios en los
+  CA de SPEC-011; se incorporarán en su revisión completa.
 
 - **F-SPEC-013-5** (sdd-verificador, 2026-09-29), alerta de coste de OpenAI del dictamen de CA-5
   (CA-6: 0,0218 € con 2 búsquedas frente a ≈ 0,012 € con 1 en el humo de SPEC-002): en el

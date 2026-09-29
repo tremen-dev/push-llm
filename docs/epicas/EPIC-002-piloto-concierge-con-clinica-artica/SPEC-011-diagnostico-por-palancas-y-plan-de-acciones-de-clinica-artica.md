@@ -18,12 +18,28 @@ historial:
 > - Las URLs de Gemini siguen siendo redirecciones `vertexaisearch` (F-SPEC-001-2).
 >
 > Decisión del humano: en el análisis de fuentes se distingue "consultadas" de "citadas",
-> igual para todos los proveedores. Propuesta pendiente del dictamen de sdd-metricas
-> (SPEC-013 CA-7): el peso de citación de CA-1 (§4, RN-04) y el orden de RN-08 se calculan
-> solo con `cited_urls`, y un indicador "consultada por" por fuente, con los tres
-> proveedores, aparece aparte, sin peso en el ranking. Esto último es propuesta para esta
-> spec y sdd-producto; no se crea ninguna métrica en SPEC-013. CA-1 se ajustará en la
-> revisión completa de esta spec, con el dictamen. Sigue en `borrador`.
+> igual para todos los proveedores. **Confirmado por el dictamen de sdd-metricas**
+> (SPEC-013 CA-7, ledger de SPEC-013; términos en `docs/fundacion/dominio.md`):
+> - El peso de citación de CA-1 (§4, RN-04), el top-10, Coverage y el orden de RN-08 se
+>   calculan **solo con `cited_urls`**. Una URL solo consultada suma 0.
+> - Las consultadas se muestran como **indicador aparte "consultada por"** (ChatGPT, Gemini,
+>   Claude) por fuente, **sin peso**: ni RN-04, ni top-10, ni Coverage, ni RN-08. Texto al
+>   cliente, igual para todos: "Consultada: el asistente la leyó al buscar. Citada: la
+>   enlazó en su respuesta. Solo las citadas cuentan en el peso de fuentes." Con una nota
+>   por proveedor de sus límites: los recuentos absolutos no se comparan entre proveedores,
+>   y Gemini no se cruza por dominio hasta resolver sus redirecciones (F-SPEC-001-2). Dar
+>   peso a las consultadas sería una definición nueva de §4 (sdd-producto y el humano).
+> - **Claude aporta 0 al peso de citación mientras no cite**; su 10 % de RN-04 no se
+>   redistribuye. El informe a la clínica lo dice expresamente ("Claude: 0 citas en el
+>   periodo").
+> - **`results.csv` anteriores a SPEC-013** (cabecera sin `searched_urls`): CA-1 usa solo el
+>   baseline posterior a SPEC-013. Si se usa un fichero antiguo, se **reclasifica al
+>   leerlo**, sin reescribirlo: OpenAI, `cited_urls` = citadas; Gemini, `cited_urls` =
+>   consultadas y citadas desconocidas; Claude, citadas vacías y consultadas desconocidas.
+>   Nunca se mezclan en un ranking filas de Gemini con los dos significados.
+> El ranking de CA-1 ya es por peso de citación y no cambia. El indicador "consultada por"
+> y la frase sobre Claude se incorporarán a los CA en la revisión completa de esta spec.
+> Sigue en `borrador`.
 
 > **Nota 2026-09-29 (b) (sdd-arquitecto) — nuevo instrumento.** El probe es ya el
 > instrumento de medición (EPIC-002, criterios 1 y 4): su baseline oficial (SPEC-008 CA-7)

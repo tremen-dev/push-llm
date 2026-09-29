@@ -35,13 +35,12 @@ León**. **Vigo y Pontevedra quedan aparcados** (sin trabajo activo; no se aband
     effort `low`; Gemini `gemini-3.6-flash` con el default de la API.
   - Módulos: `settings.py` (config, precios con fecha y fuente, pesos RN-04, `extends` de
     lotes; override por `CLAUDE_MODEL`/`OPENAI_MODEL`/`GEMINI_MODEL`), `providers.py`
-    (adaptadores → status ok/error/refusal/empty, tokens, búsquedas, URLs, `cost_eur`),
+    (adaptadores → status ok/error/refusal/empty, tokens, búsquedas, `searched_urls` y `cited_urls`, `cost_eur`),
     `matching.py` (menciones RN-01 + RN-11 sobre `brands.csv`; siglas cortas en
     `exact_aliases`, ADR-002), `analysis.py` (cobertura, agregado ponderado, líder,
     directorios, sesgo de alias cortos, coste; por nivel en el lote del piloto).
   - Flags: `--config`, `--only`, `--runs`, `--levels`, `--providers`, `--resume`,
-    `--analyze` (recuento offline), `--out`. Salida `results.csv` (respuesta en bruto) +
-    `summary.md`, ambos **privados** (ADR-001, ADR-004). Tests offline en `probe/tests/`.
+    `--analyze` (recuento offline), `--out`. Salida `results.csv` (respuesta en bruto), `raw_responses.jsonl` (respuestas completas sin cabeceras, SPEC-013 CA-1) y `summary.md`, todos **privados** (ADR-001, ADR-004). Tests offline en `probe/tests/`.
 - Producto (`src/`): no existe. Stack sin decidir — se registrará como ADR cuando llegue el
   Ciclo 3.
 
