@@ -2,7 +2,7 @@
 id: SPEC-008
 tipo: spec
 epica: EPIC-002
-estado: en-progreso
+estado: borrador
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-28, por: sdd-arquitecto}
@@ -11,8 +11,24 @@ historial:
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
   - {estado: en-progreso, fecha: 2026-09-29, por: sdd-implementador}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
 ---
 # SPEC-008 — Catálogo de Viveiro y A Mariña en el probe
+
+> **Enmienda 2026-09-29 (b) (sdd-arquitecto) — el probe es el instrumento del criterio Go.**
+> Decisión del humano (Alberto Fojo, 2026-09-29), recogida por sdd-producto en EPIC-002,
+> criterios 1 y 4: el probe mide los tres niveles y su baseline (CA-7) pasa a ser **el
+> baseline oficial del criterio Go**; la medición manual de SPEC-007 queda como calibración.
+> Cambian: CA-5 (coste del mes de cierre), **CA-7** (baseline oficial: ya no espera a la
+> pasada 1 manual, sino a SPEC-013 y a la congelación del set; sin baseline del probe no hay
+> primera acción), **CA-9 nuevo** (dictamen de `sdd-metricas` sobre el Go con el probe:
+> forma del baseline, dos mediciones "después" en semanas distintas, estabilidad, ruido e
+> indicadores `AR`/`AG`), **CA-10 nuevo** (aviso de techo, que sale de SPEC-007 CA-8),
+> dependencias, Fuera de alcance y notas. CA-1 a CA-4, CA-6 y CA-8 no cambian; lo ya
+> implementado y verificado sigue valiendo. La spec vuelve a `borrador` (estaba
+> `en-progreso`, con CA-7 sin ejecutar) y necesita **nueva aprobación humana**. Lo que el
+> implementador debe rehacer está en el ledger (F-SPEC-008-9).
 
 > **Nota 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008). No cambia ningún CA ni
 > requiere re-aprobación.** Las citas a ADR-003 y ADR-005 de esta spec siguen valiendo en lo
@@ -110,32 +126,94 @@ código; además el resultado del lote de Vigo no puede cambiar.
   texto, como hoy). El cálculo usa el set completo congelado (`AV`+`AR`+`AG`, hasta 24
   preguntas con el set propuesto); si no cabe en ≤ 20 €/mes, el dictamen propone una
   cadencia menor para `AR`/`AG` que para `AV`, nunca al revés (enmienda 2026-09-29).
+  **Enmienda 2026-09-29 (b)**: el cálculo incluye también el **mes del cierre**, con las dos
+  mediciones "después" que fije CA-9 (cada una sustituye a la ejecución `AV` semanal de su
+  semana) y la ejecución `AR`/`AG` que le toque, recalculado con el coste medido en el humo
+  (`c`); si no cabe en ≤ 20 €, el dictamen propone cómo, sin bajar los runs de las
+  mediciones del Go por debajo de los del baseline.
   *Evidencia*: dictamen y cálculo en el ledger.
 - **CA-6 (documentación) [Agente]**: Dado D-8, cuando se cierre la spec, entonces
   `probe/README.md` (en inglés) explica cómo lanzar el lote de Viveiro, dónde sale y que el
   lote de Vigo es el defecto. *Evidencia*: sección presente; comando de ejemplo coincide
   con el mecanismo de CA-3.
-- **CA-7 (baseline con el probe) [Humano lanza; Agente revisa]**: Dado CA-1 a CA-5 y las
-  claves de SPEC-002 CA-1, cuando se ejecute el lote de Viveiro **antes de la primera
-  acción del piloto**, entonces existe su `results.csv` y `summary.md` en el espacio
-  privado con fecha, y el ledger recoge fecha, número de llamadas, estado y coste. Si las
-  claves llegan después de la primera acción, este CA se marca n-a con esa causa y el
-  probe solo sirve para tendencia, no para el criterio Go (SPEC-007 CA-2 e). *Evidencia*:
-  fechas frente a la primera acción del registro de SPEC-012.
+- **CA-7 (baseline oficial del criterio Go) [Humano lanza; Agente revisa]**: Dado CA-1 a
+  CA-5, el dictamen de CA-9, SPEC-013 en estado `hecho` (citas de Claude y respuesta cruda
+  del proveedor), el set congelado (SPEC-007 CA-8: si no hay fecha anterior, esta ejecución
+  lo congela) y las claves de SPEC-002 CA-1, cuando se ejecute el lote de Viveiro con la
+  forma que fije CA-9 (propuesta: `AV` con 3 runs si el humo da `c ≤ 0,19 €` y 2 si no;
+  `AR` y `AG` con 1 run) **antes de la primera acción del piloto**, entonces existen su
+  `results.csv` y `summary.md` en el espacio privado con fecha, y el ledger recoge fecha,
+  runs por nivel, número de llamadas por estado, coste, modelos por proveedor y la fecha de
+  congelación del set. Esta ejecución es el **baseline oficial del criterio Go** (EPIC-002,
+  criterio 4): el Go se calcula probe contra probe (SPEC-007 CA-2 e) y solo con `AV`
+  (ADR-005 §4). **No depende** de ninguna pasada manual. Si no puede lanzarse antes de la
+  primera acción, la primera acción espera: sin baseline del probe no hay criterio Go (ya
+  no hay alternativa manual). *Evidencia*: fechas del baseline frente a la del `hecho` de
+  SPEC-013, la de congelación y la de la primera acción del registro de SPEC-012; runs por
+  nivel iguales a los de CA-9.
 - **CA-8 (nada en bruto en el repo) [Verificador]**: Dado ADR-001, cuando se cierre la spec,
   entonces `git ls-files` no lista salidas del lote y `git status --ignored` no muestra
   `probe/out/` con datos. *Evidencia*: ambas salidas en el ledger.
+- **CA-9 (dictamen del criterio Go con el probe) [Agente; consulta sdd-metricas]**: Dado que
+  el probe pasa a ser el instrumento del Go (EPIC-002, criterio 4) y que el humano exige
+  estabilidad (ledger de SPEC-007, P-3: la subida debe verse en las dos mediciones
+  "después"), cuando se prepare el baseline y **antes de lanzarlo** (CA-7), entonces consta
+  en el ledger un dictamen fechado de `sdd-metricas` (conclusión por punto, condiciones)
+  que fija al menos:
+  (a) **forma del baseline**: runs por nivel y si basta una ejecución o hacen falta dos en
+  semanas distintas antes de la primera acción;
+  (b) **cómo se agregan los runs**: SoV bruto por proveedor sobre todas las respuestas
+  válidas de los runs (como `probe/analysis.py`) u otra regla, y SoV ponderado del núcleo
+  con ChatGPT, Gemini y Claude normalizado a lo sondeado (RN-03/RN-04);
+  (c) **forma de las dos mediciones "después"**: mismo número de runs que el baseline, en
+  **semanas distintas** (separación mínima en días) y en qué semanas desde la primera
+  acción (propuesta: semanas 11 y 12, ± 1, con al menos 7 días entre ellas); cada una
+  sustituye a la ejecución `AV` semanal de su semana;
+  (d) **regla de estabilidad del Go**: propuesta: Δ SoV ponderado del núcleo ≥ +15 pts
+  frente al baseline **en cada una** de las dos mediciones "después" (no en su media), o la
+  que el dictamen justifique, siempre decidible con sí/no desde los `results.csv`;
+  (e) **ruido esperable** con 15 preguntas × runs × 3 proveedores frente a +15 pts, y si
+  las ejecuciones `AV` semanales de 1 run sirven como medida del ruido;
+  (f) **mismo instrumento**: qué debe ser idéntico entre baseline y "después" (set, runs,
+  ubicación, prompts de sistema, configuración de búsqueda) y qué se hace si un proveedor
+  cambia de modelo por defecto entre medias (D-5/RN-10: el probe debe usar el modelo por
+  defecto; el cambio se anota y el dictamen dice si la comparación sigue valiendo);
+  (g) **indicadores `AR` y `AG` con el probe**: traslada al probe las definiciones de
+  SPEC-007 CA-2 (g)–(j) ("aparecer con cierta regularidad", "aparecer alguna vez", solo
+  recuentos, posición en lista, cadenas como una marca) con la cadencia de CA-5 (cada 4
+  semanas, 1 run) y define su periodo "antes" y "después";
+  (h) el tratamiento en el probe de "Ártica" como adjetivo (F-SPEC-008-3).
+  Cada condición se mapea a un cambio en `batches/viveiro.json`, `analysis.py`, el README o
+  las instrucciones del ledger. El dictamen lo emite `sdd-metricas`; este CA no lo
+  prejuzga. *Evidencia*: dictamen con fecha anterior al baseline y tabla condición →
+  cambio en el ledger.
+- **CA-10 (margen para el criterio Go) [Agente avisa; Humano decide]**: Dado que la clínica
+  podría ya aparecer mucho en las preguntas de Viveiro, cuando el baseline oficial (CA-7)
+  deje el SoV ponderado del núcleo `AV` a menos de 15 pts de su techo (≥ 85 %), entonces,
+  antes de la primera acción, el humano decide y deja registrado en el ledger si se
+  mantiene el criterio, se mide sobre un subconjunto de `AV` (p. ej. preguntas de Lugo o
+  capilar) o se cambia el umbral; nunca después de ver el efecto. El aviso se calcula solo
+  con `AV` y solo con el probe (sale de SPEC-007 CA-8, enmienda 2026-09-29 (b)).
+  *Evidencia*: cifra del ponderado del núcleo en el `summary.md` privado; si aplica,
+  decisión fechada en el ledger anterior a la primera acción.
 
 ## Entidades y reglas afectadas
 - Dominio: Prompt, Prompt catalogue, Clinic, Provider, Probe / ProbeRun, Mention.
 - RN-01, RN-11 (ADR-002), RN-02–RN-04, RN-10.
 - D-4, D-5, D-6; No-negociables de coste y de "catálogos y configuración, no código".
 - ADR-001, ADR-002, ADR-003, ADR-004, ADR-005 (niveles separados; marcas del piloto fuera
-  del lote de Vigo). Depende de SPEC-007 CA-1/CA-8 (set congelado) y,
-  solo para CA-7, de SPEC-002 CA-1 (claves).
+  del lote de Vigo). Depende de SPEC-007 CA-1/CA-8 (set congelado; la congelación la
+  hace, como tarde, el propio baseline de CA-7) y, solo para CA-7: de SPEC-002 CA-1
+  (claves), de **SPEC-013 en `hecho`** (EPIC-FIX: `cited_urls` de Claude y respuesta cruda
+  del proveedor; sin ello el baseline oficial no tiene fuentes de Claude para SPEC-011 ni
+  cumple el No-negociable de guardar la respuesta en bruto) y del dictamen de CA-9. Ya
+  **no** depende de ninguna pasada manual de SPEC-007.
 
 ## Fuera de alcance
-- Google AI Overviews y Perplexity en el probe (siguen fuera; AI Overviews se mide a mano).
+- Google AI Overviews y Perplexity en el probe (siguen fuera; AI Overviews se mide a mano
+  en la calibración de SPEC-007, solo en `AV`).
+- La comparación app frente a probe (SPEC-007 CA-7) y el veredicto del Go (SPEC-012 CA-7):
+  aquí solo el baseline, el dictamen que fija cómo se mide y el aviso de techo.
 - Ejecución semanal y su análisis (SPEC-012).
 - Cualquier código en `src/`.
 - Ubicación del usuario distinta por nivel (Ferrol, Asturias…): todo el lote usa Viveiro,
@@ -171,3 +249,15 @@ código; además el resultado del lote de Vigo no puede cambiar.
   cirujanos de A Coruña y Vigo y Dorsia Lugo. Se verifican según CA-2 como las demás.
 - **Decisión a mirar**: la verificación de competidores vive en el ledger, no en una
   columna nueva de `brands.csv`, para no cambiar el formato del catálogo.
+- **Enmienda 2026-09-29 (b) — a mirar con lupa**: (1) **sin baseline del probe no hay
+  primera acción**: antes, si las claves llegaban tarde, el Go se medía a mano; ahora no hay
+  plan B, y el baseline espera a SPEC-013 (`hecho`). Si SPEC-013 se alarga, retrasa el
+  arranque del piloto. (2) La propuesta de estabilidad (dos mediciones "después" en semanas
+  distintas, cada una ≥ +15 pts) la confirma o cambia `sdd-metricas` en CA-9 **antes** del
+  baseline, no después de ver datos. (3) La regla de runs (`AV` 3 runs si `c ≤ 0,19 €`) se
+  mantiene; con el humo medido (`c` = 0,1142 €) salen 3 runs, y las dos mediciones
+  "después" usan los mismos 3 runs. (4) El cierre concentra coste: dos ejecuciones `AV` de
+  3 runs en el mismo mes; con el `c` medido, el mes de cierre se estima en ≈ 15 € (unas 129
+  preguntas × ejecución), dentro de los 20 €; CA-5 lo recalcula. (5) Claude sí entra en el
+  ponderado del Go con el probe (RN-04 normalizado), aunque la calibración manual solo
+  contraste ChatGPT y Gemini.

@@ -9,6 +9,13 @@ historial:
 ---
 # SPEC-011 — Diagnóstico por palancas y plan de acciones de Clínica Ártica
 
+> **Nota 2026-09-29 (b) (sdd-arquitecto) — nuevo instrumento.** El probe es ya el
+> instrumento de medición (EPIC-002, criterios 1 y 4): su baseline oficial (SPEC-008 CA-7)
+> es la fuente principal de dominios citados de ChatGPT, Gemini y Claude en los tres
+> niveles; la calibración manual de SPEC-007 aporta Google AI Overviews (solo `AV`) y las
+> `AM`. CA-1 ajustado en ese sentido. Pendiente de la revisión completa de esta spec:
+> diagnóstico por nivel priorizando el núcleo (F-SPEC-007-7). Sigue en `borrador`.
+
 > Spec **documental**. Traduce la foto "antes" (SPEC-007, y SPEC-008 si ya hay probe) y lo
 > aprendido en la reunión (SPEC-009) en gaps y acciones priorizadas. Las prioridades
 > concretas **dependen de la reunión** (qué tratamientos quieren llenar, qué contenido
@@ -33,8 +40,9 @@ promesas de resultado.
 - sdd-verificador. [Verificador]
 
 ## Criterios de aceptación
-- **CA-1 (fuentes citadas) [Agente]**: Dado las capturas de SPEC-007 (y el `results.csv` de
-  SPEC-008 CA-7 si existe), cuando se analicen, entonces hay una lista de dominios citados
+- **CA-1 (fuentes citadas) [Agente]**: Dado el `results.csv` del baseline oficial del probe
+  (SPEC-008 CA-7) y las capturas de la calibración "antes" de SPEC-007 (Google AI
+  Overviews), cuando se analicen, entonces hay una lista de dominios citados
   por las respuestas del set `AV`, ordenada por peso de citación (Σ pesos de proveedor,
   RN-04; AI Overviews aparte) con su tipo (directory, clinic_site, press,
   review_aggregator, other), y el top-10 marcado. *Evidencia*: el verificador recalcula el

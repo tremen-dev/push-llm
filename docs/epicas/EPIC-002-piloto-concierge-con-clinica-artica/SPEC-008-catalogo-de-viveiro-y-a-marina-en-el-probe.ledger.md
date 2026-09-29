@@ -190,6 +190,11 @@ Contraste: con el típico, las 132 preguntas × ejecución del lote Vigo (396 ll
   dos lotes) y se rehace este cálculo.
 
 ## Dependencias
+> **Actualizado por la enmienda 2026-09-29 (b) (sdd-arquitecto)**: el set ya no lo congela la
+> pasada 1 manual sino, como tarde, el propio baseline oficial (SPEC-007 CA-8), y CA-7 depende
+> además de **SPEC-013 en `hecho`** y del dictamen de CA-9. El texto de abajo es el previo;
+> lo reescribe el implementador (F-SPEC-008-9).
+
 - **Set congelado (SPEC-007 CA-8)**: CA-1 pide el set "congelado". El texto de los tres
   niveles es el definitivo y se ha copiado tal cual, pero la fecha de congelación es el
   inicio de la pasada 1 manual, que aún no ha empezado. Dependencia pendiente, **no
@@ -199,6 +204,11 @@ Contraste: con el típico, las 132 preguntas × ejecución del lote Vigo (396 ll
 - **Claves (SPEC-002 CA-1)**: solo para CA-7.
 
 ## Instrucciones para el humano (CA-7)
+> **Orden OBSOLETO desde la enmienda 2026-09-29 (b) (sdd-arquitecto).** El baseline ya **no**
+> va después de la pasada 1 manual: va después de SPEC-013 (`hecho`) y del dictamen de CA-9,
+> y antes de la primera acción; es el baseline oficial del criterio Go. No lances el baseline
+> hasta la re-aprobación de la spec y F-SPEC-008-9. El humo sigue valiendo.
+
 **Orden**: el humo puede lanzarse ya; el **baseline va después de la pasada 1 manual de
 SPEC-007** (su inicio congela el set, SPEC-007 CA-8) y **antes de la primera acción del
 piloto** (SPEC-012). `PUSHLLM_PRIVADO` ya es variable de usuario: no se fija aquí. Sin
@@ -326,12 +336,39 @@ Humo de Viveiro (informativo para CA-7): 9/9 `ok`, modelos = dictamen, Claude 0 
   titular). SPEC-011 lo usa en el diagnóstico; SPEC-012 lo revisa en cada informe con la
   sección "Observaciones para revisar a mano" del `summary.md` del probe y, en la medición
   manual, con una marca en `observaciones`. No es métrica ni se promete.
+- **F-SPEC-008-9** (→ sdd-implementador, **tras la re-aprobación humana** de la enmienda
+  2026-09-29 (b); sdd-arquitecto). El probe es el instrumento del Go. **No tocar nada de
+  esta lista antes de la re-aprobación.** Después, en este orden:
+  1. **Dictamen CA-9**: pedir a `sdd-metricas` el dictamen (a)–(h) y añadirlo a este ledger
+     con tabla condición → cambio, con fecha anterior al baseline.
+  2. **CA-5**: añadir al dictamen de `sdd-probe` el cálculo del mes del cierre (dos
+     mediciones "después" con los runs del baseline + `AV` semanal del resto del mes +
+     `AR`/`AG`) con el `c` medido (0,1142 €); si el dictamen CA-9 pide dos ejecuciones de
+     baseline, recalcular también el mes del baseline.
+  3. **Configuración y análisis** (`probe/batches/viveiro.json`, `probe/analysis.py`): lo
+     que pida CA-9 (runs del baseline y de las mediciones "después"; agregación de runs;
+     indicadores `AR`/`AG` con la cadencia de 4 semanas) y una línea de **aviso de techo** en
+     `summary.md` cuando el ponderado del núcleo sea ≥ 85 % (CA-10), solo con `AV`. Tests
+     en `probe/tests/test_pilot_batch.py`; el golden de Vigo (CA-4) no cambia.
+  4. **README** `probe/README.md` §"Batches": el comando de baseline con la forma de CA-9
+     (cierra también el finding 1 de la verificación intermedia).
+  5. **Este ledger**: reescribir "Dependencias" e "Instrucciones para el humano (CA-7)" con
+     el orden humo → SPEC-013 `hecho` → dictamen CA-9 → congelación del set (fecha en el
+     ledger de SPEC-007) → baseline oficial → aviso de techo (CA-10) → primera acción;
+     quitar "después de la pasada 1 manual"; añadir CA-9 y CA-10 a la matriz; actualizar
+     "Decisiones del humano" (Orden) y F-SPEC-008-5 (el baseline ya no espera a la manual).
+  La comparación app frente a probe no se implementa aquí: es SPEC-007 CA-7 (F-SPEC-007-8).
 - **F-SPEC-008-8** (verificación intermedia, 2026-09-29): findings 1–4 corregidos: runs por
   nivel y `--levels` (1), Clínica Villoria como miembro del lote piloto (2), alias punycode
   de Virxe da Mariña (3), `--out` vacío o raíz rechazado y comprobación de
   `PUSHLLM_PRIVADO` en los pasos del humano (4).
 
 ## Cómo retomar (handoff)
+- **2026-09-29 (b) (sdd-arquitecto)**: la spec vuelve a `borrador` por la enmienda "el probe
+  es el instrumento del Go": CA-7 pasa a baseline oficial (depende de SPEC-013 `hecho` y de
+  CA-9, ya no de la pasada manual), CA-9 (dictamen del Go con el probe) y CA-10 (techo)
+  nuevos, CA-5 amplía el cálculo al mes del cierre. CA-1 a CA-4, CA-6 y CA-8 siguen como
+  estaban (implementados y verificados en intermedia). Tras la re-aprobación: F-SPEC-008-9.
 - **2026-09-29 (sdd-implementador, tras la verificación intermedia)**: findings 1–4
   corregidos con tests; decisiones del humano (a) y (b) y el orden humo → pasada 1 →
   baseline registrados. Spec en `en-progreso`; falta CA-7 ([Humano]).

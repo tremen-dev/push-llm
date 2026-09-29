@@ -20,6 +20,17 @@ historial:
 > encuadre como "excepción a D-2" y sus prohibiciones de prospección y de "Asturias no es
 > mercado"; el lote de Vigo queda aparcado, intacto, como configuración por defecto.
 
+> **Nota 2026-09-29 (b) (sdd-arquitecto) — la manual pasa a calibración (EPIC-002,
+> criterios 1 y 4). No cambia ningún CA ni requiere re-aprobación.** Donde esta spec dice
+> "pasada 1 de SPEC-007", léase la **pasada "antes"** de calibración (SPEC-007 CA-5): 15
+> `AV` en ChatGPT, Gemini y Google más las `AM`; la hoja de hallazgo (SPEC-007 CA-10) sale
+> de ella igual que antes. El set `AR`/`AG` se congela, como tarde, con el primer baseline
+> del probe (SPEC-007 CA-8), no con la pasada manual. SPEC-007 CA-7 pide además que, si la
+> calibración dice que app y probe **no** coinciden, no se envíe la propuesta ni se enseñen
+> cifras del probe hasta que el humano decida el ajuste; si la propuesta sale antes de que
+> exista la calibración, no puede citar cifras del probe (pregunta abierta para el gate de
+> SPEC-007).
+
 > Spec **documental**. El agente redacta el kit de la reunión y la propuesta; el humano
 > ensaya, se reúne, envía la propuesta y cobra. Plantillas en
 > `docs/piloto-artica/reunion/` (castellano, D-8), sin datos de personas ni cifras de la
