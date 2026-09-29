@@ -7,7 +7,7 @@ epica: EPIC-002
 
 ## Resumen
 - Fase: <!-- refleja el estado de la spec; la fuente de verdad es el frontmatter de la spec -->
-- Rama: `ft/SPEC-007-calibracion` (desde `ft/SPEC-013-respuesta-cruda-y-citas-de-claude`; antes, `ft/SPEC-007-baseline-antes-manual-de-clinica-artica-desde-el-movil`)
+- Rama: `ft/SPEC-007-pasada-antes` (desde `main`, con la enmienda (c) ya fusionada, PR #7; pasada "antes" y su recuento); antes, `ft/SPEC-007-calibracion` (desde `ft/SPEC-013-respuesta-cruda-y-citas-de-claude`; antes, `ft/SPEC-007-baseline-antes-manual-de-clinica-artica-desde-el-movil`)
 
 ## Matriz de criterios de aceptación
 <!-- Escritores: sdd-implementador rellena Implementado y Test; sdd-verificador rellena Verif. y Estado. Nunca al revés. -->
@@ -19,16 +19,65 @@ epica: EPIC-002
 | CA-2 | Dictamen `sdd-metricas` 2026-09-29 (a)–(f), ampliación por niveles (g)–(j), segunda ampliación (k)–(n) (calibración) y **tercera ampliación (o)–(s) del 2026-09-29 (calibración por nivel)**, con tabla condición → cambio (filas k1–n, o1–s y reparto de 49), en este ledger; todas antes de la pasada "antes". Solo reglas y umbrales, sin datos de visibilidad (ADR-004 §2) | Checklist (a)–(s) en la sección del dictamen; cada condición mapeada a fichero y test (tabla condición → cambio); umbrales fijados en `test_baseline_count.py::test_thresholds_of_the_dictamen` (`AV` y `AR`) y `test_baseline_procedure.py` (§6-AV y §6-AR) |  | ❌ |
 | CA-3 | `docs/piloto-artica/protocolo-captura.md` (enmienda (c): 49 consultas; ChatGPT y Gemini `AR` → `AV` → `AM`, 22 cada una; Google solo `AR`, 5, nunca `AV`/`AM`/`AG`; las dos ejecuciones emparejadas —baseline oficial para `AV`, SPEC-008 CA-12 para `AR`— con 7 días cada una; corte entre apps; 60–90 + 20–25 min; mismas condiciones en las dos pasadas; Vilaboa y limitación de ubicación reescrita para `AR`; 1090 palabras); orden en `baseline_docs.py` (`CALIBRATION_BLOCKS`, `EXPECTED_LAYOUT`) | `docs/piloto-artica/tools/tests/test_baseline_protocol_template.py` (≤ 1100 palabras, sin cambiar el límite; campos; apps, sesión limpia, cuenta/plan, modelo, texto literal, una por conversación, orden, captura, enlace, mismas condiciones incl. SPEC-012, anti-contaminación, Vilaboa; (c): `test_protocol_calibration_covers`, `test_protocol_order_names_the_three_blocks_and_no_ag`, `test_protocol_first_block_is_ar`, `test_protocol_field_lists_the_three_levels`, `test_protocol_calibration_has_no_second_before_pass`; orden de las 49: `test_calibration_order_has_49_queries`, `test_calibration_order_blocks`, `test_calibration_order_has_no_ag_and_no_google_av_or_am`, `test_calibration_order_uses_the_frozen_texts`, `test_expected_layout_matches_the_order`) |  | ❌ |
 | CA-4 | `docs/piloto-artica/plantilla-captura.csv` (solo cabecera; sin cambios: el dictamen (k)–(n) no pide columna nueva, la ejecución emparejada va en el ledger y en `--probe`) | `test_baseline_protocol_template.py::test_template_is_header_only`, `::test_template_crosses_protocol_fields_and_ca4_extras`, `::test_protocol_documents_every_template_column` | | ❌ |
-| CA-5 | [Humano] pendiente: dentro de 7 días de las dos ejecuciones emparejadas (las dos del 2026-09-29: **como tarde el 2026-10-06**) y antes de la primera acción. Preparado (enmienda (c)): `$PUSHLLM_PRIVADO/piloto-artica/baseline/captura-antes-prerrellenada.csv` y `captura-despues-prerrellenada.csv` (49 filas cada uno, en el orden del protocolo: ChatGPT `AR`→`AV`→`AM`, Gemini igual, Google `AR`) y `preguntas-en-orden.txt` (22 + 22 + 5), generados con `baseline_docs.py --prefill`; los de la enmienda (b) renombrados `*-obsoleto-b` y los de 76 filas siguen como `*-obsoleto`. `count_baseline.py` rechaza una pasada sin el reparto de 49 filas | `test_baseline_protocol_template.py::test_prefill_rows_follow_the_template`, `::test_prefill_rejects_unknown_pass`, `::test_questions_in_order_text`, `::test_prefill_cli_writes_the_three_private_files`; `test_baseline_count.py::test_incomplete_or_extra_layout_fails_loudly`, `::test_google_av_or_am_rows_are_rejected`, `::test_ag_rows_are_rejected`; filas por nivel y app (30 / 15 / 4), capturas y campos los cuenta el verificador en privado |  | ❌ |
+| CA-5 | **[Humano] hecha el 2026-09-29** (23:31–23:59 hora local; ficheros guardados hasta el 2026-09-30 00:04): `$PUSHLLM_PRIVADO/piloto-artica/baseline/2026-09-29-antes/` con `captura-antes.csv` (**49 filas**, reparto 30 `AV` / 15 `AR` / 4 `AM`, todas válidas, todos los campos obligatorios rellenos; hora aproximada marcada `#hora-aprox` donde no se anotó), `chatgpt.md`, `gemini.md`, `google.md` (texto copiado en lugar de capturas), `desviaciones.txt` (D1–D9) y `alias-canonicos.csv`. Columnas de lectura rellenadas por sdd-implementador el 2026-09-30 (ver "Pasada 'antes' — registro"). Ejecuciones emparejadas: `AV` ↔ `…\piloto-artica\probe\` (2026-09-29), `AR` ↔ `…\piloto-artica\probe-AR-antes\` (2026-09-29): **las dos ventanas, dentro de 7 días** (distancia 0). Antes de la primera acción (SPEC-012 sin empezar). Preparado (enmienda (c)): `$PUSHLLM_PRIVADO/piloto-artica/baseline/captura-antes-prerrellenada.csv` y `captura-despues-prerrellenada.csv` (49 filas cada uno, en el orden del protocolo: ChatGPT `AR`→`AV`→`AM`, Gemini igual, Google `AR`) y `preguntas-en-orden.txt` (22 + 22 + 5), generados con `baseline_docs.py --prefill`; los de la enmienda (b) renombrados `*-obsoleto-b` y los de 76 filas siguen como `*-obsoleto`. `count_baseline.py` rechaza una pasada sin el reparto de 49 filas | `test_baseline_protocol_template.py::test_prefill_rows_follow_the_template`, `::test_prefill_rejects_unknown_pass`, `::test_questions_in_order_text`, `::test_prefill_cli_writes_the_three_private_files`; `test_baseline_count.py::test_incomplete_or_extra_layout_fails_loudly`, `::test_google_av_or_am_rows_are_rejected`, `::test_ag_rows_are_rejected`; filas por nivel y app (30 / 15 / 4), capturas y campos los cuenta el verificador en privado |  | ❌ |
 | CA-6 | Retirado (enmienda 2026-09-29 (b)): no hay pasada 2. `captura-p2-prerrellenada.csv` renombrado `captura-p2-prerrellenada-obsoleto.csv` | — | | ❌ |
-| CA-7 | Procedimiento `docs/piloto-artica/procedimiento-recuento.md` (enmienda (c): §2 por app y por nivel; §3 AI Overviews solo `AR`, "x de 5"; §6-AV y §6-AR con su emparejamiento, casillas, acuerdo o discrepancia gruesa y veredicto; §7 dos veredictos y su efecto en SPEC-009) y `docs/piloto-artica/tools/count_baseline.py` (`count` por nivel, `summarize_probe(level=…)`, `compare_av`, `compare_ar`, `render_calibration` con una sección y un veredicto por nivel, CLI `--probe-av`/`--probe-ar`; `read_probe` rechaza `results.csv` sin `searched_urls`). Probado de punta a punta con los `results.csv` privados y una pasada ficticia (salida en el scratchpad, sin datos en el repo). **Falta** `calibracion-antes.md` privado (necesita la pasada "antes") | `docs/piloto-artica/tools/tests/test_baseline_count.py` (reparto de 49; lo que ve el paciente por nivel; `AR` en recuentos y puestos en lista; cadenas; Google solo `AR`; dominios por nivel; observaciones; probe: mayoría/empate/mediana, unánime/repartida; `AV`: acuerdo, SoV, umbrales, ventana; `AR`: comparables, decisivas, discrepancias gruesas, 1 run no comparable, sin SoV, ventana propia; informe: `test_render_has_one_section_and_one_verdict_per_level`, `test_render_never_combines_levels`, `test_render_ar_sections_without_percentages`, `test_render_says_what_each_no_blocks`, CLI) y `test_baseline_procedure.py` (§6-AV, §6-AR, §3, §2) — fixtures ficticias |  | ❌ |
-| CA-8 | Regla de congelación en `prompts-baseline.md` ("Estado del set": como tarde al empezar el baseline oficial del probe, o fecha del humano; la pasada "antes" no empieza sin ella). Aviso de techo: ya no es de la manual (SPEC-008 CA-10); `count_baseline.py` no calcula ponderado. **Falta** la fecha de congelación | `test_baseline_prompts.py::test_intro_and_state_reflect_the_calibration`, `::test_freeze_no_longer_tied_to_pass_1`; `test_baseline_count.py::test_no_manual_weighted_figure` | | ❌ |
-| CA-9 | `$PUSHLLM_PRIVADO/piloto-artica/baseline/foto-tecnica-2026-09-29/` (`foto-tecnica.md`, `raw/robots.txt`, `raw/sitemap_index.xml` + 8 sitemaps, HTML y JSON-LD de portada, contacto y una página por línea, `raw/SHA256SUMS.txt`). **Falta**: Google Business Profile (lo mira el humano) y los dominios citados en la pasada "antes" y en el baseline del probe | Comprobación manual del verificador (fechas y URLs en `foto-tecnica.md`) | | ❌ |
-| CA-10 | **Pendiente** de la pasada "antes" (3 respuestas representativas del núcleo, ahora de ChatGPT o Gemini; cifras del probe de un nivel solo si CA-7 dice que ese nivel coincide). Comprobador de términos prohibidos listo: `python docs/piloto-artica/tools/baseline_docs.py "$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md"` | `docs/piloto-artica/tools/tests/test_baseline_frontier.py::test_forbidden_meeting_terms` |  | ❌ |
+| CA-7 | Procedimiento `docs/piloto-artica/procedimiento-recuento.md` (enmienda (c): §2 por app y por nivel; §3 AI Overviews solo `AR`, "x de 5"; §6-AV y §6-AR con su emparejamiento, casillas, acuerdo o discrepancia gruesa y veredicto; §7 dos veredictos y su efecto en SPEC-009) y `docs/piloto-artica/tools/count_baseline.py` (`count` por nivel, `summarize_probe(level=…)`, `compare_av`, `compare_ar`, `render_calibration` con una sección y un veredicto por nivel, CLI `--probe-av`/`--probe-ar`; `read_probe` rechaza `results.csv` sin `searched_urls`). Probado de punta a punta con los `results.csv` privados y una pasada ficticia (salida en el scratchpad, sin datos en el repo). **Hecho el 2026-09-30**: `$PUSHLLM_PRIVADO/piloto-artica/baseline/calibracion-antes.md` (copia idéntica en `baseline/2026-09-29-antes/`), generado con `count_baseline.py … --probe-av …\probe\results.csv --probe-ar …\probe-AR-antes\results.csv --aliases …\alias-canonicos.csv` más una §5 a mano (lectura de las casillas en desacuerdo, desviaciones, errores sobre la clínica). Veredictos: **"coinciden de forma razonable en `AV`": no**; **"sin discrepancia gruesa en `AR`": sí** (débil). Con los datos reales la herramienta no falló; dos arreglos de presentación con TDD (commit `c75021c`: `|` escapado en la tabla `AM`, puesto mediano sin ".0") | `docs/piloto-artica/tools/tests/test_baseline_count.py` (reparto de 49; lo que ve el paciente por nivel; `AR` en recuentos y puestos en lista; cadenas; Google solo `AR`; dominios por nivel; observaciones; probe: mayoría/empate/mediana, unánime/repartida; `AV`: acuerdo, SoV, umbrales, ventana; `AR`: comparables, decisivas, discrepancias gruesas, 1 run no comparable, sin SoV, ventana propia; informe: `test_render_has_one_section_and_one_verdict_per_level`, `test_render_never_combines_levels`, `test_render_ar_sections_without_percentages`, `test_render_says_what_each_no_blocks`, CLI) y `test_baseline_procedure.py` (§6-AV, §6-AR, §3, §2) — fixtures ficticias; datos reales: `test_render_escapes_pipes_in_brand_observations`, `test_probe_median_position_is_shown_without_a_trailing_zero`, `test_approximate_hours_keep_the_date_of_the_pass`. Recalculable por el verificador desde los ficheros privados |  | ❌ |
+| CA-8 | Regla de congelación en `prompts-baseline.md` ("Estado del set": como tarde al empezar el baseline oficial del probe, o fecha del humano; la pasada "antes" no empieza sin ella). Aviso de techo: ya no es de la manual (SPEC-008 CA-10); `count_baseline.py` no calcula ponderado. **Fecha de congelación: 2026-09-29T15:30:43Z, commit `60863af`** (inicio del baseline oficial del probe, SPEC-008 CA-7; `$PUSHLLM_PRIVADO/piloto-artica/congelacion-set.txt`), registrada aquí el 2026-09-30: anterior al baseline (primera fila 15:31:12Z), a la ejecución `AR` de SPEC-008 CA-12 (17:43Z), a la pasada "antes" (23:31 hora local) y a la primera acción (no ocurrida) | `test_baseline_prompts.py::test_intro_and_state_reflect_the_calibration`, `::test_freeze_no_longer_tied_to_pass_1`; `test_baseline_count.py::test_no_manual_weighted_figure` | | ❌ |
+| CA-9 | `$PUSHLLM_PRIVADO/piloto-artica/baseline/foto-tecnica-2026-09-29/` (`foto-tecnica.md`, `raw/robots.txt`, `raw/sitemap_index.xml` + 8 sitemaps, HTML y JSON-LD de portada, contacto y una página por línea, `raw/SHA256SUMS.txt`). **2026-09-30**: añadida `foto-tecnica.md` §6, tabla de presencia en los dominios citados en la pasada "antes" y en las dos ejecuciones del probe (estado de la §5 o de las propias respuestas; el resto, "sin verificar"). **Falta**: Google Business Profile (lo mira el humano; `capturas/gbp.png` no existe, desviación D2) y verificar las filas "sin verificar" (F-SPEC-007-15) | Comprobación manual del verificador (fechas y URLs en `foto-tecnica.md`) | | ❌ |
+| CA-10 | **Hecho el 2026-09-30**: `$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md` (una página, castellano, sin jerga): 3 respuestas literales del núcleo con app y fecha (2 de ChatGPT, 1 de Gemini), quién sale en su lugar, qué páginas citan, qué dicen de la clínica en `AM` y la frase de límites. **Sin ninguna cifra del probe** (`AV` no coincide; `AR` solo "sin discrepancia gruesa") y **sin la frase "ya sois la clínica que la IA recomienda en A Mariña"**; no menciona el nivel Galicia. `baseline_docs.py` sobre la hoja: OK (sin términos prohibidos). Comprobador de términos prohibidos: `python docs/piloto-artica/tools/baseline_docs.py "$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md"` | `docs/piloto-artica/tools/tests/test_baseline_frontier.py::test_forbidden_meeting_terms` |  | ❌ |
 | CA-11 | [Verificador]. Apoyo: `baseline_docs.py` sin argumentos revisa `docs/piloto-artica/` (emails, teléfonos, cifras junto a marcas); `--prefill` y `count_baseline.py --out` escriben solo en la ruta privada que se les da | `test_baseline_frontier.py::test_repo_docs_pass_the_frontier` y `::test_frontier_detects_email_phone_and_figure_next_to_brand` | | ❌ |
 
 Tests (2026-09-29, tras la enmienda (c)): `python -m pytest -q docs/piloto-artica/tools/tests` y
 `python -m pytest -q probe/tests` (214 en verde, 0 saltados) con `PUSHLLM_PRIVADO` en el entorno y el Python de `probe/.venv`; `docs/piloto-artica/tools/tests`: 279 en verde. `valida.mjs`: OK. `ruff check probe docs/piloto-artica/tools`: OK.
+Tests (2026-09-30, tras la pasada "antes"): `docs/piloto-artica/tools/tests` 282 en verde; `probe/tests` 239 en verde (con `PUSHLLM_PRIVADO`, Python de `probe/.venv`); `ruff`: OK; `valida.mjs`: OK.
+
+## Pasada "antes" — registro (CA-5, CA-7, CA-10; 2026-09-30, sdd-implementador)
+Solo veredictos y datos operativos (ADR-004 §2): las cifras están en privado.
+- **Pasada**: 2026-09-29, 23:31–23:59 hora local (Gemini, ChatGPT, Google), carpeta
+  `$PUSHLLM_PRIVADO/piloto-artica/baseline/2026-09-29-antes/`. **49 filas**, reparto del
+  protocolo (30 `AV` / 15 `AR` / 4 `AM`), **todas válidas**, todos los campos obligatorios
+  rellenos. Cuentas gratuitas (ChatGPT y Gemini con alias; Google sin sesión), municipio
+  Vilaboa.
+- **Ventanas**: `AV` ↔ baseline oficial (`…\piloto-artica\probe\`, 2026-09-29) y `AR` ↔
+  "antes" de `AR` (`…\piloto-artica\probe-AR-antes\`, 2026-09-29, 3 runs): **las dos dentro
+  de 7 días** (el mismo día). Set congelado antes (CA-8).
+- **Lectura** (columnas del agente): a mano, con RN-01/RN-06, cadenas como una marca
+  (`alias-canonicos.csv` en la carpeta de la pasada), sin directorios en la posición;
+  contrastada con `probe/matching.py` (lote Viveiro): misma detección de la clínica en las
+  49 filas. Ninguna fila `#artica-adjetivo` ni `#medica-sin-clinica`.
+- **Desviaciones** (detalle en `desviaciones.txt`, D1–D9):
+  D1 **PC con navegador web (Chrome), no el móvil**; la pasada "después" también será en PC
+  (decisión del humano). D2 **Sin capturas de imagen**: el texto copiado sustituye a la
+  captura (`fichero_captura` = `chatgpt.md#AR01`…); tampoco hay imágenes de Google, de las
+  `AM` ni de Maps; si hacen falta, se sacarán más adelante. D3 **Horas parciales**: el resto
+  lleva un intervalo deducido de las horas anotadas del mismo fichero y la marca
+  `#hora-aprox`; las fechas de modificación confirman el 2026-09-29. D4 **Orden de apps**:
+  Gemini antes que ChatGPT (dentro de cada app, `AR` → `AV` → `AM` respetado). D5 ubicación
+  del navegador: Vigo. D6 modelo de ChatGPT no anotado. D7 **Google: posible Modo IA y
+  posible hilo encadenado, a confirmar por el humano** (repreguntas al final, "Rich media
+  excluded", respuestas en gallego a preguntas en castellano, una que empieza como
+  continuación); filas válidas con marca `#google-posible-modo-ia`; Google no entra en
+  ningún veredicto. D8 modo de Gemini supuesto `temporal`. D9 Gemini sin fuentes copiadas.
+- **Veredictos (CA-7)**, informe `$PUSHLLM_PRIVADO/piloto-artica/baseline/calibracion-antes.md`:
+  - **`AV` — "coinciden de forma razonable": no.** Falla en ChatGPT (acuerdo y diferencia de
+    SoV bruto por encima de los umbrales de (l.2)); Gemini cumple los cuatro. Revisión, paso
+    (1) de (l.4), **hecho**: la lectura es correcta en los dos lados (respuestas pegadas y
+    `answer` del probe releídos), así que no es un error de lectura. Causas candidatas para
+    los pasos (2)–(4): pasada en PC con ubicación del navegador Vigo y modelo de ChatGPT sin
+    anotar (protocolo), modelo por defecto de la API frente al de la web gratuita
+    (configuración del probe) y ubicación Vigo/Vilaboa frente a Viveiro. **Falta la decisión
+    del humano para `AV`** (F-SPEC-007-13). Hasta entonces: ninguna cifra `AV` del probe a
+    la clínica y la frase "ya sois la clínica que la IA recomienda en A Mariña" de SPEC-009
+    **no se usa** (se revisa antes de enviar la propuesta). (D) no cambia (probe contra
+    probe).
+  - **`AR` — "sin discrepancia gruesa": sí** (veredicto débil). Según la decisión del gate,
+    basta para contar en SPEC-009 el objetivo de aparecer en el área de influencia **como
+    objetivo, no como dato ni garantía**. (C) no cambia.
+  - **Google** (solo `AR`): canal aparte, descrito en recuentos en el informe privado; sujeto
+    a la confirmación de D7.
+- **Hoja de hallazgo (CA-10)**: `$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md`,
+  sin cifras del probe y sin la frase comercial de `AV`.
+- **Foto técnica (CA-9)**: §6 añadida con los dominios citados; GBP pendiente del humano.
 
 ## Dictamen sdd-metricas (CA-2)
 - **Fecha**: 2026-09-29, antes de la pasada 1 (que no ha empezado).
@@ -799,7 +848,41 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
   cierre) y **SPEC-011** (ya no hay capturas de AI Overviews del núcleo; sí de `AR`). No se
   editan en esta rama para no chocar con la PR #5, que ya enmienda esas specs.
 
+- **F-SPEC-007-13** (→ humano, vía orquestador; **bloquea** CA-7 y la propuesta de SPEC-009):
+  el veredicto `AV` de la pasada "antes" es **no**. CA-7 exige, antes de enviar la propuesta
+  y antes de la primera acción, la causa identificada y la **decisión fechada del humano
+  para `AV`**: qué se ajusta (p. ej. repetir la pasada `AV` en las condiciones del protocolo,
+  con la ubicación y el modelo anotados; revisar la configuración del probe) o seguir con la
+  salvedad escrita. Paso (1) de la revisión hecho (lectura correcta); pasos (2)–(4)
+  pendientes de esa decisión. Mientras tanto, ninguna cifra `AV` del probe a la clínica y la
+  frase "ya sois la clínica que la IA recomienda en A Mariña" no se usa. Si se repite la
+  pasada, el informe da las dos (dictamen l.4).
+- **F-SPEC-007-14** (→ humano): confirmar si en Google se usó el **Modo IA** y si las
+  búsquedas compartieron conversación (desviación D7). Si fue así, la sección de Google del
+  informe describe el Modo IA y no el resumen de IA, y para comparar en el "después"
+  (SPEC-012) hay que repetir lo mismo o rehacer ahora las 5 búsquedas `AR` en incógnito, sin
+  Modo IA, una por pestaña. No toca ningún veredicto.
+- **F-SPEC-007-15** (→ humano / sdd-implementador; CA-9): falta la ficha de Google Business
+  Profile (búsqueda "medicina estética Viveiro" en Maps, `capturas/gbp.png`) y comprobar las
+  filas "sin verificar" de `foto-tecnica.md` §6. Las capturas de imagen de la pasada (D2),
+  si hacen falta para la reunión, también quedan pendientes.
+- **F-SPEC-007-16** (→ orquestador/arquitecto, informativo): la pasada "antes" se hizo en PC
+  y la "después" también se hará en PC (decisión del humano, D1); el protocolo y el título
+  de la spec dicen "desde el móvil". SPEC-012 CA-3 debería recoger "mismo dispositivo que la
+  pasada 'antes' (PC con navegador)". No se ha editado ninguna spec.
+
 ## Cómo retomar (handoff)
+- **2026-09-30 (sdd-implementador, pasada "antes")**: rama `ft/SPEC-007-pasada-antes`. Hecho:
+  CSV de la pasada rellenado (49 filas, válidas, dentro de las dos ventanas), desviaciones
+  D1–D9, `calibracion-antes.md` (**`AV`: no; `AR`: sí, débil**), hoja de hallazgo (CA-10) sin
+  cifras del probe ni frase comercial de `AV`, foto técnica §6 (CA-9), fecha de congelación
+  en CA-8, dos arreglos de presentación en `count_baseline.py` con TDD. La spec **sigue en
+  `en-progreso`**: faltan la decisión del humano sobre `AV` (F-SPEC-007-13, obligatoria por
+  CA-7 antes de la propuesta y de la primera acción), la confirmación de D7
+  (F-SPEC-007-14) y GBP (F-SPEC-007-15). La pasada "después" **no** es de esta spec (Fuera
+  de alcance: SPEC-012); la spec no prevé cierre por fases: pasa a `en-revision` cuando
+  estén cerradas F-SPEC-007-13 y F-SPEC-007-15. Abierta: P-6. Pendiente fuera de esta rama:
+  F-SPEC-007-12.
 - **2026-09-29 (c) (sdd-implementador)**: F-SPEC-007-11 hecho tras la re-aprobación. Spec en
   `en-progreso`: faltan las pasadas humanas. Hecho: tercera ampliación del dictamen (o)–(s)
   con su tabla; entradilla del set; protocolo (orden `AR` → `AV` → `AM` en ChatGPT y Gemini,
