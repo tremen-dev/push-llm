@@ -1,9 +1,11 @@
 ---
 id: ADR-009
 tipo: adr
-estado: borrador
+estado: aprobada
 historial:
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
+aprobada-por: Alberto Fojo
 ---
 # ADR-009: Criterio Go del piloto: crecer en el área de influencia y defender el núcleo; supera en parte ADR-005 y ADR-008
 
