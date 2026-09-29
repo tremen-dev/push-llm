@@ -1,9 +1,11 @@
 ---
 id: ADR-006
 tipo: adr
-estado: borrador
+estado: aprobada
 historial:
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
+aprobada-por: Alberto Fojo
 ---
 # ADR-006: Claves de API en un .env local ignorado por git
 
