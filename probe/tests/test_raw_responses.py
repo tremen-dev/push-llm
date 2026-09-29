@@ -167,7 +167,7 @@ def test_ca1a_one_line_per_call_with_the_row_keys(tmp_path):
         assert str(line["run"]) == row["run"]
         assert line["request"]["prompt"]
         assert line["responses"]
-    assert list(rows[0]) == run_probe.COLUMNS  # results.csv columns unchanged
+    assert list(rows[0]) == run_probe.COLUMNS  # SPEC-013 CA-3 (k): searched_urls at the end
 
 
 def test_ca1b_pause_turn_line_has_one_response_per_turn(tmp_path):

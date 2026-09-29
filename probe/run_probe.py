@@ -46,7 +46,9 @@ DOTENV_PATH = REPO_ROOT / DOTENV_NAME
 _DOTENV_LINE = re.compile(r"^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$")
 COLUMNS = ["timestamp_utc", "prompt_id", "specialty", "city", "provider", "run", "model",
            "status", "input_tokens", "output_tokens", "web_searches", "cost_eur",
-           "brands_mentioned", "directories_mentioned", "cited_urls", "answer"]
+           "brands_mentioned", "directories_mentioned", "cited_urls", "answer",
+           "searched_urls"]  # SPEC-013 CA-3 (k): consulted URLs, last so old readers keep working
+NEW_COLUMN = "searched_urls"
 RAW_NAME = "raw_responses.jsonl"  # SPEC-013 CA-1: private raw responses, next to results.csv
 
 
@@ -137,6 +139,11 @@ def _blank(v):
     return "" if v is None else v
 
 
+def results_header(path: Path) -> list[str]:
+    with open(path, newline="", encoding="utf-8") as f:
+        return next(csv.reader(f), [])
+
+
 def raw_line(row: dict, r) -> str:
     """One JSON line of raw_responses.jsonl for the call that produced `row`."""
     rec = {"timestamp_utc": row["timestamp_utc"], "prompt_id": row["prompt_id"],
@@ -209,6 +216,10 @@ def main(argv=None, env=None, ask=None, dotenv=None):
     if results.exists():
         if not args.resume:
             sys.exit(f"{results} exists: use --resume to continue it or --out for a new directory")
+        if NEW_COLUMN not in results_header(results):
+            sys.exit(f"refusing --resume: {results} predates SPEC-013 (no {NEW_COLUMN} column, "
+                     "and its Gemini cited_urls meant every grounding chunk, not the cited "
+                     "ones). Use --out with a new directory, or --analyze to recount it.")
         done = {(r["prompt_id"], r["provider"], r["run"]) for r in analysis.read_results(results)
                 if r.get("status") == "ok"}
     out.mkdir(parents=True, exist_ok=True)
@@ -240,6 +251,7 @@ def main(argv=None, env=None, ask=None, dotenv=None):
                         "cost_eur": f"{providers.cost_eur(r, name, cfg):.6f}",
                         "brands_mentioned": ";".join(clinics), "directories_mentioned": ";".join(dirs),
                         "cited_urls": ";".join(r.cited_urls), "answer": answer,
+                        "searched_urls": ";".join(r.searched_urls),
                     }
                     w.writerow(row)
                     fh.flush()

@@ -1,5 +1,24 @@
 """Fake SDK clients/responses shaped like the real ones. No network, no keys."""
+import json
+from pathlib import Path
 from types import SimpleNamespace as NS
+
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
+
+
+def ns(obj):
+    """dict/list JSON (a recorded or fixture SDK response) -> attribute objects like the SDK."""
+    if isinstance(obj, dict):
+        return NS(**{k: ns(v) for k, v in obj.items()})
+    if isinstance(obj, list):
+        return [ns(v) for v in obj]
+    return obj
+
+
+def load_fixture(name):
+    data = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
+    data.pop("_comment", None)
+    return ns(data)
 
 
 class FakeClaudeClient:
@@ -41,8 +60,14 @@ class FakeOpenAIClient:
 
 
 def openai_resp(text="", urls=(), refusal=None, inp=800, out=150, searches=1,
-                model="openai-served-1"):
-    output = [NS(type="web_search_call", action=NS(type="search")) for _ in range(searches)]
+                model="openai-served-1", sources=None):
+    """sources: one list per search of action.sources entries (dicts), or None (no sources)."""
+    output = []
+    for i in range(searches):
+        action = NS(type="search")
+        if sources is not None:
+            action.sources = [NS(**src) for src in sources[i]]
+        output.append(NS(type="web_search_call", action=action))
     if refusal:
         parts = [NS(type="refusal", refusal=refusal)]
     else:
@@ -68,9 +93,13 @@ class FakeGeminiClient:
 
 
 def gemini_resp(text="", urls=(), queries=("q1",), finish="STOP", block=None, inp=500,
-                out=100, thoughts=50, tool_inp=20, model="gemini-served-1"):
+                out=100, thoughts=50, tool_inp=20, model="gemini-served-1", supports=None):
+    """supports: list of groundingChunkIndices lists, one per grounding_support (None: none)."""
     gm = NS(web_search_queries=list(queries),
-            grounding_chunks=[NS(web=NS(uri=u, title="t")) for u in urls])
+            grounding_chunks=[NS(web=NS(uri=u, title="t")) for u in urls],
+            grounding_supports=None if supports is None else [
+                NS(segment=NS(start_index=0, end_index=1, text="x"),
+                   grounding_chunk_indices=list(idx)) for idx in supports])
     cand = NS(finish_reason=finish, grounding_metadata=gm)
     usage = NS(prompt_token_count=inp, candidates_token_count=out, thoughts_token_count=thoughts,
                tool_use_prompt_token_count=tool_inp)
