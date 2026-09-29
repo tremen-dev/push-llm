@@ -158,6 +158,125 @@ que el criterio Go exige estabilidad: la subida debe verse en las dos pasadas "d
   ponderar; si no hay resumen, la búsqueda es válida y sin clínica; (e) mismo instrumento
   también en los niveles. (c) y (f) siguen siendo solo del núcleo.
 
+### Segunda ampliación (k)–(n) — calibración, 2026-09-29, antes de la pasada "antes"
+- **Emisor**: sdd-implementador aplicando `.ai-context/skills/sdd-metricas.md` (advisory,
+  sin cambiar reglas). **Fecha**: 2026-09-29; la pasada "antes" no ha empezado y el
+  baseline oficial del probe (SPEC-008 CA-7) tampoco. **Fuentes**: las de los dictámenes
+  anteriores; SPEC-007 enmienda (b) (CA-2 k–n, CA-3, CA-5, CA-7, CA-8); SPEC-008 CA-7 y CA-9;
+  SPEC-013 y `docs/fundacion/dominio.md` (URLs citadas frente a consultadas);
+  `probe/run_probe.py` (`COLUMNS`), `probe/analysis.py` (SoV bruto sobre todas las
+  respuestas válidas de los runs) y `probe/batches/viveiro.json` (ubicación Viveiro,
+  `client_brand`); ADR-005 §4. Decisiones del humano del 2026-09-29 que se aplican tal cual:
+  49 consultas; AI Overviews solo en el núcleo; **orden: primero el baseline oficial del
+  probe y después la pasada "antes"**, emparejada con esa ejecución; P-5 cerrada; pasadas
+  desde Vilaboa.
+- **Ninguna regla de negocio cambia.** RN-01 (alias), RN-02 (SoV bruto sobre respuestas
+  válidas), RN-04 (AI Overviews aparte) y RN-06 (posición sin directorios) se aplican igual;
+  lo nuevo son reglas de lectura de la calibración, que no entran en ninguna cifra del Go.
+
+#### (k) Qué se compara y con qué — **correcto con condiciones**
+1. **Unidad**: la casilla pregunta `AV` × asistente presente en los dos instrumentos:
+   ChatGPT (app `chatgpt` ↔ proveedor `openai`) y Gemini (`gemini` ↔ `gemini`). 15 × 2 = 30
+   casillas. Claude (solo en el probe) y Google (solo en la manual) no tienen pareja.
+2. **Lado app**: la fila de la pasada que cuenta (cuenta gratuita, Vilaboa, respuesta
+   válida): "sale" si `artica_nombrada` = `si`, y `posicion_artica`.
+3. **Lado probe**: las filas de `results.csv` con `prompt_id` `AV…`, ese proveedor y
+   `status` = `ok`. Se usa la columna `brands_mentioned` tal como la escribió el probe (lo
+   reproduce cualquiera con una hoja de cálculo): la clínica "sale" en un run si
+   `Clínica Ártica` está en la lista; su posición es su puesto en esa lista (que ya excluye
+   directorios, RN-06).
+4. **Resumen de runs por casilla**: `k de n` runs válidos con la clínica. "Sale" si
+   k/n > 1/2; "no sale" si k/n < 1/2; **"empate"** si k/n = 1/2 (posible con 2 runs). La
+   posición del probe es la **mediana** de sus puestos en los runs donde sale.
+5. **Qué ejecución del probe**: la del baseline oficial de SPEC-008 CA-7 (decisión del
+   humano: primero el baseline, después la pasada "antes"). En el "después" (SPEC-012), la
+   medición "después" del probe más cercana en fechas. **Ventana máxima: 7 días** entre la
+   ejecución `AV` del probe (fechas de sus filas `AV`) y la pasada manual (fechas de sus
+   filas); si los dos intervalos se solapan, la distancia es 0. Motivo: una semana es la
+   cadencia de medición del piloto (SPEC-012) y deja margen para repartir la pasada en 2
+   días; más allá, un cambio de modelo o del índice de búsqueda se confunde con una
+   diferencia de instrumento. Si la pasada cae fuera de la ventana, la comparación se hace
+   igual pero el veredicto es "no" (hay que lanzar una ejecución `AV` del probe dentro de la
+   ventana, que no sustituye al baseline oficial).
+6. **Diferencias conocidas, sin corregir**: (i) la manual se hace desde **Vilaboa** y el
+   probe envía la ubicación **Viveiro**. Todas las `AV` nombran el lugar, así que en ChatGPT
+   y Gemini el efecto esperable es pequeño; no se corrige ni se estima aparte: la
+   calibración mide "instrumento + ubicación" juntos, que es justo lo que importa (lo que ve
+   un paciente que pregunta nombrando el sitio frente a lo que mide el probe). Si el
+   veredicto es "no", la ubicación es una de las causas a revisar (l.4). (ii) Modelo de la
+   app gratuita frente al modelo por defecto de la API (D-5, RN-10): se anota
+   `modelo_mostrado` y la columna `model` del probe; que no coincidan no invalida la
+   comparación (es la diferencia que la calibración mide), pero se escribe en el informe.
+   (iii) El probe solo reconoce las marcas de su catálogo y la manual anota todas las
+   clínicas nombradas: la posición del probe puede salir mejor. Por eso la posición no
+   entra en el veredicto (l.2).
+
+#### (l) "Coinciden de forma razonable" — **correcto con condiciones**
+1. **Acuerdo por asistente** = casillas comparables con el mismo resultado ÷ casillas
+   comparables. Comparable = fila válida en la app y ≥ 1 run válido en el probe. Mismo
+   resultado = "sale/sale" o "no sale/no sale"; un **empate** del probe cuenta como
+   acuerdo (con p = 1/2 cualquier respuesta de la app es compatible).
+2. **Veredicto "coinciden de forma razonable: sí"** si y solo si se cumplen **todas**:
+   (a) la pasada está dentro de la ventana de 7 días (k.5); (b) en ChatGPT **y** en Gemini
+   hay **≥ 12 casillas comparables** (de 15); (c) en cada uno el **acuerdo es ≥ 70 %**
+   (con 15 comparables, ≥ 11); y (d) en cada uno la **diferencia de SoV bruto** entre app
+   (menciones ÷ respuestas válidas `AV` de la pasada) y probe (runs con la clínica ÷ runs
+   válidos `AV`, como `probe/analysis.py`) es **≤ 20 pts** en valor absoluto. Si falla
+   una, "no". La **posición** se informa (casillas donde sale en los dos; "parecida" si la
+   diferencia es ≤ 2 puestos), pero no decide.
+3. **Ruido esperable con 15 casillas**: si los dos instrumentos midieran lo mismo, la app
+   (una respuesta) difiere de la mayoría de runs solo por azar; con casillas casi siempre
+   "sale" o casi siempre "no sale" el acuerdo esperable es ≥ 85 %, y con casillas
+   repartidas, en torno al 75 %. El error típico de un acuerdo del 80 % con 15 casillas es
+   ≈ 10 pts: el umbral del 70 % queda ≈ 1 error típico por debajo, y 11 de 15 no se
+   alcanza por suerte si los instrumentos no se parecen. Para el SoV bruto, el error típico
+   de la diferencia app (15 respuestas) − probe (≈ 45 runs) llega a ≈ 15 pts con un SoV del
+   50 % y ≈ 12 pts con uno del 20 %: 20 pts es ≈ 1,3–1,7 errores típicos. Son umbrales de
+   **alarma**, no una prueba estadística: con esta muestra no se puede afirmar igualdad,
+   solo detectar una diferencia gruesa.
+4. **Si no coinciden**: se revisa, en este orden, y se anota en el ledger qué se ha
+   encontrado: (1) **lectura**: releer las capturas y los `answer` del probe de las casillas
+   en desacuerdo (alias o variante no reconocida, adjetivo, médica sin clínica); (2)
+   **protocolo manual**: desviaciones, cuenta, modo, modelo mostrado, fechas; (3)
+   **configuración del probe**: modelo por defecto (RN-10), búsqueda web activa, ubicación
+   Viveiro; (4) **ubicación Vilaboa/Viveiro** como causa posible, sin corregirla. Hasta que
+   el ledger tenga la causa y la **decisión del humano** (qué se ajusta, o seguir con la
+   salvedad escrita), **no se enseña a la clínica ninguna cifra del probe** ni se envía la
+   propuesta de SPEC-009 (CA-7). Si el humano decide repetir la pasada, la nueva se empareja
+   con una ejecución `AV` del probe dentro de la ventana y el informe da **las dos**, sin
+   elegir la que más convenga.
+
+#### (m) Google AI Overviews — **correcto con condiciones**
+1. Canal aparte (RN-04, D-6): **fuera del acuerdo, del veredicto y del criterio Go**. Solo
+   en el núcleo `AV` (decisión del humano: `AR`/`AG` no se miden en Google).
+2. Con 15 búsquedas y una pasada se dan **recuentos "x de n"**, sin porcentajes: búsquedas
+   válidas; cuántas tuvieron resumen de IA; en cuántas sale la clínica **dentro** del
+   resumen, sobre las válidas y sobre las que tuvieron resumen. Una búsqueda mueve 6,7
+   pts: un porcentaje daría una precisión que no hay.
+3. **Sin resumen**: la búsqueda es válida, cuenta en el denominador de "sobre las
+   válidas" y sin la clínica (lo que ve el paciente: por esta vía no la ve). El paquete de
+   mapas y los resultados normales no cuentan; pueden ir en `observaciones`.
+4. **Antes/después (SPEC-012)**: se informa "x de n antes → y de n después", junto con
+   cuántas búsquedas tuvieron resumen en cada pasada (Google puede mostrar más o menos
+   resúmenes por su cuenta). Solo se describe como **cambio claro** si la diferencia es de
+   **≥ 5 búsquedas** con la clínica sobre las mismas 15 (margen del 95 % de una diferencia
+   de dos proporciones con n = 15 ≈ ± 33 pts ≈ 5 búsquedas); si no, "dentro de lo que varía
+   de un día a otro". Sin objetivo ni promesa. La ubicación Vilaboa pesa más aquí que en
+   ChatGPT y Gemini: se escribe como limitación.
+
+#### (n) Qué queda del dictamen anterior
+| Punto | Estado | Detalle |
+|---|---|---|
+| (a) alias y reglas de mención | **Sigue** | Igual en la lectura de la manual. P-1 y P-2 siguen. |
+| (b) dos pasadas, 3–10 días, ± 2 h | **Sustituido** | Una pasada "antes" y una "después" (SPEC-012), cada una emparejada con una ejecución `AV` del probe dentro de la ventana de 7 días (k.5). La separación 3–10 días queda sin objeto. |
+| (c) SoV bruto, válida/excluida, cuentas gratuitas, Claude observación | **Sigue** | SoV bruto por app de la pasada ("lo que ve el paciente" y término de (l.2 d)). |
+| (c) SoV ponderado manual | **Sin objeto** | **No se calcula.** Evita que una cifra manual se lea como Go. El ponderado solo existe en el probe (SPEC-008 CA-9 b). |
+| (d) AI Overviews aparte | **Sustituido por (m)** | Mismo canal aparte; ahora recuentos "x de n" sin porcentajes y regla de lectura del antes/después. |
+| (e) mismo instrumento | **Sigue, reforzado** | El Go es probe contra probe (SPEC-008 CA-7/CA-9). Ninguna cifra manual se resta, suma ni promedia con una del probe; la manual antes/después es descriptiva. |
+| (f) ruido frente a +15 pts | **Sin objeto en la manual** | El ruido del Go se re-evalúa con el probe en SPEC-008 CA-9 (e). El ruido de la calibración está en (l.3). |
+| (g)–(j) niveles `AR`/`AG` | **Sin objeto en la manual** | `AR` y `AG` ya no se preguntan a mano; sus definiciones se trasladan al probe en SPEC-008 CA-9 (g). |
+| "b/d en niveles" | **Sin objeto** | Ya no hay bloques `AR`/`AG` en la pasada. |
+
 ### Tabla condición → cambio
 | Condición | Cambio | Dónde |
 |---|---|---|
@@ -179,6 +298,16 @@ que el criterio Go exige estabilidad: la subida debe verse en las dos pasadas "d
 | i cadenas y posición | Cadena = una marca en `alias-canonicos.csv`; puestos en lista | `procedimiento-recuento.md` §7; tests `test_chains_are_one_brand_in_levels`, `test_level_positions_are_listed_not_averaged` |
 | j solo recuentos | Secciones de nivel sin porcentajes | `count_baseline.py` (`render`); test `test_render_levels_as_counts_without_percentages` |
 | b/d en niveles | Una sola pasada con los tres niveles; Google dentro de cada nivel | `protocolo-captura.md` ("Antes de empezar" 4, "Cómo preguntar" 1); test `test_protocol_three_levels_block_order` |
+| k1–k4 casilla, lado app, lado probe, resumen de runs | `summarize_probe` (mayoría k/n, empate, mediana de puestos) y `compare_with_probe` | `procedimiento-recuento.md` §6; `count_baseline.py`; tests `test_probe_cell_*`, `test_probe_position_*`, `test_agreement_*` |
+| k5 ejecución emparejada y ventana de 7 días | Baseline del probe primero; ventana comprobada por la herramienta | `protocolo-captura.md` "Antes de empezar" 1; `procedimiento-recuento.md` §6.1; `count_baseline.py` (`MAX_WINDOW_DAYS`); tests `test_window_*`; "Instrucciones para el humano" |
+| k5 `results.csv` posterior a SPEC-013 | La herramienta rechaza un `results.csv` sin `searched_urls` | `count_baseline.py` (`read_probe`); test `test_read_probe_refuses_results_without_searched_urls` |
+| k6 Vilaboa/Viveiro, modelo, catálogo | Limitaciones escritas; modelos en el informe | `protocolo-captura.md` "Antes de empezar" 2; `procedimiento-recuento.md` §6.4; render (`test_render_calibration_*`) |
+| l1–l2 acuerdo y veredicto | Umbrales 12 comparables, 70 %, 20 pts; posición informativa (≤ 2) | `procedimiento-recuento.md` §6.2–6.3; `count_baseline.py` (`MIN_COMPARABLE`, `MIN_AGREEMENT`, `MAX_SOV_GAP`, `POSITION_TOLERANCE`); tests `test_verdict_*` |
+| l4 si no coinciden | Orden de revisión; sin cifras del probe a la clínica ni propuesta hasta decisión | `procedimiento-recuento.md` §6.5; texto del informe (`test_render_calibration_says_what_to_do_if_no`) |
+| m AI Overviews | Recuentos "x de n" sin porcentajes; lectura antes/después (≥ 5 búsquedas) | `procedimiento-recuento.md` §3; `count_baseline.py` (`AIO_CLEAR_CHANGE`); tests `test_google_*`, `test_render_google_as_counts_without_percentages` |
+| n (b) una pasada | Protocolo de 49 consultas, `pasada` = `antes`/`despues`; herramienta de una pasada | `protocolo-captura.md`; `count_baseline.py` (`_check`); tests `test_protocol_calibration_*`, `test_mixed_passes_fail_loudly` |
+| n (c) sin ponderado manual | La herramienta no calcula ponderado | `count_baseline.py`; test `test_no_manual_weighted_figure` |
+| n (f), (g)–(j), "b/d en niveles" | **Sin objeto en la manual** (filas `f`, `g`, `i`, `j` y "b/d en niveles" de arriba quedan históricas; `b` sustituida; `h` sigue en el probe) | Retirados `count_level`, estabilidad p1/p2 y sus tests; `test_level_rows_are_ignored` |
 
 ### Tratamientos del nivel AG (CA-1)
 Comprobado en clinicaartica.es el **2026-09-29** (HTTP 200; título y H1 de cada página):
