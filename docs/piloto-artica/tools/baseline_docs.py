@@ -4,6 +4,9 @@ Pure functions over text, used by the tests and runnable by the verifier:
 
     python docs/piloto-artica/tools/baseline_docs.py            # repo documents
     python docs/piloto-artica/tools/baseline_docs.py FILE.md    # + forbidden terms of CA-10
+    python docs/piloto-artica/tools/baseline_docs.py --prefill "$PUSHLLM_PRIVADO/piloto-artica/baseline"
+        # CA-5: pre-filled CSVs of the "antes" and "despues" passes (49 rows) and the
+        # questions in protocol order; private files, never inside the repo
 
 Normalisation is the one of the probe (probe/matching.py, RN-01) so that "Ártica" and
 "Artica" are the same string here and there.
@@ -180,6 +183,70 @@ def render_coverage(cov: dict) -> str:
             f"Foz o Ribadeo, {cov['lugo']} nombran Lugo; {cov['gl']} en gallego.")
 
 
+# ---------------------------------------------------------------- CA-3/CA-5 calibration order
+# Amendment 2026-09-29 (b): the manual pass is a calibration: AV in ChatGPT, Gemini and
+# Google, plus AM in ChatGPT and Gemini (never in Google). AR/AG are measured by the probe.
+CALIBRATION_BLOCKS = (("chatgpt", ("AV", "AM")), ("gemini", ("AV", "AM")), ("google", ("AV",)))
+CALIBRATION_QUERIES = 49
+CALIBRATION_PASSES = ("antes", "despues")
+APP_TITLES = {"chatgpt": "ChatGPT (chat temporal)", "gemini": "Gemini", "google":
+              "Google (incógnito, resumen de IA)"}
+BLOCK_TITLES = {"AV": "Bloque AV (núcleo)", "AM": "Bloque AM (marca)"}
+PREFILL_MUNICIPIO = "Vilaboa"
+
+
+def calibration_order(doc: dict) -> list[dict]:
+    """The 49 queries of one calibration pass, in the protocol order."""
+    by_prefix = {"AV": doc["measurement"], "AM": doc["brand"]}
+    return [{"app": app, "block": block, "id": q["id"], "text": q["text"],
+             "language": q["language"]}
+            for app, blocks in CALIBRATION_BLOCKS for block in blocks for q in by_prefix[block]]
+
+
+def prefill_rows(order: list[dict], pasada: str) -> list[dict]:
+    """Rows of the capture template pre-filled with what is known before asking."""
+    if pasada not in CALIBRATION_PASSES:
+        raise ValueError(f"pasada debe ser {' o '.join(CALIBRATION_PASSES)}: {pasada!r}")
+    rows = []
+    for q in order:
+        r = {c: "" for c in TEMPLATE_COLUMNS}
+        r.update(pasada=pasada, id_pregunta=q["id"], app=q["app"], municipio=PREFILL_MUNICIPIO,
+                 idioma=q["language"], resumen_ia="" if q["app"] == "google" else "n-a")
+        rows.append(r)
+    return rows
+
+
+def questions_in_order(order: list[dict]) -> str:
+    out = [f"Pasada de calibración: {len(order)} consultas (solo AV y AM). Municipio: "
+           f"{PREFILL_MUNICIPIO}. Si repartes en 2 días, corta solo entre apps."]
+    for app, blocks in CALIBRATION_BLOCKS:
+        qs = [q for q in order if q["app"] == app]
+        out += ["", f"==== {APP_TITLES[app]}: {len(qs)} preguntas ===="]
+        for block in blocks:
+            out.append(f"-- {BLOCK_TITLES[block]} --")
+            out += [f"{q['id']}  {q['text']}" for q in qs if q["block"] == block]
+    return "\n".join(out) + "\n"
+
+
+def write_prefill(dest: Path, prompts_md: Path | None = None) -> list[Path]:
+    """Private files of CA-5 (never inside the repo): two pre-filled CSVs and the list."""
+    doc = parse_prompts_doc((prompts_md or PILOT_DIR / "prompts-baseline.md")
+                            .read_text(encoding="utf-8"))
+    order = calibration_order(doc)
+    dest.mkdir(parents=True, exist_ok=True)
+    written = []
+    for pasada in CALIBRATION_PASSES:
+        p = dest / f"captura-{pasada}-prerrellenada.csv"
+        with open(p, "w", encoding="utf-8-sig", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=TEMPLATE_COLUMNS)
+            w.writeheader()
+            w.writerows(prefill_rows(order, pasada))
+        written.append(p)
+    p = dest / "preguntas-en-orden.txt"
+    p.write_text(questions_in_order(order), encoding="utf-8")
+    return written + [p]
+
+
 # ---------------------------------------------------------------- CA-4 template
 def template_header(csv_text: str) -> tuple[list[str], int]:
     """Header of the template and number of non-empty lines in the file."""
@@ -223,6 +290,10 @@ def frontier_issues(text: str, names: list[str]) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
+    if argv[:1] == ["--prefill"]:
+        for p in write_prefill(Path(argv[1])):
+            print(p)
+        return 0
     names = brand_names()
     bad = 0
     for p in sorted(PILOT_DIR.glob("*.*")):

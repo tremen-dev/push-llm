@@ -172,3 +172,22 @@ def test_every_level_question_names_a_place(doc):
 
 def test_mondonedo_is_a_mariña_so_never_regional():
     assert bd.names_any("Vivo en Mondoñedo", bd.MARIÑA_MUNICIPALITIES)
+
+
+# ------------------------------------------------ amendment 2026-09-29 (b): calibration
+def _flat(md: str) -> str:
+    return re.sub(r"\s+", " ", md.replace("*", "").replace("`", "")).lower()
+
+
+@pytest.mark.parametrize("snippet", [
+    "la medición a mano mide solo av y am",          # intro: manual = calibration
+    "el probe mide av, ar y ag",
+    "baseline oficial del probe",                    # CA-8: freeze at the latest there
+    "fecha que fije el humano en el ledger",
+])
+def test_intro_and_state_reflect_the_calibration(snippet):
+    assert snippet in _flat(PROMPTS_MD.read_text(encoding="utf-8"))
+
+
+def test_freeze_no_longer_tied_to_pass_1():
+    assert "fecha de inicio de la pasada 1" not in _flat(PROMPTS_MD.read_text(encoding="utf-8"))

@@ -1,8 +1,10 @@
 # Set de preguntas del baseline — piloto Clínica Ártica (SPEC-007 CA-1)
 
-> Preguntas de paciente para medir, desde el móvil, qué recomiendan ChatGPT, Gemini y el
-> resumen de IA de Google sobre medicina estética, en **tres niveles geográficos**
-> (ADR-005), cada uno medido e informado por separado:
+> Preguntas de paciente sobre medicina estética, comunes a los dos instrumentos del piloto.
+> **El probe mide `AV`, `AR` y `AG`** (SPEC-008) y es el instrumento del criterio Go.
+> **La medición a mano mide solo `AV` y `AM`**: es la calibración de SPEC-007 (ChatGPT,
+> Gemini y el resumen de IA de Google, desde el móvil; `AM` nunca en Google). Hay **tres niveles
+> geográficos** (ADR-005), cada uno medido e informado por separado:
 >
 > - **Núcleo `AV`** — Viveiro y A Mariña (más las preguntas del set que nombran también
 >   Lugo o Galicia junto a ellas). **Es el único nivel que cuenta para el criterio Go.**
@@ -28,10 +30,12 @@
 
 - Publicado: 2026-09-29 (`AV`, `AM`); niveles `AR` y `AG` añadidos el 2026-09-29 tras la
   enmienda de SPEC-007 (ADR-005). `AV01`–`AV15` no cambian.
-- **Congelación** (SPEC-007 CA-8): los tres niveles (`AV`, `AR`, `AG`) quedan congelados en
-  la fecha de inicio de la pasada 1, que se anota en el ledger de SPEC-007. Desde ese
-  momento no se cambia ni una coma; una pregunta nueva lleva un id nuevo, se informa aparte
-  y no cuenta para el criterio Go. `AR` y `AG` nunca cuentan para el criterio Go.
+- **Congelación** (SPEC-007 CA-8): los tres niveles (`AV`, `AR`, `AG`) quedan congelados,
+  como tarde, cuando empieza la primera ejecución del **baseline oficial del probe**
+  (SPEC-008 CA-7), o antes, en la fecha que fije el humano en el ledger de SPEC-007. La
+  fecha se anota en ese ledger. Desde ese momento no se cambia ni una coma; una pregunta
+  nueva lleva un id nuevo, se informa aparte y no cuenta para el criterio Go. `AR` y `AG`
+  nunca cuentan para el criterio Go. La pasada "antes" a mano no empieza sin congelación.
 
 ## Preguntas de medición (cuentan para el SoV)
 

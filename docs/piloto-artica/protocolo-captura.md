@@ -1,27 +1,38 @@
-# Protocolo de captura desde el móvil — piloto Clínica Ártica
+# Protocolo de captura desde el móvil — calibración del piloto Clínica Ártica
 
-> SPEC-007 CA-3. Para imprimir y seguir al pie de la letra. Preguntas: `prompts-baseline.md`.
-> Registro: copia de `plantilla-captura.csv`. Todo lo que generes (capturas, CSV, notas)
-> va a `$PUSHLLM_PRIVADO/piloto-artica/baseline/AAAA-MM-DD-pN/`, **nunca al repo**.
+> SPEC-007 CA-3. Para imprimir y seguir al pie de la letra. Preguntas: `prompts-baseline.md`
+> (para copiar: `preguntas-en-orden.txt`, privado). Registro: copia del CSV
+> prerrellenado de la pasada (o de `plantilla-captura.csv`). Todo lo que generes (capturas,
+> CSV, notas) va a `$PUSHLLM_PRIVADO/piloto-artica/baseline/AAAA-MM-DD-antes/` (o
+> `-despues/`), **nunca al repo**.
 
-## Antes de empezar (una vez por pasada)
-1. Crea la carpeta de la pasada (fecha del primer día y `p1` o `p2`) con una copia de la
-   plantilla y un fichero `desviaciones.txt` vacío (**registro de desviaciones**).
-2. Apunta la **cabecera de sesión**: municipio, si la ubicación del móvil está activada y
+La medición del piloto la hace el probe. Esta pasada a mano **calibra**: comprueba que lo
+que ve el paciente en la app se parece a lo que mide el probe, mide el resumen de IA de
+Google (que el probe no ve) y da capturas reales para la reunión. Hay **una pasada
+"antes"** (`pasada` = `antes`) y **una "después"** (`despues`, al cierre, SPEC-012).
+
+## Antes de empezar
+1. **Orden**: primero se lanza el **baseline oficial del probe** (SPEC-008 CA-7), que
+   congela el set; después haces esta pasada, como mucho **7 días** después de esa ejecución
+   (ventana del dictamen de CA-2 (k)). En el "después", dentro de los 7 días de la medición
+   "después" del probe. Fuera de la ventana, la pasada no calibra.
+2. Crea la carpeta de la pasada (fecha del primer día) con la copia del CSV, un fichero
+   `desviaciones.txt` vacío (**registro de desviaciones**) y una carpeta `capturas/`.
+3. Apunta la **cabecera de sesión**: municipio, si la ubicación del móvil está activada y
    la cuenta que usas en cada app (un alias corto, nunca el email). **Municipio fijo:
    Vilaboa**, para todas las pasadas (antes y después). La ubicación del móvil, activada o
    no, queda con un ajuste idéntico en todas las pasadas. Nada de VPN ni de simular el GPS.
-   Estas condiciones (cuenta, plan, modo, móvil, municipio) son **las mismas en todas las
-   pasadas, incluidas las de SPEC-012**; lo que no puedas repetir, a desviaciones.
-   *Limitación*: se pregunta por Viveiro desde otro sitio. Afecta sobre todo a Google (sus
-   resúmenes de IA y Maps pesan más la ubicación del dispositivo); en ChatGPT y Gemini
-   afecta poco, porque la pregunta ya nombra el lugar.
-3. Usa siempre la **cuenta gratuita** de cada app (lo que ve la mayoría de pacientes). Una
+   Estas condiciones (cuenta, plan, modo, móvil, municipio) son **las mismas en las dos
+   pasadas** (mismas en todas las pasadas, incluida la de SPEC-012); lo que no
+   puedas repetir, a desviaciones.
+   *Limitación*: se pregunta por Viveiro desde otro sitio, y el probe envía la ubicación
+   Viveiro. Afecta sobre todo a Google (sus resúmenes de IA y Maps pesan más la ubicación
+   del dispositivo); en ChatGPT y Gemini afecta poco, porque la pregunta ya nombra el lugar.
+4. Usa siempre la **cuenta gratuita** de cada app (lo que ve la mayoría de pacientes). Una
    cuenta de pago solo como observación aparte, con `plan_cuenta` = `pago`: no cuenta.
-4. Es **una sola pasada con los tres niveles** del set (`AV`, `AR`, `AG`) y las `AM`:
-   76 consultas, 95–140 min más 25–30 min de CSV y capturas. Si no te da, termina al día
-   siguiente (máximo 2 días seguidos): el corte cae entre bloques (nunca dentro de un
-   bloque app × nivel), se anota en desviaciones y la pasada 2 se corta igual.
+5. Son **49 consultas**: 60–90 min de preguntas más 20–25 min de CSV y capturas. Si no te
+   da, termina al día siguiente (máximo 2 días seguidos): el corte cae entre apps (nunca
+   dentro de una) y se anota en desviaciones.
 
 ## Cómo abrir una sesión limpia
 - **ChatGPT** (app): sesión iniciada con la cuenta gratuita. Ajustes → Personalización:
@@ -39,9 +50,9 @@
   (p. ej. el nombre del modelo o "Rápido"); si no enseña nada, `no se muestra`.
 
 ## Cómo preguntar
-1. Orden por app, igual en todas las pasadas: en ChatGPT, bloques AV, AR, AG y AM; lo
-   mismo en Gemini; por último Google con AV, AR y AG (nunca AM). Dentro de cada bloque,
-   en el **orden del set**.
+1. Orden por app, igual en las dos pasadas: en ChatGPT, primero el bloque AV y después las
+   AM (17 consultas); lo mismo en Gemini (17); por último, en Google solo el bloque AV (15,
+   nunca AM). Dentro de cada bloque, en el **orden del set**.
 2. Copia y pega el **texto literal** de la pregunta. **Una pregunta por conversación
    nueva**. No repreguntes ni pidas aclaraciones.
 3. Espera a que la respuesta termine del todo.
@@ -65,8 +76,8 @@
 ## Campos por fila (CSV, una fila por pregunta × app)
 Obligatorios (los rellenas tú; se pueden copiar de la cabecera de sesión):
 - `fecha_hora_local`: AAAA-MM-DD HH:MM (sirve la hora de la captura).
-- `pasada`: `p1` o `p2` (en el cierre, lo que diga SPEC-012).
-- `id_pregunta`: `AV01`…, `AR01`…, `AG01`…, `AM01`….
+- `pasada`: `antes` o `despues`.
+- `id_pregunta`: `AV01`…`AV15`, `AM01`, `AM02`.
 - `app`: `chatgpt`, `gemini`, `google` (o `claude` si se usa como observación).
 - `modo`: `temporal`, `normal` o `incognito`.
 - `sesion_iniciada`: `si` / `no`.
@@ -94,12 +105,8 @@ Los rellena el agente al hacer el recuento, leyendo tus capturas (tú revisas un
   sale.
 - `dominios_citados`: dominios de las fuentes, separados por `;`.
 
-## Pasada 2 y siguientes
-Igual que la 1: mismas apps, cuentas, modos, móvil y municipio (Vilaboa), a una hora parecida
-(± 2 h). La pasada 2 va entre 3 y 10 días después de la 1 y **antes de la primera acción**
-del piloto. Claude (cuenta gratuita) es opcional y solo observación: si lo usas en una
-pasada, úsalo en todas.
-
-**Opcional**: si estás en Viveiro, puedes repetir solo el bloque de Google y Maps como
-**observación de sensibilidad a la ubicación**, con `municipio` = `Viveiro`, en una carpeta
-aparte (`AAAA-MM-DD-pN-sensibilidad/`). Queda fuera del cómputo.
+## Opcional
+Claude (cuenta gratuita) solo como observación: si lo usas en una pasada, úsalo en las dos.
+Si estás en Viveiro, puedes repetir solo el bloque de Google y Maps como **observación de
+sensibilidad a la ubicación**, con `municipio` = `Viveiro`, en una carpeta aparte
+(`AAAA-MM-DD-antes-sensibilidad/`). Queda fuera del cómputo.
