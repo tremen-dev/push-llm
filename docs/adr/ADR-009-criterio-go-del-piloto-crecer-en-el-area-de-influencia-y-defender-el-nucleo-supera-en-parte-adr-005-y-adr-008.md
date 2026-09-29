@@ -14,7 +14,7 @@ aprobada-por: Alberto Fojo
   piloto pasa a "crecer fuera, defender dentro". sdd-producto lo recogió en EPIC-002,
   criterio de éxito 4 (commit `f40637f`). Propone este ADR sdd-arquitecto (2026-09-29). Fija
   **qué parte de ADR-005 y ADR-008 se supera, qué sigue vigente y qué se deja a
-  `sdd-metricas`**. Aprueba: humano (pendiente).
+  `sdd-metricas`**. Aprueba: humano (Alberto Fojo, 2026-09-29).
 - Specs relacionadas: SPEC-008 (CA-10, decisión; CA-11 y CA-12 nuevos), SPEC-012 (CA-3 y
   CA-7, veredicto), SPEC-009 (propuesta, nota), SPEC-007 (set congelado).
 - **Supera en parte ADR-005 §4 y §6 y ADR-008 §6** (lo que confirma de ADR-005 §4). Los tres
@@ -125,11 +125,20 @@ ADR aceptado e inmutable. Por eso hace falta este ADR.
   de CA-10): rechazada por el humano. Además, elegir el subconjunto después de ver en qué
   preguntas falla la clínica sesga el Go hacia donde hay margen, y un subconjunto de `AV` es
   todavía menos preguntas que `AR`.
-- **Bajar el umbral del núcleo** (p. ej. +5 pts): rechazada. La diferencia entre runs del mismo día
-  ya es del orden de ese umbral (dato solo en el espacio privado) y el techo comprime la
+- **Bajar el umbral del núcleo**: rechazada. Un umbral más bajo quedaría del orden del
+  ruido entre runs del mismo día, estimado en privado (ADR-004 §2), y el techo comprime la
   subida posible; un Go así mediría ruido.
 - **Un índice que combine `AV` y `AR`** (media, suma o ponderado de niveles): rechazada. Es
   justo lo que ADR-005 §4 prohíbe y sigue prohibiendo: un buen núcleo escondería un `AR` sin
   movimiento, y al revés.
 - **Crecer en `AG`**: rechazada. Compiten cadenas con varias sedes; es un objetivo de un año
   y no se promete (ADR-005 §6).
+
+## Erratas
+Excepción de errata autorizada expresamente por el humano (Alberto Fojo, 2026-09-29) solo
+para estas dos correcciones. Ninguna cambia la decisión; por eso no hay ADR que supersede.
+- **2026-09-29, Deciders**: "Aprueba: humano (pendiente)" pasa a "Aprueba: humano (Alberto
+  Fojo, 2026-09-29)", coherente con el frontmatter.
+- **2026-09-29, alternativa "Bajar el umbral del núcleo"**: se quita la cifra de ejemplo,
+  que se apoyaba en un estadístico de datos privados; ahora se dice sin cifra, "del orden del
+  ruido entre runs del mismo día, estimado en privado" (ADR-004 §2).
