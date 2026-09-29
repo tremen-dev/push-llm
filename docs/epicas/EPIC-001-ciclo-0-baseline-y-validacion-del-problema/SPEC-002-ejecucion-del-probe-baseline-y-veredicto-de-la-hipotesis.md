@@ -2,7 +2,7 @@
 id: SPEC-002
 tipo: spec
 epica: EPIC-001
-estado: aprobada
+estado: borrador
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-23, por: sdd-arquitecto}
@@ -10,6 +10,8 @@ historial:
   - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
 ---
 # SPEC-002 — Ejecución del probe baseline y veredicto de la hipótesis
 
@@ -71,7 +73,10 @@ real es desconocido (estimación del dictamen sdd-probe: ~20–30 €).
   `git log -p` contienen claves. *Evidencia* (salidas en el ledger, sin valores de clave):
   (a) `git check-ignore -v .env` responde con una regla de `.gitignore`; (b)
   `git log --all --oneline -- .env` sale vacío; (c) `git status --porcelain` no lista `.env`;
-  (d) `git ls-files` no lista ningún `.env` ni `.env.*`; (e) búsqueda de `sk-`, `sk-ant-` y
+  (d) `git ls-files` no lista ningún fichero `.env*` salvo exactamente `.env.example` en la
+  raíz (ADR-007; ~~ningún `.env` ni `.env.*`~~, enmienda 2026-09-29), toda variable
+  `*_API_KEY` de `.env.example` está vacía, y la búsqueda de `sk-`, `sk-ant-` y `AIza` no da
+  coincidencias en su contenido ni en `git log -p --all -- .env.example`; (e) búsqueda de `sk-`, `sk-ant-` y
   `AIza` en `git log -p --all` sin coincidencias; (f) la misma búsqueda sobre los ficheros
   versionados (`git grep`) sin coincidencias; (g) `git -C "$PUSHLLM_PRIVADO" rev-parse
   --show-toplevel` no devuelve la raíz de este repo; tipo de ubicación y respaldo anotados en
@@ -186,6 +191,9 @@ real es desconocido (estimación del dictamen sdd-probe: ~20–30 €).
   combinación en CA-4.
 
 ## Notas para el gate humano
+- **Enmienda 2026-09-29 (2.ª re-aprobación)**: solo cambia CA-1 (d), para admitir
+  exactamente `.env.example` (plantilla sin valores) como único `.env*` versionado
+  (ADR-007). Aprobad ADR-007 junto con la spec.
 - **Enmienda 2026-09-29 (re-aprobación)**: solo cambian CA-1 y P-2 (claves en `.env` local
   ignorado, ADR-006). Mirad con lupa: (i) ADR-006 acepta para las claves lo que ADR-001
   rechazó como única medida para los datos (depender de `.gitignore`); la mitigación es
