@@ -1,6 +1,7 @@
-# Secrets
+# Secrets (ADR-006). The template .env.example is versioned on purpose.
 .env
 .env.*
+!.env.example
 
 # Probe outputs (regenerable, may contain raw provider answers)
 probe/results.csv
