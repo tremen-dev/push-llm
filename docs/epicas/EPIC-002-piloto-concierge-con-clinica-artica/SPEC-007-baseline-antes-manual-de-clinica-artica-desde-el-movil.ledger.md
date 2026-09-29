@@ -7,7 +7,7 @@ epica: EPIC-002
 
 ## Resumen
 - Fase: <!-- refleja el estado de la spec; la fuente de verdad es el frontmatter de la spec -->
-- Rama: `ft/SPEC-007-baseline-antes-manual-de-clinica-artica-desde-el-movil`
+- Rama: `ft/SPEC-007-calibracion` (desde `ft/SPEC-013-respuesta-cruda-y-citas-de-claude`; antes, `ft/SPEC-007-baseline-antes-manual-de-clinica-artica-desde-el-movil`)
 
 ## Matriz de criterios de aceptación
 <!-- Escritores: sdd-implementador rellena Implementado y Test; sdd-verificador rellena Verif. y Estado. Nunca al revés. -->
@@ -15,20 +15,21 @@ epica: EPIC-002
 <!-- Un CA está ✅ solo cuando Implementado + Test + Verif. aplicables están en verde. Una salvedad se marca ⚠️, nunca ✅. -->
 | CA | Implementado (fichero) | Test (fichero/caso) | Verif. | Estado |
 |---|---|---|---|---|
-| CA-1 | `docs/piloto-artica/prompts-baseline.md`: núcleo `AV01`–`AV15` (sin cambios), `AR01`–`AR05`, `AG01`–`AG04`, `AM01`–`AM02`; comprobador `docs/piloto-artica/tools/baseline_docs.py` (`parse_prompts_doc`, `coverage`, `coverage_regional`, `render_coverage_galicia`); copia congelada `tools/tests/av-2026-09-29.tsv`; tratamientos `AG` con URL y fecha en "Tratamientos del nivel AG" | `docs/piloto-artica/tools/tests/test_baseline_prompts.py` (condiciones por nivel, ids únicos y por prefijo, `AV` idénticas a la versión publicada, sin textos repetidos, ≤ 24, sin "Ártica"/"Artica"/candidatas de SPEC-008 en `AV`, `AR` ni `AG`, sin preguntas sin lugar, líneas de cobertura = tablas, Mondoñedo es A Mariña) | | ❌ |
-| CA-2 | Dictamen `sdd-metricas` 2026-09-29 (a)–(f) y **ampliación por niveles (g)–(j) del 2026-09-29**, con tabla condición → cambio, en este ledger; ambas antes de la pasada 1 | Checklist (a)–(j) en la sección del dictamen; cada condición mapeada a fichero y test | | ❌ |
-| CA-3 | `docs/piloto-artica/protocolo-captura.md` (una sola pasada con los tres niveles, bloques AV → AR → AG → AM, corte entre bloques, 76 consultas) | `docs/piloto-artica/tools/tests/test_baseline_protocol_template.py` (≤ 1100 palabras; campos obligatorios; apps, sesión limpia, cuenta/plan, modelo, texto literal, una por conversación, orden, captura, enlace, mismas condiciones incl. SPEC-012, reglas anti-contaminación, Vilaboa, `test_protocol_three_levels_block_order`, `test_protocol_block_order_av_first`) | | ❌ |
-| CA-4 | `docs/piloto-artica/plantilla-captura.csv` (solo cabecera) | `test_baseline_protocol_template.py::test_template_is_header_only`, `::test_template_crosses_protocol_fields_and_ca4_extras`, `::test_protocol_documents_every_template_column` | | ❌ |
-| CA-5 | [Humano] pendiente. Preparado: `$PUSHLLM_PRIVADO/piloto-artica/baseline/captura-p1-prerrellenada.csv` (76 filas, en el orden del protocolo) y `preguntas-en-orden.txt` (por app y bloque) | — (lo cuenta el verificador en privado) | | ❌ |
-| CA-6 | [Humano] pendiente. Preparado: `captura-p2-prerrellenada.csv` (76 filas, mismo orden) | — | | ❌ |
-| CA-7 | Procedimiento `docs/piloto-artica/procedimiento-recuento.md` (§1–6 núcleo, §7 niveles) y `docs/piloto-artica/tools/count_baseline.py` (`count`, `count_level`). **Falta** el `recuento-antes.md` privado (necesita las pasadas 1 y 2) | `docs/piloto-artica/tools/tests/test_baseline_count.py` (núcleo: SoV bruto por app y pasada, ponderado, posición, en su lugar, Google, dominios, estabilidad, observaciones; niveles: `test_core_unchanged_when_level_rows_removed`, recuentos por app y pasada, puestos, indicadores `AR`/`AG`, cadenas como una marca, render sin porcentajes) — fixture ficticia | | ❌ |
-| CA-8 | Regla de congelación de los tres niveles en `prompts-baseline.md` ("Estado del set"); aviso de techo solo con `AV` (el ponderado de `count_baseline.py` usa solo `AV`). **Falta** la fecha de congelación (= inicio de la pasada 1) y, si aplica, la decisión humana | `test_core_unchanged_when_level_rows_removed` | | ❌ |
-| CA-9 | `$PUSHLLM_PRIVADO/piloto-artica/baseline/foto-tecnica-2026-09-29/` (`foto-tecnica.md`, `raw/robots.txt`, `raw/sitemap_index.xml` + 8 sitemaps, HTML y JSON-LD de portada, contacto y una página por línea, `raw/SHA256SUMS.txt`). **Falta**: Google Business Profile (lo mira el humano) y los dominios citados en la pasada 1 | Comprobación manual del verificador (fechas y URLs en `foto-tecnica.md`) | | ❌ |
-| CA-10 | **Pendiente** de la pasada 1 (respuestas representativas solo del núcleo; `AR`/`AG`, si salen, como dato "fuera de la comarca" sin objetivo). Comprobador de términos prohibidos listo: `python docs/piloto-artica/tools/baseline_docs.py "$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md"` | `docs/piloto-artica/tools/tests/test_baseline_frontier.py::test_forbidden_meeting_terms` | | ❌ |
-| CA-11 | [Verificador]. Apoyo: `baseline_docs.py` sin argumentos revisa `docs/piloto-artica/` (emails, teléfonos, cifras junto a marcas) | `test_baseline_frontier.py::test_repo_docs_pass_the_frontier` y `::test_frontier_detects_email_phone_and_figure_next_to_brand` | | ❌ |
+| CA-1 | `docs/piloto-artica/prompts-baseline.md`: núcleo `AV01`–`AV15` (sin cambios), `AR01`–`AR05`, `AG01`–`AG04`, `AM01`–`AM02` (ninguna pregunta cambia en la enmienda (b); solo la entradilla: la manual mide `AV` + `AM`, el probe `AV`, `AR` y `AG`); comprobador `docs/piloto-artica/tools/baseline_docs.py` (`parse_prompts_doc`, `coverage`, `coverage_regional`, `render_coverage_galicia`); copia congelada `tools/tests/av-2026-09-29.tsv`; tratamientos `AG` con URL y fecha en "Tratamientos del nivel AG" | `docs/piloto-artica/tools/tests/test_baseline_prompts.py` (condiciones por nivel, ids únicos y por prefijo, `AV` idénticas a la versión publicada, sin textos repetidos, ≤ 24, sin "Ártica"/"Artica"/candidatas de SPEC-008 en `AV`, `AR` ni `AG`, sin preguntas sin lugar, líneas de cobertura = tablas, Mondoñedo es A Mariña; entradilla: `test_intro_and_state_reflect_the_calibration`) | | ❌ |
+| CA-2 | Dictamen `sdd-metricas` 2026-09-29 (a)–(f), ampliación por niveles (g)–(j) y **segunda ampliación (k)–(n) del 2026-09-29 (calibración)**, con tabla condición → cambio (filas k1–n), en este ledger; todas antes de la pasada "antes" | Checklist (a)–(n) en la sección del dictamen; cada condición mapeada a fichero y test (tabla condición → cambio); umbrales fijados en `test_baseline_count.py::test_thresholds_of_the_dictamen` y `test_baseline_procedure.py` | | ❌ |
+| CA-3 | `docs/piloto-artica/protocolo-captura.md` (calibración: 49 consultas, ChatGPT y Gemini con `AV` y después `AM`, Google solo `AV`; `pasada` = `antes`/`despues`; baseline oficial del probe primero y ventana de 7 días; corte entre apps; 60–90 + 20–25 min; mismas condiciones en las dos pasadas; Vilaboa) | `docs/piloto-artica/tools/tests/test_baseline_protocol_template.py` (≤ 1100 palabras; campos obligatorios; apps, sesión limpia, cuenta/plan, modelo, texto literal, una por conversación, orden, captura, enlace, mismas condiciones incl. SPEC-012, reglas anti-contaminación, Vilaboa; `test_protocol_calibration_covers`, `test_protocol_calibration_asks_no_ar_or_ag`, `test_protocol_calibration_has_no_second_before_pass`; orden de las 49: `test_calibration_order_has_49_queries`, `test_calibration_order_blocks`) | | ❌ |
+| CA-4 | `docs/piloto-artica/plantilla-captura.csv` (solo cabecera; sin cambios: el dictamen (k)–(n) no pide columna nueva, la ejecución emparejada va en el ledger y en `--probe`) | `test_baseline_protocol_template.py::test_template_is_header_only`, `::test_template_crosses_protocol_fields_and_ca4_extras`, `::test_protocol_documents_every_template_column` | | ❌ |
+| CA-5 | [Humano] pendiente (después del baseline oficial del probe, dentro de 7 días). Preparado: `$PUSHLLM_PRIVADO/piloto-artica/baseline/captura-antes-prerrellenada.csv` y `captura-despues-prerrellenada.csv` (49 filas cada uno, en el orden del protocolo) y `preguntas-en-orden.txt` (49, por app y bloque), generados con `baseline_docs.py --prefill`; los de 76 filas renombrados `*-obsoleto` | `test_baseline_protocol_template.py::test_prefill_rows_follow_the_template`, `::test_prefill_rejects_unknown_pass`, `::test_questions_in_order_text`, `::test_prefill_cli_writes_the_three_private_files`; filas, capturas y campos los cuenta el verificador en privado | | ❌ |
+| CA-6 | Retirado (enmienda 2026-09-29 (b)): no hay pasada 2. `captura-p2-prerrellenada.csv` renombrado `captura-p2-prerrellenada-obsoleto.csv` | — | | ❌ |
+| CA-7 | Procedimiento `docs/piloto-artica/procedimiento-recuento.md` (una pasada; §3 AI Overviews en recuentos; §6 comparación app frente a probe, veredicto y qué hacer si no) y `docs/piloto-artica/tools/count_baseline.py` (`count`, `read_probe` —rechaza `results.csv` sin `searched_urls`—, `summarize_probe`, `compare_with_probe`, `render_calibration`, CLI `--probe`). **Falta** `calibracion-antes.md` privado (necesita el baseline del probe y la pasada "antes") | `docs/piloto-artica/tools/tests/test_baseline_count.py` (pasada: SoV bruto, sin ponderado, posición, en su lugar, Google en recuentos, dominios, observaciones, marcas, pasadas mezcladas, `AR`/`AG` ignoradas; probe: lectura, mayoría/empate/mediana, errores/otros niveles/Claude fuera; comparación: acuerdo, SoV, veredicto y umbrales, ventana, posición informativa, modelos; informe y CLI) y `test_baseline_procedure.py` — fixtures ficticias | | ❌ |
+| CA-8 | Regla de congelación en `prompts-baseline.md` ("Estado del set": como tarde al empezar el baseline oficial del probe, o fecha del humano; la pasada "antes" no empieza sin ella). Aviso de techo: ya no es de la manual (SPEC-008 CA-10); `count_baseline.py` no calcula ponderado. **Falta** la fecha de congelación | `test_baseline_prompts.py::test_intro_and_state_reflect_the_calibration`, `::test_freeze_no_longer_tied_to_pass_1`; `test_baseline_count.py::test_no_manual_weighted_figure` | | ❌ |
+| CA-9 | `$PUSHLLM_PRIVADO/piloto-artica/baseline/foto-tecnica-2026-09-29/` (`foto-tecnica.md`, `raw/robots.txt`, `raw/sitemap_index.xml` + 8 sitemaps, HTML y JSON-LD de portada, contacto y una página por línea, `raw/SHA256SUMS.txt`). **Falta**: Google Business Profile (lo mira el humano) y los dominios citados en la pasada "antes" y en el baseline del probe | Comprobación manual del verificador (fechas y URLs en `foto-tecnica.md`) | | ❌ |
+| CA-10 | **Pendiente** de la pasada "antes" (respuestas representativas del núcleo; cifras del probe solo si CA-7 dice que coinciden). Comprobador de términos prohibidos listo: `python docs/piloto-artica/tools/baseline_docs.py "$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md"` | `docs/piloto-artica/tools/tests/test_baseline_frontier.py::test_forbidden_meeting_terms` | | ❌ |
+| CA-11 | [Verificador]. Apoyo: `baseline_docs.py` sin argumentos revisa `docs/piloto-artica/` (emails, teléfonos, cifras junto a marcas); `--prefill` y `count_baseline.py --out` escriben solo en la ruta privada que se les da | `test_baseline_frontier.py::test_repo_docs_pass_the_frontier` y `::test_frontier_detects_email_phone_and_figure_next_to_brand` | | ❌ |
 
-Tests: `python -m pytest -q docs/piloto-artica/tools/tests` (143 en verde el 2026-09-29, tras la enmienda) y
-`python -m pytest -q probe/tests` (106, sin cambios).
+Tests (2026-09-29, tras la enmienda (b)): `python -m pytest -q docs/piloto-artica/tools/tests` (200 en verde) y
+`python -m pytest -q probe/tests` (213 en verde, 1 saltado sin `PUSHLLM_PRIVADO`; sin cambios en `probe/`), con el
+entorno `probe/.venv` (el Python del sistema no tiene el SDK `anthropic` y falla `test_raw_responses.py::test_real_sdk_objects_serialize_without_http_headers`, ajeno a esta spec). `ruff check probe docs/piloto-artica/tools`: OK.
 
 ## Dictamen sdd-metricas (CA-2)
 - **Fecha**: 2026-09-29, antes de la pasada 1 (que no ha empezado).
@@ -158,6 +159,125 @@ que el criterio Go exige estabilidad: la subida debe verse en las dos pasadas "d
   ponderar; si no hay resumen, la búsqueda es válida y sin clínica; (e) mismo instrumento
   también en los niveles. (c) y (f) siguen siendo solo del núcleo.
 
+### Segunda ampliación (k)–(n) — calibración, 2026-09-29, antes de la pasada "antes"
+- **Emisor**: sdd-implementador aplicando `.ai-context/skills/sdd-metricas.md` (advisory,
+  sin cambiar reglas). **Fecha**: 2026-09-29; la pasada "antes" no ha empezado y el
+  baseline oficial del probe (SPEC-008 CA-7) tampoco. **Fuentes**: las de los dictámenes
+  anteriores; SPEC-007 enmienda (b) (CA-2 k–n, CA-3, CA-5, CA-7, CA-8); SPEC-008 CA-7 y CA-9;
+  SPEC-013 y `docs/fundacion/dominio.md` (URLs citadas frente a consultadas);
+  `probe/run_probe.py` (`COLUMNS`), `probe/analysis.py` (SoV bruto sobre todas las
+  respuestas válidas de los runs) y `probe/batches/viveiro.json` (ubicación Viveiro,
+  `client_brand`); ADR-005 §4. Decisiones del humano del 2026-09-29 que se aplican tal cual:
+  49 consultas; AI Overviews solo en el núcleo; **orden: primero el baseline oficial del
+  probe y después la pasada "antes"**, emparejada con esa ejecución; P-5 cerrada; pasadas
+  desde Vilaboa.
+- **Ninguna regla de negocio cambia.** RN-01 (alias), RN-02 (SoV bruto sobre respuestas
+  válidas), RN-04 (AI Overviews aparte) y RN-06 (posición sin directorios) se aplican igual;
+  lo nuevo son reglas de lectura de la calibración, que no entran en ninguna cifra del Go.
+
+#### (k) Qué se compara y con qué — **correcto con condiciones**
+1. **Unidad**: la casilla pregunta `AV` × asistente presente en los dos instrumentos:
+   ChatGPT (app `chatgpt` ↔ proveedor `openai`) y Gemini (`gemini` ↔ `gemini`). 15 × 2 = 30
+   casillas. Claude (solo en el probe) y Google (solo en la manual) no tienen pareja.
+2. **Lado app**: la fila de la pasada que cuenta (cuenta gratuita, Vilaboa, respuesta
+   válida): "sale" si `artica_nombrada` = `si`, y `posicion_artica`.
+3. **Lado probe**: las filas de `results.csv` con `prompt_id` `AV…`, ese proveedor y
+   `status` = `ok`. Se usa la columna `brands_mentioned` tal como la escribió el probe (lo
+   reproduce cualquiera con una hoja de cálculo): la clínica "sale" en un run si
+   `Clínica Ártica` está en la lista; su posición es su puesto en esa lista (que ya excluye
+   directorios, RN-06).
+4. **Resumen de runs por casilla**: `k de n` runs válidos con la clínica. "Sale" si
+   k/n > 1/2; "no sale" si k/n < 1/2; **"empate"** si k/n = 1/2 (posible con 2 runs). La
+   posición del probe es la **mediana** de sus puestos en los runs donde sale.
+5. **Qué ejecución del probe**: la del baseline oficial de SPEC-008 CA-7 (decisión del
+   humano: primero el baseline, después la pasada "antes"). En el "después" (SPEC-012), la
+   medición "después" del probe más cercana en fechas. **Ventana máxima: 7 días** entre la
+   ejecución `AV` del probe (fechas de sus filas `AV`) y la pasada manual (fechas de sus
+   filas); si los dos intervalos se solapan, la distancia es 0. Motivo: una semana es la
+   cadencia de medición del piloto (SPEC-012) y deja margen para repartir la pasada en 2
+   días; más allá, un cambio de modelo o del índice de búsqueda se confunde con una
+   diferencia de instrumento. Si la pasada cae fuera de la ventana, la comparación se hace
+   igual pero el veredicto es "no" (hay que lanzar una ejecución `AV` del probe dentro de la
+   ventana, que no sustituye al baseline oficial).
+6. **Diferencias conocidas, sin corregir**: (i) la manual se hace desde **Vilaboa** y el
+   probe envía la ubicación **Viveiro**. Todas las `AV` nombran el lugar, así que en ChatGPT
+   y Gemini el efecto esperable es pequeño; no se corrige ni se estima aparte: la
+   calibración mide "instrumento + ubicación" juntos, que es justo lo que importa (lo que ve
+   un paciente que pregunta nombrando el sitio frente a lo que mide el probe). Si el
+   veredicto es "no", la ubicación es una de las causas a revisar (l.4). (ii) Modelo de la
+   app gratuita frente al modelo por defecto de la API (D-5, RN-10): se anota
+   `modelo_mostrado` y la columna `model` del probe; que no coincidan no invalida la
+   comparación (es la diferencia que la calibración mide), pero se escribe en el informe.
+   (iii) El probe solo reconoce las marcas de su catálogo y la manual anota todas las
+   clínicas nombradas: la posición del probe puede salir mejor. Por eso la posición no
+   entra en el veredicto (l.2).
+
+#### (l) "Coinciden de forma razonable" — **correcto con condiciones**
+1. **Acuerdo por asistente** = casillas comparables con el mismo resultado ÷ casillas
+   comparables. Comparable = fila válida en la app y ≥ 1 run válido en el probe. Mismo
+   resultado = "sale/sale" o "no sale/no sale"; un **empate** del probe cuenta como
+   acuerdo (con p = 1/2 cualquier respuesta de la app es compatible).
+2. **Veredicto "coinciden de forma razonable: sí"** si y solo si se cumplen **todas**:
+   (a) la pasada está dentro de la ventana de 7 días (k.5); (b) en ChatGPT **y** en Gemini
+   hay **≥ 12 casillas comparables** (de 15); (c) en cada uno el **acuerdo es ≥ 70 %**
+   (con 15 comparables, ≥ 11); y (d) en cada uno la **diferencia de SoV bruto** entre app
+   (menciones ÷ respuestas válidas `AV` de la pasada) y probe (runs con la clínica ÷ runs
+   válidos `AV`, como `probe/analysis.py`) es **≤ 20 pts** en valor absoluto. Si falla
+   una, "no". La **posición** se informa (casillas donde sale en los dos; "parecida" si la
+   diferencia es ≤ 2 puestos), pero no decide.
+3. **Ruido esperable con 15 casillas**: si los dos instrumentos midieran lo mismo, la app
+   (una respuesta) difiere de la mayoría de runs solo por azar; con casillas casi siempre
+   "sale" o casi siempre "no sale" el acuerdo esperable es ≥ 85 %, y con casillas
+   repartidas, en torno al 75 %. El error típico de un acuerdo del 80 % con 15 casillas es
+   ≈ 10 pts: el umbral del 70 % queda ≈ 1 error típico por debajo, y 11 de 15 no se
+   alcanza por suerte si los instrumentos no se parecen. Para el SoV bruto, el error típico
+   de la diferencia app (15 respuestas) − probe (≈ 45 runs) llega a ≈ 15 pts con un SoV del
+   50 % y ≈ 12 pts con uno del 20 %: 20 pts es ≈ 1,3–1,7 errores típicos. Son umbrales de
+   **alarma**, no una prueba estadística: con esta muestra no se puede afirmar igualdad,
+   solo detectar una diferencia gruesa.
+4. **Si no coinciden**: se revisa, en este orden, y se anota en el ledger qué se ha
+   encontrado: (1) **lectura**: releer las capturas y los `answer` del probe de las casillas
+   en desacuerdo (alias o variante no reconocida, adjetivo, médica sin clínica); (2)
+   **protocolo manual**: desviaciones, cuenta, modo, modelo mostrado, fechas; (3)
+   **configuración del probe**: modelo por defecto (RN-10), búsqueda web activa, ubicación
+   Viveiro; (4) **ubicación Vilaboa/Viveiro** como causa posible, sin corregirla. Hasta que
+   el ledger tenga la causa y la **decisión del humano** (qué se ajusta, o seguir con la
+   salvedad escrita), **no se enseña a la clínica ninguna cifra del probe** ni se envía la
+   propuesta de SPEC-009 (CA-7). Si el humano decide repetir la pasada, la nueva se empareja
+   con una ejecución `AV` del probe dentro de la ventana y el informe da **las dos**, sin
+   elegir la que más convenga.
+
+#### (m) Google AI Overviews — **correcto con condiciones**
+1. Canal aparte (RN-04, D-6): **fuera del acuerdo, del veredicto y del criterio Go**. Solo
+   en el núcleo `AV` (decisión del humano: `AR`/`AG` no se miden en Google).
+2. Con 15 búsquedas y una pasada se dan **recuentos "x de n"**, sin porcentajes: búsquedas
+   válidas; cuántas tuvieron resumen de IA; en cuántas sale la clínica **dentro** del
+   resumen, sobre las válidas y sobre las que tuvieron resumen. Una búsqueda mueve 6,7
+   pts: un porcentaje daría una precisión que no hay.
+3. **Sin resumen**: la búsqueda es válida, cuenta en el denominador de "sobre las
+   válidas" y sin la clínica (lo que ve el paciente: por esta vía no la ve). El paquete de
+   mapas y los resultados normales no cuentan; pueden ir en `observaciones`.
+4. **Antes/después (SPEC-012)**: se informa "x de n antes → y de n después", junto con
+   cuántas búsquedas tuvieron resumen en cada pasada (Google puede mostrar más o menos
+   resúmenes por su cuenta). Solo se describe como **cambio claro** si la diferencia es de
+   **≥ 5 búsquedas** con la clínica sobre las mismas 15 (margen del 95 % de una diferencia
+   de dos proporciones con n = 15 ≈ ± 33 pts ≈ 5 búsquedas); si no, "dentro de lo que varía
+   de un día a otro". Sin objetivo ni promesa. La ubicación Vilaboa pesa más aquí que en
+   ChatGPT y Gemini: se escribe como limitación.
+
+#### (n) Qué queda del dictamen anterior
+| Punto | Estado | Detalle |
+|---|---|---|
+| (a) alias y reglas de mención | **Sigue** | Igual en la lectura de la manual. P-1 y P-2 siguen. |
+| (b) dos pasadas, 3–10 días, ± 2 h | **Sustituido** | Una pasada "antes" y una "después" (SPEC-012), cada una emparejada con una ejecución `AV` del probe dentro de la ventana de 7 días (k.5). La separación 3–10 días queda sin objeto. |
+| (c) SoV bruto, válida/excluida, cuentas gratuitas, Claude observación | **Sigue** | SoV bruto por app de la pasada ("lo que ve el paciente" y término de (l.2 d)). |
+| (c) SoV ponderado manual | **Sin objeto** | **No se calcula.** Evita que una cifra manual se lea como Go. El ponderado solo existe en el probe (SPEC-008 CA-9 b). |
+| (d) AI Overviews aparte | **Sustituido por (m)** | Mismo canal aparte; ahora recuentos "x de n" sin porcentajes y regla de lectura del antes/después. |
+| (e) mismo instrumento | **Sigue, reforzado** | El Go es probe contra probe (SPEC-008 CA-7/CA-9). Ninguna cifra manual se resta, suma ni promedia con una del probe; la manual antes/después es descriptiva. |
+| (f) ruido frente a +15 pts | **Sin objeto en la manual** | El ruido del Go se re-evalúa con el probe en SPEC-008 CA-9 (e). El ruido de la calibración está en (l.3). |
+| (g)–(j) niveles `AR`/`AG` | **Sin objeto en la manual** | `AR` y `AG` ya no se preguntan a mano; sus definiciones se trasladan al probe en SPEC-008 CA-9 (g). |
+| "b/d en niveles" | **Sin objeto** | Ya no hay bloques `AR`/`AG` en la pasada. |
+
 ### Tabla condición → cambio
 | Condición | Cambio | Dónde |
 |---|---|---|
@@ -166,19 +286,29 @@ que el criterio Go exige estabilidad: la subida debe verse en las dos pasadas "d
 | a4 nombre de la médica | Se anota en observaciones; no cuenta | `procedimiento-recuento.md` §0.3 (implícito: solo nombre/alias de la clínica); P-2 |
 | a5 competidores y variantes | `alias-canonicos.csv` privado | `procedimiento-recuento.md` §0.4; `count_baseline.py --aliases`; test `test_clinics_in_its_place_are_canonicalised` |
 | a6 posición sin directorios | Definición de `posicion_artica` | `protocolo-captura.md` (campos); `procedimiento-recuento.md` §0.3 |
-| b 2 pasadas, 3–10 días, ± 2 h | Plazo y hora de la pasada 2 | `protocolo-captura.md` "Pasada 2 y siguientes"; CA-6 |
+| ~~b 2 pasadas, 3–10 días, ± 2 h~~ **sustituida por (n)(b)** | Plazo y hora de la pasada 2 | `protocolo-captura.md` "Pasada 2 y siguientes"; CA-6 |
 | c válida/excluida | Columna `respuesta_valida` | `plantilla-captura.csv`; `protocolo-captura.md`; test `test_raw_sov_per_app` |
 | c solo cuentas gratuitas | `plan_cuenta`; filtro de filas principales | `protocolo-captura.md` "Antes de empezar" 3; `count_baseline.py` (`MAIN_PLANS`); test `test_observation_and_brand_rows_apart` |
-| c ponderado normalizado ChatGPT+Gemini | Fórmula | `procedimiento-recuento.md` §3; tests `test_weighted_*` |
-| c Claude como observación | Solo observación, repetir en todas o nada | `protocolo-captura.md` "Pasada 2 y siguientes"; `count_baseline.py` (`WEIGHTS` sin Claude) |
-| d AI Overviews aparte | Columna `resumen_ia`; dos cifras | `plantilla-captura.csv`; `procedimiento-recuento.md` §4; tests `test_google_*` |
+| ~~c ponderado normalizado ChatGPT+Gemini~~ **sin objeto (n)(c)**: tests `test_weighted_*` retirados | Fórmula | `procedimiento-recuento.md` §3; tests `test_weighted_*` |
+| c Claude como observación | Solo observación, en las dos pasadas o en ninguna | `protocolo-captura.md` "Opcional"; `count_baseline.py` (`PAIRED` sin Claude); test `test_observation_and_brand_rows_apart` |
+| d AI Overviews aparte (**sustituida por (m)**) | Columna `resumen_ia`; dos cifras | `plantilla-captura.csv`; `procedimiento-recuento.md` §4; tests `test_google_*` |
 | e mismo instrumento | Condiciones iguales en todas las pasadas; set congelado | `protocolo-captura.md` "Antes de empezar" 2; `prompts-baseline.md` "Estado del set" |
-| f ruido | Estabilidad por pregunta y SoV por pasada en el recuento | `procedimiento-recuento.md` §2 y §6; tests `test_sov_per_pass`, `test_stability_per_question` |
-| g indicadores `AR`/`AG` | "x de n" por nivel × app × pasada; regularidad (≥ 2 casillas estables) y alguna vez (≥ 1) | `procedimiento-recuento.md` §7; `count_baseline.py` (`count_level`, `AR_MIN_STABLE_CELLS`); tests `test_level_counts_per_app_and_pass`, `test_regularity_*`, `test_galicia_indicator_is_at_least_once` |
-| h núcleo aparte | Go, estabilidad y techo solo con `AV` | `procedimiento-recuento.md` §1; `count_baseline.py` (el núcleo filtra `AV`); test `test_core_unchanged_when_level_rows_removed` |
-| i cadenas y posición | Cadena = una marca en `alias-canonicos.csv`; puestos en lista | `procedimiento-recuento.md` §7; tests `test_chains_are_one_brand_in_levels`, `test_level_positions_are_listed_not_averaged` |
-| j solo recuentos | Secciones de nivel sin porcentajes | `count_baseline.py` (`render`); test `test_render_levels_as_counts_without_percentages` |
-| b/d en niveles | Una sola pasada con los tres niveles; Google dentro de cada nivel | `protocolo-captura.md` ("Antes de empezar" 4, "Cómo preguntar" 1); test `test_protocol_three_levels_block_order` |
+| ~~f ruido~~ **sin objeto en la manual (n)(f)**: `test_sov_per_pass` y `test_stability_per_question` retirados | Estabilidad por pregunta y SoV por pasada en el recuento | `procedimiento-recuento.md` §2 y §6; tests `test_sov_per_pass`, `test_stability_per_question` |
+| ~~g indicadores `AR`/`AG`~~ **sin objeto (n)(g–j)**, histórico | "x de n" por nivel × app × pasada; regularidad (≥ 2 casillas estables) y alguna vez (≥ 1) | `procedimiento-recuento.md` §7; `count_baseline.py` (`count_level`, `AR_MIN_STABLE_CELLS`); tests `test_level_counts_per_app_and_pass`, `test_regularity_*`, `test_galicia_indicator_is_at_least_once` |
+| h núcleo aparte (sigue en el probe; en la manual solo hay `AV`) | Go, estabilidad y techo solo con `AV` | `procedimiento-recuento.md` §1; `count_baseline.py` (el núcleo filtra `AV`); test `test_core_unchanged_when_level_rows_removed` |
+| ~~i cadenas y posición~~ **sin objeto (n)** en la manual | Cadena = una marca en `alias-canonicos.csv`; puestos en lista | `procedimiento-recuento.md` §7; tests `test_chains_are_one_brand_in_levels`, `test_level_positions_are_listed_not_averaged` |
+| ~~j solo recuentos~~ **sin objeto (n)** en la manual | Secciones de nivel sin porcentajes | `count_baseline.py` (`render`); test `test_render_levels_as_counts_without_percentages` |
+| ~~b/d en niveles~~ **sin objeto (n)** | Una sola pasada con los tres niveles; Google dentro de cada nivel | `protocolo-captura.md` ("Antes de empezar" 4, "Cómo preguntar" 1); test `test_protocol_three_levels_block_order` |
+| k1–k4 casilla, lado app, lado probe, resumen de runs | `summarize_probe` (mayoría k/n, empate, mediana de puestos) y `compare_with_probe` | `procedimiento-recuento.md` §6; `count_baseline.py`; tests `test_probe_cell_*`, `test_probe_position_*`, `test_agreement_*` |
+| k5 ejecución emparejada y ventana de 7 días | Baseline del probe primero; ventana comprobada por la herramienta | `protocolo-captura.md` "Antes de empezar" 1; `procedimiento-recuento.md` §6.1; `count_baseline.py` (`MAX_WINDOW_DAYS`); tests `test_window_*`; "Instrucciones para el humano" |
+| k5 `results.csv` posterior a SPEC-013 | La herramienta rechaza un `results.csv` sin `searched_urls` | `count_baseline.py` (`read_probe`); test `test_read_probe_refuses_results_without_searched_urls` |
+| k6 Vilaboa/Viveiro, modelo, catálogo | Limitaciones escritas; modelos en el informe | `protocolo-captura.md` "Antes de empezar" 2; `procedimiento-recuento.md` §6.4; render (`test_render_calibration_*`) |
+| l1–l2 acuerdo y veredicto | Umbrales 12 comparables, 70 %, 20 pts; posición informativa (≤ 2) | `procedimiento-recuento.md` §6.2–6.3; `count_baseline.py` (`MIN_COMPARABLE`, `MIN_AGREEMENT`, `MAX_SOV_GAP`, `POSITION_TOLERANCE`); tests `test_verdict_*` |
+| l4 si no coinciden | Orden de revisión; sin cifras del probe a la clínica ni propuesta hasta decisión | `procedimiento-recuento.md` §6.5; texto del informe (`test_render_calibration_says_what_to_do_if_no`) |
+| m AI Overviews | Recuentos "x de n" sin porcentajes; lectura antes/después (≥ 5 búsquedas) | `procedimiento-recuento.md` §3; `count_baseline.py` (`AIO_CLEAR_CHANGE`); tests `test_google_*`, `test_render_google_as_counts_without_percentages` |
+| n (b) una pasada | Protocolo de 49 consultas, `pasada` = `antes`/`despues`; herramienta de una pasada | `protocolo-captura.md`; `count_baseline.py` (`_check`); tests `test_protocol_calibration_*`, `test_mixed_passes_fail_loudly` |
+| n (c) sin ponderado manual | La herramienta no calcula ponderado | `count_baseline.py`; test `test_no_manual_weighted_figure` |
+| n (f), (g)–(j), "b/d en niveles" | **Sin objeto en la manual** (filas `f`, `g`, `i`, `j` y "b/d en niveles" de arriba quedan históricas; `b` sustituida; `h` sigue en el probe) | Retirados `count_level`, estabilidad p1/p2 y sus tests; `test_level_rows_are_ignored` |
 
 ### Tratamientos del nivel AG (CA-1)
 Comprobado en clinicaartica.es el **2026-09-29** (HTTP 200; título y H1 de cada página):
@@ -190,6 +320,42 @@ Comprobado en clinicaartica.es el **2026-09-29** (HTTP 200; título y H1 de cada
   https://clinicaartica.es/unidad-de-cirugia-estetica-facial/blefaroplastia-superior-rejuvenecimiento-mirada/
   ("Blefaroplastia superior"). La clínica ofrece la **superior**: por eso `AG03`/`AG04`
   preguntan por los párpados superiores. No hizo falta sustituir el tratamiento.
+
+## Instrucciones para el humano — pasada "antes" de calibración (CA-5)
+Vigentes desde el 2026-09-29 (enmienda (b), F-SPEC-007-8). 49 consultas: 60–90 min de
+preguntas + 20–25 min de CSV y capturas. Todo desde **Vilaboa**.
+0. **Orden** (tu decisión del 2026-09-29): **primero el baseline oficial del probe**
+   (SPEC-008 CA-7). Al lanzarlo se congela el set (CA-8): anota aquí la fecha de
+   congelación si no la has fijado antes. Apunta también la fecha y la carpeta de esa
+   ejecución: es la que se empareja con esta pasada.
+1. Haz la pasada **como mucho 7 días después** de esa ejecución del probe (ventana del
+   dictamen (k)); si se te pasa, habrá que lanzar otra ejecución `AV` del probe dentro de la
+   ventana (no sustituye al baseline). Hazla también **antes de la primera acción** del
+   piloto.
+2. Imprime `docs/piloto-artica/protocolo-captura.md` y abre
+   `$PUSHLLM_PRIVADO/piloto-artica/baseline/preguntas-en-orden.txt` (17 en ChatGPT: AV01–AV15,
+   AM01, AM02; 17 en Gemini, igual; 15 en Google: AV01–AV15).
+3. Cuentas **gratuitas**: ChatGPT con memoria desactivada; Gemini con la actividad
+   desactivada. Nada de VPN ni GPS simulado; el mismo ajuste de ubicación del móvil que
+   usarás en el "después".
+4. Crea `$PUSHLLM_PRIVADO/piloto-artica/baseline/AAAA-MM-DD-antes/` (fecha del primer día) y
+   dentro: copia `captura-antes-prerrellenada.csv` como `captura-antes.csv`, un
+   `desviaciones.txt` vacío y una carpeta `capturas/`.
+5. Haz las consultas según el protocolo (chat temporal nuevo por pregunta, texto literal,
+   captura completa; Google en incógnito). No pulses enlaces a la web de la clínica ni
+   busques su nombre en Google. Si lo repartes en 2 días, corta entre apps.
+6. Al terminar Google, en Google Maps (incógnito) busca **"medicina estética Viveiro"** y
+   captura si sale la ficha de la clínica (reseñas, fotos, horario, web):
+   `capturas/gbp.png` (CA-9).
+7. Rellena en `captura-antes.csv` tus columnas (condiciones, hora, `respuesta_valida`,
+   `resumen_ia`, `fichero_captura`, enlace, observaciones). Las de lectura las rellena el
+   agente.
+8. Avisa al orquestador con la fecha, el nº de filas, las desviaciones y la carpeta del
+   probe emparejada. El agente hace `calibracion-antes.md` (CA-7, con el veredicto
+   "coinciden de forma razonable"), la hoja de hallazgo (CA-10) y completa la foto técnica
+   (CA-9).
+9. El "después" (SPEC-012) se hace igual, con `captura-despues-prerrellenada.csv`, en
+   `AAAA-MM-DD-despues/`, dentro de los 7 días de la medición "después" del probe.
 
 ## Instrucciones para el humano — pasada 1 (CA-5)
 > **OBSOLETO desde la enmienda 2026-09-29 (b) (sdd-arquitecto).** No hagas esta pasada de
@@ -238,6 +404,8 @@ Mejor **antes de la reunión** de SPEC-009. Todas las pasadas desde Vilaboa (P-4
   "tal cual" decidido por el humano y, con 5 `AR` y 4 `AG`, pasaría de 24 preguntas. Opción,
   si el humano la quiere: `AV16` con Mondoñedo y quitar una `AR` o una `AG` (total 24),
   antes de la pasada 1. Hoy queda fuera.
+  **CERRADA el 2026-09-29 — decidido por el humano (Alberto Fojo), transmitido por el
+  orquestador: sin cambios en el set.** Mondoñedo no entra; ninguna pregunta cambia.
 - **P-6** (2026-09-29, enmienda; → arquitecto/humano): ADR-005 §1 enumera el área de
   influencia como Ferrolterra, norte de Lugo fuera de A Mariña y occidente de Asturias.
   **Sarria y A Fonsagrada** (interior de Lugo, al sur y al este) no están en esa lista,
@@ -380,8 +548,33 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
       las "Instrucciones para el humano" para la pasada "antes" (incluido el paso de
       congelación y la ejecución del probe emparejada).
   No se toca `probe/` desde aquí: lo del probe va en F-SPEC-008-9.
+  **Hecho el 2026-09-29 por sdd-implementador** en la rama `ft/SPEC-007-calibracion`
+  (puntos 1–10; `probe/` sin tocar). Punto 9 ampliado a petición del orquestador: también
+  `captura-despues-prerrellenada.csv` (49 filas), y los ficheros de 76 filas **renombrados**
+  con sufijo `-obsoleto` (no borrados). Ruff F401 corregido en `count_baseline.py` y
+  `tests/test_baseline_count.py`.
+- **F-SPEC-007-9** (→ sdd-arquitecto / orquestador, SPEC-012): la calibración "después"
+  usa la misma ventana de 7 días respecto a una medición "después" del probe (dictamen
+  (k.5)) y la lectura de AI Overviews de (m.4) (≥ 5 búsquedas = cambio claro). SPEC-012
+  CA-3 debería citarlo; no se ha editado SPEC-012.
+- **F-SPEC-007-10** (→ sdd-implementador de SPEC-008, informativo): la comparación usa la
+  columna `brands_mentioned` del `results.csv` tal como la escribe el probe y el
+  `client_brand` "Clínica Ártica" de `probe/batches/viveiro.json`. Si SPEC-008 cambia ese
+  nombre o el formato de la columna, hay que pasar `--client` o ajustar
+  `count_baseline.py`.
 
 ## Cómo retomar (handoff)
+- **2026-09-29 (sdd-implementador, calibración)**: F-SPEC-007-8 hecho en
+  `ft/SPEC-007-calibracion`. Spec en `en-progreso`: faltan las pasadas humanas. Hecho:
+  segunda ampliación del dictamen (k)–(n) con su tabla; set (solo entradilla y congelación),
+  protocolo de 49 consultas, procedimiento con la comparación app frente a probe,
+  `count_baseline.py` (una pasada + `--probe`), `baseline_docs.py --prefill`, tests (200) y
+  ficheros privados de 49 filas. P-5 cerrada sin cambios. Siguiente, en este orden:
+  baseline oficial del probe (SPEC-008 CA-7; congela el set, CA-8) → pasada "antes" del
+  humano dentro de 7 días → columnas de lectura, `calibracion-antes.md` (CA-7) con
+  `count_baseline.py ANTES.csv --probe results.csv`, hoja de hallazgo (CA-10) y foto técnica
+  completa (CA-9) → si el veredicto es "no", causa y decisión humana en este ledger antes de
+  la propuesta. Después, `en-revision`. Abierta: P-6.
 - **2026-09-29 (b) (sdd-arquitecto)**: la spec vuelve a `borrador` por la enmienda "la
   manual pasa a calibración" (decisión del humano; EPIC-002 criterios 1 y 4). Ninguna
   pasada se había hecho. **No empezar la pasada 1** (las instrucciones de arriba están

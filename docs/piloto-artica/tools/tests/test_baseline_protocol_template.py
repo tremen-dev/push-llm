@@ -100,18 +100,78 @@ def test_protocol_no_longer_asks_for_viveiro_as_measurement_place(protocol):
 
 
 @pytest.mark.parametrize("snippet", [
-    # amendment 2026-09-29 (ADR-005): one pass with the three levels, AV block first
-    "una sola pasada con los tres niveles",
-    "av, ar, ag y am",                       # block order in chatgpt and gemini
-    "av, ar y ag",                            # block order in google
-    "el corte cae entre bloques",            # 2-day split rule
-    "76 consultas", "95–140 min",
+    # amendment 2026-09-29 (b): the manual pass is a calibration of the probe
+    "49 consultas", "60–90 min", "20–25 min",
+    "`antes`", "`despues`",
+    "primero el bloque av y después las am",        # chatgpt and gemini
+    "google solo el bloque av",
+    "baseline oficial del probe", "7 días",          # CA-2 (k5): pairing and window
+    "el corte cae entre apps",                       # 2-day split rule (CA-5)
+    "mismas en las dos pasadas",
 ])
-def test_protocol_three_levels_block_order(protocol, snippet):
+def test_protocol_calibration_covers(protocol, snippet):
     assert snippet in _flat(protocol)
 
 
-def test_protocol_block_order_av_first(protocol):
+def test_protocol_calibration_asks_no_ar_or_ag(protocol):
+    """CA-3 evidence: AR/AG do not appear in the question order of the protocol."""
+    order = protocol.split("## Cómo preguntar", 1)[1].split("\n## ", 1)[0]
+    assert not re.search(r"\bA[RG]\b|\bA[RG]\d\d\b", order)
+
+
+def test_protocol_calibration_has_no_second_before_pass(protocol):
     flat = _flat(protocol)
-    i = flat.index("av, ar, ag y am")
-    assert flat.index("av", i) < flat.index("ar", i) < flat.index("ag", i) < flat.index("am", i)
+    assert "pasada 2" not in flat and "`p1`" not in flat and "76 consultas" not in flat
+
+
+# ------------------------------------------------------------ calibration order and prefill
+@pytest.fixture(scope="module")
+def order():
+    doc = bd.parse_prompts_doc((PILOT_DIR / "prompts-baseline.md").read_text(encoding="utf-8"))
+    return bd.calibration_order(doc)
+
+
+def test_calibration_order_has_49_queries(order):
+    assert len(order) == bd.CALIBRATION_QUERIES == 49
+
+
+def test_calibration_order_blocks(order):
+    ids = lambda app: [q["id"] for q in order if q["app"] == app]  # noqa: E731
+    av = [f"AV{i:02d}" for i in range(1, 16)]
+    assert ids("chatgpt") == av + ["AM01", "AM02"]
+    assert ids("gemini") == av + ["AM01", "AM02"]
+    assert ids("google") == av
+    assert [q["app"] for q in order][::17][:2] == ["chatgpt", "gemini"]
+    assert order[-1]["app"] == "google"
+
+
+def test_prefill_rows_follow_the_template(order):
+    rows = bd.prefill_rows(order, "antes")
+    assert len(rows) == 49 and list(rows[0]) == bd.TEMPLATE_COLUMNS
+    assert {r["pasada"] for r in rows} == {"antes"}
+    assert {r["municipio"] for r in rows} == {"Vilaboa"}
+    assert {r["resumen_ia"] for r in rows if r["app"] != "google"} == {"n-a"}
+    assert {r["resumen_ia"] for r in rows if r["app"] == "google"} == {""}
+    assert next(r for r in rows if r["id_pregunta"] == "AV14")["idioma"] == "gl"
+
+
+def test_prefill_rejects_unknown_pass(order):
+    with pytest.raises(ValueError):
+        bd.prefill_rows(order, "p1")
+
+
+def test_questions_in_order_text(order):
+    text = bd.questions_in_order(order)
+    assert text.count("\nAV01  ") == 3 and text.count("\nAM01  ") == 2
+    assert "AR01" not in text and "AG01" not in text
+    assert "49 consultas" in text
+
+
+def test_prefill_cli_writes_the_three_private_files(tmp_path):
+    assert bd.main(["--prefill", str(tmp_path)]) == 0
+    for name in ("captura-antes-prerrellenada.csv", "captura-despues-prerrellenada.csv",
+                 "preguntas-en-orden.txt"):
+        assert (tmp_path / name).exists(), name
+    lines = (tmp_path / "captura-despues-prerrellenada.csv").read_text(
+        encoding="utf-8-sig").splitlines()
+    assert len(lines) == 50 and ",despues,AV01,chatgpt," in lines[1]
