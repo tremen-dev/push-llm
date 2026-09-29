@@ -2,7 +2,7 @@
 id: SPEC-007
 tipo: spec
 epica: EPIC-002
-estado: borrador
+estado: aprobada
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-28, por: sdd-arquitecto}
@@ -18,6 +18,7 @@ historial:
   - {estado: en-progreso, fecha: 2026-09-29, por: sdd-implementador}
   - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
 ---
 # SPEC-007 — Baseline antes manual de Clínica Ártica desde el móvil
 
