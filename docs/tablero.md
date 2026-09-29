@@ -8,10 +8,10 @@ Actualizado: 2026-09-29
 | Spec | Estado | Último cambio |
 |---|---|---|
 | SPEC-001 — ajustes-del-probe-para-el-baseline | hecho | 2026-09-23 (sdd-verificador) |
-| SPEC-002 — ejecucion-del-probe-baseline-y-veredicto-de-la-hipotesis | en-progreso | 2026-09-29 (sdd-implementador) |
-| SPEC-003 — extracto-de-hallazgos-por-clinica | borrador | 2026-09-23 (sdd-arquitecto) |
-| SPEC-004 — kit-de-contacto-y-entrevista-para-un-fundador-no-comercial | borrador | 2026-09-23 (sdd-arquitecto) |
-| SPEC-005 — registro-y-evaluacion-de-las-entrevistas | borrador | 2026-09-23 (sdd-arquitecto) |
+| SPEC-002 — ejecucion-del-probe-baseline-y-veredicto-de-la-hipotesis | borrador | 2026-09-29 (sdd-arquitecto) |
+| SPEC-003 — extracto-de-hallazgos-por-clinica | bloqueada | 2026-09-29 (sdd-arquitecto) |
+| SPEC-004 — kit-de-contacto-y-entrevista-para-un-fundador-no-comercial | bloqueada | 2026-09-29 (sdd-arquitecto) |
+| SPEC-005 — registro-y-evaluacion-de-las-entrevistas | bloqueada | 2026-09-29 (sdd-arquitecto) |
 | SPEC-006 — siglas-cortas-inequivocas-en-el-matching-del-probe | hecho | 2026-09-23 (sdd-verificador) |
 
 ## EPIC-002 — piloto-concierge-con-clinica-artica (borrador)
@@ -36,10 +36,12 @@ Actualizado: 2026-09-29
 | ADR-005 | aprobada | catalogo-del-piloto-de-clinica-artica-en-tres-niveles-geograficos | 2026-09-29 (Alberto Fojo) |
 | ADR-006 | aprobada | claves-de-api-en-un-env-local-ignorado-por-git | 2026-09-29 (Alberto Fojo) |
 | ADR-007 | aprobada | plantilla-env-example-versionada-como-unica-excepcion-a-la-regla-de-adr-006 | 2026-09-29 (Alberto Fojo) |
+| ADR-008 | borrador | nicho-geografico-a-marina-primero-despues-galicia-asturias-y-leon-supera-d-2 | 2026-09-29 (sdd-arquitecto) |
 
 ## Resumen
 
 - hecho: 2
-- en-progreso: 3
-- borrador: 6
+- borrador: 4
+- bloqueada: 3
+- en-progreso: 2
 - aprobada: 1

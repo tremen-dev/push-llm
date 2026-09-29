@@ -5,12 +5,13 @@
 > sdd-producto (hook protege-verdad).
 
 - Creado: 2026-09-23
-- Dominio: SaaS que mide y mejora cómo los asistentes de IA (ChatGPT, Gemini, Claude, Perplexity, Google AI Overviews) recomiendan clínicas sanitarias privadas en Galicia, y atribuye los pacientes que llegan por ese canal.
+- Dominio: SaaS que mide y mejora cómo los asistentes de IA (ChatGPT, Gemini, Claude, Perplexity, Google AI Overviews) recomiendan clínicas sanitarias privadas del noroeste de España (A Mariña primero; después Galicia, Asturias y León; ADR-008), y atribuye los pacientes que llegan por ese canal.
 
 ## Decisiones locked
-<!-- Origen: DECISIONS.md (D-001…D-008, 2026-09-23). El detalle y la justificación viven allí. -->
+<!-- Origen: DECISIONS.md (D-001…D-008, 2026-09-23; D-009, 2026-09-29). El detalle y la justificación viven allí y en los ADR que las superan. -->
 - **D-1** (2026-09-23): Nicho vertical + geográfico; el producto no se generaliza a "cualquier negocio" en el MVP. (DECISIONS.md D-001)
 - **D-2** (2026-09-23): Nicho primario = clínicas sanitarias privadas, Vigo y Pontevedra primero. Dental = volumen; oftalmología y fertilidad = casos demo; estética = segundo mercado; fisio solo vía agencias; hospitales en fase 2. Nicho secundario (año 2): educación privada. (D-002)
+  - **Superada en parte por ADR-008** (2026-09-29; decisión del humano, ADR en `borrador` hasta su aprobación; DECISIONS.md D-009): nicho primario = clínicas de sanidad privada en general, **A Mariña primero**, después resto de **Galicia**, **Asturias** y **provincia de León**. **Vigo y Pontevedra, aparcados** (sin trabajo activo; se retoman solo por decisión del humano en el roadmap). El orden de especialidades deja de ser vinculante; siguen vigentes hospitales en fase 2, fisio solo vía agencias, educación privada en el año 2 y los catálogos por especialidad × ciudad.
 - **D-3** (2026-09-23): Se vende "pacientes desde ChatGPT", no "visibilidad en IA". La atribución (referral tags + subida de búsqueda de marca + respuesta en recepción) es funcionalidad del día uno. (D-003)
 - **D-4** (2026-09-23): Secuencia lean: nada de código de producto antes de la evidencia del Ciclo 2 (`05-lean-plan.md`). (D-004)
 - **D-5** (2026-09-23): El probe usa el modelo por defecto (gama media) de cada app de consumo, con búsqueda web y ubicación de la ciudad; el procesamiento interno usa el modelo más barato que supere un test etiquetado. (D-005)
@@ -20,7 +21,7 @@
 
 ## Alcance
 - Dentro (MVP, `07-mvp-product-spec.md` §1): probe semanal multi-asistente; SoV ponderado por uso; análisis de fuentes citadas; lista de gaps con acciones recomendadas; registro de atribución; vista multi-clínica para agencias.
-- Fuera: generación masiva de contenido, integraciones con CMS/web, publicación automática en directorios, rank tracking en Google, cualquier vertical distinta de sanidad privada, cualquier geografía distinta de Galicia (configurable, pero no se vende).
+- Fuera: generación masiva de contenido, integraciones con CMS/web, publicación automática en directorios, rank tracking en Google, cualquier vertical distinta de sanidad privada, cualquier geografía distinta de Galicia, Asturias y la provincia de León (configurable, pero no se vende; ADR-008 §4, ~~antes: distinta de Galicia~~).
 
 ## No-negociables
 - RGPD: no se almacena ningún dato personal de pacientes; la atribución son agregados.

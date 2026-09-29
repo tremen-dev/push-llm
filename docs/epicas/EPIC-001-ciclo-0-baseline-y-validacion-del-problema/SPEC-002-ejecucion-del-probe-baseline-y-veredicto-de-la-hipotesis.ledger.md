@@ -176,6 +176,14 @@ Claude. El punto "Effort — se mantiene" de más arriba queda sustituido por es
   (ignorado por git) con filas sintéticas del 2026-09-29 ("Te recomiendo Clínica Ártica",
   tokens 100/10), no de una ejecución real. No es de esta spec; revisarlo en CA-10
   (`git status --ignored`) y borrarlo si nadie lo necesita.
+- **F-SPEC-002-6** (2026-09-29, alcance reducido por ADR-008; → orquestador para SPEC-008
+  CA-7 y SPEC-012): CA-2 ya no caduca con la completa de Vigo, pero el dictamen de modelos
+  (2026-09-29) sigue caducando para cualquier **ejecución real**: se re-comprueba (sdd-probe)
+  si el baseline del lote de Viveiro (SPEC-008 CA-7) se lanza después del **2026-10-01**
+  (misma regla de ≤ 2 días), y en la medición semanal (SPEC-012) al menos una vez al mes o
+  cuando sdd-probe sepa de un cambio de modelo por defecto en una app (p. ej. GPT-6 Luna en
+  Chat). SPEC-008 está aprobada y no se enmienda aquí: se lleva como instrucción de
+  ejecución; si se quiere vinculante, enmienda de SPEC-008 CA-7 o CA de SPEC-012.
 
 ## Cómo retomar (handoff)
 <!-- Estado real del trabajo para la siguiente sesión: qué está hecho, qué falta, dónde seguir. -->
@@ -189,6 +197,14 @@ Claude. El punto "Effort — se mantiene" de más arriba queda sustituido por es
   "Instrucciones para el humano"); después el agente revisa el humo (CA-3). **CA-2 caduca**
   si la completa no se lanza como tarde el 2026-10-01. La spec se queda en `en-progreso`
   hasta que existan CA-3…CA-9.
+- **2026-09-29 (sdd-arquitecto) — alcance reducido (ADR-008)**: el humano cambia el nicho
+  (A Mariña primero; Vigo y Pontevedra aparcados) y cierra EPIC-001. La spec pasa
+  `en-progreso` → `bloqueada` → `borrador` y se queda con CA-1, CA-2 (effort `medium` de
+  Claude incorporado), CA-3 (coste medido por pregunta × ejecución, sin extrapolar a la
+  completa) y CA-10; CA-4…CA-9 retirados (se marcan `n-a`, "retirado por cambio de nicho
+  (ADR-008)"). Necesita **re-aprobación humana** (y ADR-008). Después: sdd-implementador
+  pasa a `en-progreso` y rellena CA-3 con el humo de Vigo ya ejecutado el 2026-09-29;
+  humano: comprobaciones de CA-1; verificador: CA-1, CA-2, CA-3, CA-10.
 
 ## Instrucciones para el humano (humos, CA-3)
 Claves en el `.env` de la raíz del repo (copia de `.env.example` con los valores

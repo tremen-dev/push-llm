@@ -14,6 +14,13 @@ historial:
 ---
 # SPEC-008 — Catálogo de Viveiro y A Mariña en el probe
 
+> **Nota 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008). No cambia ningún CA ni
+> requiere re-aprobación.** Las citas a ADR-003 y ADR-005 de esta spec siguen valiendo en lo
+> que usa (lote aparte, niveles `AV`/`AR`/`AG` sin mezclar, Go solo con `AV`, nivel Galicia
+> sin prometer, marcas del piloto fuera del lote de Vigo). Lo que ADR-008 deroga es el
+> encuadre como "excepción a D-2" y sus prohibiciones de prospección y de "Asturias no es
+> mercado"; el lote de Vigo queda aparcado, intacto, como configuración por defecto.
+
 > Cambio acotado en `probe/` (herramienta de medición del Ciclo 0, no producto de `src/`;
 > mismo encuadre que SPEC-001 y SPEC-006 respecto a D-4). La implementación y sus tests
 > son **offline** y pueden hacerse ya; solo la ejecución real (CA-7) necesita las claves

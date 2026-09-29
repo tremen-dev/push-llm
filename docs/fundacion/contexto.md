@@ -5,19 +5,67 @@
 
 ## Qué es y en qué punto está
 SaaS de visibilidad de clínicas privadas en asistentes de IA (ver `vision.md`).
-Estado a 2026-09-24: **semilla, pre-producto**. Existen los documentos fundacionales (`README.md`, `00-…08-*.md`, `DECISIONS.md`) y el kit `probe/` del Ciclo 0, que **aún no se ha ejecutado** (faltan API keys). Nada validado con clientes de pago.
+Estado a 2026-09-29: **semilla, pre-producto**. Nada validado con clientes de pago.
+
+**Cambio de nicho (humano, 2026-09-29; ADR-008, DECISIONS.md D-009):** sanidad privada en
+general, **A Mariña primero**, después resto de **Galicia**, **Asturias** y **provincia de
+León**. **Vigo y Pontevedra quedan aparcados** (sin trabajo activo; no se abandonan).
+- **EPIC-001** (Ciclo 0 en Vigo) cerrada sin completar (`bloqueada`). Queda de ella el probe
+  preparado: SPEC-001 y SPEC-006 (`hecho`) y SPEC-002 reducida a claves, modelos y humo.
+  SPEC-003, SPEC-004 y SPEC-005 `bloqueada`, con lo rescatable anotado en cada una.
+- **EPIC-002** (piloto concierge con Clínica Ártica, medicina estética, Viveiro) es la
+  **validación principal**: medición manual desde el móvil (SPEC-007) y lote de Viveiro del
+  probe (SPEC-008).
+- Humo del lote de Vigo ejecutado el 2026-09-29 (12/12 válidas; cifras en el espacio
+  privado). El baseline completo de Vigo **no** se ejecuta.
 
 ## Stack y arquitectura (resumen as-built)
-- `probe/` (Python, as-built tras SPEC-001, 2026-09-23): `run_probe.py` (CLI) lanza `prompts.csv` (44 prompts es/gl) contra Anthropic, OpenAI y Gemini con búsqueda web y ubicación Vigo (Gemini: solo la del texto del prompt); un proveedor se activa si está su clave en el entorno. Módulos: `settings.py` (carga `probe_config.json`: modelo, runs, effort, precios con fecha y fuente, pesos RN-04; override por `CLAUDE_MODEL`/`OPENAI_MODEL`/`GEMINI_MODEL`), `providers.py` (adaptadores → status ok/error/refusal/empty, tokens, búsquedas, URLs, `cost_eur`), `matching.py` (menciones RN-01 + RN-11 sobre `brands.csv`: 43 clínicas + 9 directorios; siglas cortas inequívocas en la columna `exact_aliases`, hoy solo `IVI` → IVI Vigo, sensibles a mayúsculas y por palabra completa; SPEC-006, ADR-002), `analysis.py` (cobertura, agregado ponderado, líder, directorios, sesgo de alias cortos, coste).
-- Flags: `--only`, `--runs`, `--providers`, `--resume` (solo combinaciones sin fila ok; sin él no sobrescribe), `--analyze` (recuento offline sin llamadas), `--out`, `--config`. Salida `results.csv` (16 columnas, respuesta en bruto) + `summary.md`, ambos **privados** (ADR-001): `--out` > `$PUSHLLM_PRIVADO/probe` > `probe/out/` (gitignored). Tests offline en `probe/tests/`. Pendiente: primera ejecución real (SPEC-002).
-- Producto (`src/`): no existe. Stack sin decidir — se registrará como ADR cuando llegue el Ciclo 3.
+- `probe/` (Python; SPEC-001, SPEC-006, SPEC-008 y SPEC-002): `run_probe.py` (CLI) lanza un
+  **lote** de preguntas contra Anthropic, OpenAI y Gemini con búsqueda web y ubicación del
+  lote (Gemini: solo la del texto del prompt). Un proveedor se activa si su clave está en el
+  entorno; `run_probe.py` carga solo el `.env` de la raíz del repo, sin sobrescribir el
+  entorno ni mostrar valores (ADR-006, ADR-007).
+  - Lotes por configuración (ADR-003 §3–§4): `probe_config.json` es el lote por defecto
+    **Vigo/Pontevedra** (aparcado, intacto; 44 prompts es/gl); `batches/viveiro.json` es el
+    lote del **piloto de Clínica Ártica** (ubicación Viveiro; niveles `AV` núcleo, `AR` área
+    de influencia, `AG` Galicia, informados por separado y Go solo con `AV`, ADR-005 §4;
+    marcas por pertenencia al lote; salida `$PUSHLLM_PRIVADO/piloto-artica/probe/`).
+  - Modelos (dictamen sdd-probe vigente, 2026-09-29, ledger de SPEC-002): Claude
+    `claude-sonnet-5-5` con effort `medium` y `max_tokens` 16000; OpenAI `gpt-5.6-luna` con
+    effort `low`; Gemini `gemini-3.6-flash` con el default de la API.
+  - Módulos: `settings.py` (config, precios con fecha y fuente, pesos RN-04, `extends` de
+    lotes; override por `CLAUDE_MODEL`/`OPENAI_MODEL`/`GEMINI_MODEL`), `providers.py`
+    (adaptadores → status ok/error/refusal/empty, tokens, búsquedas, URLs, `cost_eur`),
+    `matching.py` (menciones RN-01 + RN-11 sobre `brands.csv`; siglas cortas en
+    `exact_aliases`, ADR-002), `analysis.py` (cobertura, agregado ponderado, líder,
+    directorios, sesgo de alias cortos, coste; por nivel en el lote del piloto).
+  - Flags: `--config`, `--only`, `--runs`, `--levels`, `--providers`, `--resume`,
+    `--analyze` (recuento offline), `--out`. Salida `results.csv` (respuesta en bruto) +
+    `summary.md`, ambos **privados** (ADR-001, ADR-004). Tests offline en `probe/tests/`.
+- Producto (`src/`): no existe. Stack sin decidir — se registrará como ADR cuando llegue el
+  Ciclo 3.
 
 ## Decisiones clave hasta hoy
-- Decisiones fundacionales D-1…D-8 en `FOUNDATION.md` (origen: `DECISIONS.md`).
-- ADRs: ADR-001 (frontera de datos repo público / espacio privado, aprobada); ADR-002 (excepción a RN-01 para siglas cortas, aprobada 2026-09-24).
+- Decisiones fundacionales D-1…D-8 en `FOUNDATION.md` (origen: `DECISIONS.md`); D-2 superada
+  en parte por ADR-008 (D-009).
+- ADR-001 (frontera de datos repo público / espacio privado) · ADR-002 (siglas cortas,
+  RN-11) · ADR-003 (piloto de Clínica Ártica; vigentes §1, §3, §4 y §5 reinterpretado) ·
+  ADR-004 (frontera de datos aplicada al piloto) · ADR-005 (catálogo del piloto en tres
+  niveles; vigentes §1, §4, §5 técnico y §6) · ADR-006 (claves en `.env` local ignorado) ·
+  ADR-007 (`.env.example` versionado) · ADR-008 (nicho nuevo; `borrador` hasta que lo apruebe
+  el humano).
 
 ## Riesgos y preguntas abiertas
-- H1: ¿se puede mover una respuesta de LLM hacia una clínica en 8–12 semanas? (el riesgo que puede matar la idea)
-- H2: ¿paga una clínica 150–400 €/mes? · H3: ¿se pueden atribuir pacientes? · H4: ¿revenden las agencias?
-- Riesgo de plataforma: OpenAI/Google/Anthropic pueden lanzar analítica de marca o anuncios en respuestas.
-- Preguntas abiertas del MVP (`07-mvp-product-spec.md` §8): qué señal de atribución mantienen las clínicas; si PresenceCheck necesita automatización; si AI Overviews es sondeable con fiabilidad; ticket medio por especialidad.
+- H1: ¿se puede mover una respuesta de LLM hacia una clínica en 8–12 semanas? (el riesgo que
+  puede matar la idea). Hoy se prueba con un solo cliente (EPIC-002).
+- H2: ¿paga una clínica 150–400 €/mes? · H3: ¿se pueden atribuir pacientes? · H4: ¿revenden
+  las agencias?
+- **Volumen del nicho nuevo**: A Mariña es pequeña; no hay ningún dato de mercado de resto de
+  Galicia, Asturias ni León. Falta la épica de validación del nicho nuevo (sdd-producto).
+- Normativa de publicidad sanitaria de Asturias y Castilla y León sin revisar
+  (`sdd-sanidad-regulacion`, ADR-008 §8).
+- Riesgo de plataforma: OpenAI/Google/Anthropic pueden lanzar analítica de marca o anuncios
+  en respuestas.
+- Preguntas abiertas del MVP (`07-mvp-product-spec.md` §8): qué señal de atribución mantienen
+  las clínicas; si PresenceCheck necesita automatización; si AI Overviews es sondeable con
+  fiabilidad; ticket medio por especialidad.

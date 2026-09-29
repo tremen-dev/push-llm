@@ -2,12 +2,26 @@
 id: SPEC-004
 tipo: spec
 epica: EPIC-001
-estado: borrador
+estado: bloqueada
 aprobada-por:
 historial:
   - {estado: borrador, fecha: 2026-09-23, por: sdd-arquitecto}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
 ---
 # SPEC-004 — Kit de contacto y entrevista para un fundador no comercial
+
+> **Bloqueada 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008).** El humano cierra
+> EPIC-001 y aparca Vigo y Pontevedra; las 10 entrevistas de Vigo no se hacen. No se
+> redacta. **Rescatable** para la épica de validación del nicho nuevo (el fundador sigue
+> sin ser comercial): mensajes de primer contacto con dato primero (CA-2), guion para leer
+> (CA-3), preguntas estilo Mom Test (CA-4), cierre explícito (CA-5), frases de apoyo (CA-6),
+> plantilla de notas y hoja de puntuación fijadas ex ante (CA-7), procedimiento (CA-8),
+> dictamen normativo antes del primer envío (CA-9; en Asturias y León, ampliado según
+> ADR-008 §8), envío bloqueado (CA-10), ensayo (CA-11) y sin jerga ni datos personales
+> (CA-12). **No rescatable tal cual**: la lista de objetivos (CA-1), basada en
+> `03-local-market-vigo-pontevedra.md` y el veredicto de Vigo. SPEC-009 (EPIC-002) reutiliza
+> las **reglas** de CA-3, CA-4, CA-6 y CA-11 como texto de referencia: siguen siendo
+> legibles aquí y no dependen de que esta spec se ejecute.
 
 > Spec **documental**. Un agente redacta todo el kit; el humano aprueba el tono,
 > hace el ensayo y envía. El kit vive en el repo en `docs/ciclo-0/kit/` **sin datos

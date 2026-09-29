@@ -7,6 +7,17 @@ historial:
 ---
 # EPIC-002 — Piloto concierge con Clínica Ártica
 
+> **Nota 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008).** El humano ha movido el
+> nicho a A Mariña primero (después Galicia, Asturias y León) y aparcado Vigo y Pontevedra.
+> Este piloto **deja de ser una excepción a D-2**: es el primer cliente del nicho y la
+> validación principal. Donde este texto habla de "excepción al nicho", "fuera del nicho
+> D-2" o "ampliar el nicho oficial a Lugo / A Mariña", vale ADR-008: la excepción y sus
+> prohibiciones (ADR-003 §2 y §6, ADR-005 §2 y §3) quedan derogadas; siguen vigentes el lote
+> aparte, los niveles `AV`/`AR`/`AG` sin mezclar, el Go solo con `AV` y el nivel Galicia sin
+> prometer (ADR-003 §1, §3, §4; ADR-005 §1, §4, §6). La prospección de otras clínicas del
+> nicho va en su propia épica, no en esta (ADR-008 §7). El fondo del piloto no cambia.
+> Texto de la épica sin tocar: lo actualiza sdd-producto si lo cree necesario.
+
 ## Objetivo
 Llevar a cabo el primer **piloto concierge de pago** con un cliente real:
 **Clínica Ártica** (medicina estética; sede única en Viveiro, Lugo;

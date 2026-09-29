@@ -15,6 +15,13 @@ historial:
 ---
 # SPEC-007 — Baseline antes manual de Clínica Ártica desde el móvil
 
+> **Nota 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008). No cambia ningún CA ni
+> requiere re-aprobación.** Las citas a ADR-003 y ADR-005 de esta spec siguen valiendo en lo
+> que usa (lote aparte, niveles `AV`/`AR`/`AG` sin mezclar, Go solo con `AV`, nivel Galicia
+> sin prometer, marcas del piloto fuera del lote de Vigo). Lo que ADR-008 deroga es el
+> encuadre como "excepción a D-2" y sus prohibiciones de prospección y de "Asturias no es
+> mercado"; el lote de Vigo queda aparcado, intacto, como configuración por defecto.
+
 > Spec **documental y de medición manual**. No hay código. El agente redacta el set de
 > preguntas, el protocolo, la plantilla y el recuento; el humano pregunta en las apps
 > del móvil y captura. Ejecutable **ya, sin claves de API**. Material del repo en
