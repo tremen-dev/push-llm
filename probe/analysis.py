@@ -195,6 +195,14 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
     short_alias, valid = Counter(), Counter()
     terms = [matching.norm(t) for t in b.get("review_terms", [])]
     review = []
+    per_cell = defaultdict(lambda: [0, 0])  # (level, pid, provider) -> [valid runs, with client]
+    per_run = defaultdict(lambda: defaultdict(lambda: [0, 0]))  # core run -> prov -> [valid, hit]
+    rows_core = Counter()                   # core rows per provider, any status
+    models = defaultdict(set)
+    bare = {lv["prefix"]: [] for lv in levels}
+    client_row = next((x for x in brands if x["brand"] == client), None)
+    review_pats = {matching.norm(a) for a in b.get("client_review_aliases", [])}
+    strong_pats = [p for p in (client_row or {}).get("patterns", []) if p not in review_pats]
 
     for r in rows:
         lv = _level_of(r.get("prompt_id", ""), levels)
@@ -202,6 +210,10 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
             continue
         prov, status = r["provider"], r.get("status", "ok")
         cell = cells[lv][prov]
+        if r.get("model"):
+            models[prov].add(r["model"])
+        if lv == core:
+            rows_core[prov] += 1
         try:
             cost[lv][prov] += float(r.get("cost_eur") or 0)
         except ValueError:
@@ -213,8 +225,19 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
         valid[lv] += 1
         hits = matching.find_mentions(r.get("answer", ""), brands, r.get("specialty"),
                                       r.get("city"))
-        if any(h["brand"] == client for h in hits):
+        has_client = any(h["brand"] == client for h in hits)
+        pc = per_cell[lv, r.get("prompt_id"), prov]
+        pc[0] += 1
+        if lv == core:
+            pr = per_run[str(r.get("run"))][prov]
+            pr[0] += 1
+            pr[1] += has_client
+        if has_client:
             cell["with_client"] += 1
+            pc[1] += 1
+            padded = f" {matching.norm(r.get('answer', ''))} "
+            if review_pats and not any(f" {p} " in padded for p in strong_pats):
+                bare[lv].append((r.get("prompt_id"), prov, str(r.get("run"))))
         if any(matching.is_local_clinic(h, local_cities) for h in hits):
             cell["with_local"] += 1
         for h in hits:
@@ -227,15 +250,36 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
         for cell in lv_cells.values():
             cell["pct"] = _pct(cell["with_client"], cell["valid"])
 
-    num = den = 0.0
-    for prov, cell in cells[core].items():  # RN-03 on the core level only (ADR-005 §4)
-        if cell["valid"]:
-            w = cfg["providers"].get(prov, {}).get("weight", 0)
-            num += cell["pct"] * w
-            den += w
+    def weighted(by_prov):  # RN-03 normalised to the providers with valid answers
+        num = den = 0.0
+        for prov, (n_valid, n_hit) in by_prov.items():
+            if n_valid:
+                w = cfg["providers"].get(prov, {}).get("weight", 0)
+                num += n_hit / n_valid * w
+                den += w
+        return num / den if den else None
+
+    # RN-03 on the core level only (ADR-005 §4); runs pooled per provider (CA-9 (b))
+    core_weighted = weighted({p: (c["valid"], c["with_client"]) for p, c in cells[core].items()})
+    stability = {"all": 0, "some": 0, "none": 0, "cells": 0}
+    with_client_cells = {lv["prefix"]: [] for lv in levels}
+    for (lv, pid, prov), (n_valid, n_hit) in sorted(per_cell.items()):
+        if lv == core:
+            stability["cells"] += 1
+            stability["all" if n_hit == n_valid else "some" if n_hit else "none"] += 1
+        elif n_hit:
+            with_client_cells[lv].append((pid, prov, n_hit, n_valid))
+    share = b.get("go", {}).get("min_valid_share", 0)
+    weighted_provs = [p for p, pc in cfg["providers"].items() if pc.get("weight", 0) > 0]
+    complete = bool(rows_core) and all(
+        rows_core[p] and cells[core][p]["valid"] / rows_core[p] >= share for p in weighted_provs)
 
     return {"levels": {k: dict(v) for k, v in cells.items()}, "core": core, "client": client,
-            "core_weighted": num / den if den else None,
+            "core_weighted": core_weighted,
+            "core_weighted_by_run": {run: weighted(bp) for run, bp in sorted(per_run.items())},
+            "core_stability": stability, "cells_with_client": with_client_cells,
+            "go_complete": complete, "bare_client": bare,
+            "models": {p: sorted(m) for p, m in models.items()},
             "named": {k: dict(v) for k, v in named.items()},
             "directories": {k: dict(v) for k, v in directories.items()},
             "short_alias": dict(short_alias), "valid": dict(valid),
@@ -269,6 +313,51 @@ def _of(n, d):
     return f"{n} de {d}"
 
 
+def _ceiling_warning(res: dict, b: dict) -> list[str]:
+    """CA-10: the core weighted SoV is within 15 pts of its ceiling (only AV, only the probe)."""
+    ceiling = b.get("go", {}).get("ceiling")
+    w = res["core_weighted"]
+    if ceiling is None or w is None or round(w, 9) < ceiling:
+        return []
+    return ["", f"> **Aviso de techo (SPEC-008 CA-10)**: el SoV ponderado del núcleo es "
+                f"≥ {ceiling * 100:.0f} %, a menos de {100 - ceiling * 100:.0f} pts de su techo. "
+                "Antes de la primera acción, el humano decide y deja registrado en el ledger si "
+                "se mantiene el criterio Go, se mide sobre un subconjunto de `AV` o se cambia el "
+                "umbral; nunca después de ver el efecto."]
+
+
+def _core_go_lines(res: dict, b: dict, client: str) -> list[str]:
+    """Noise and validity of a Go measurement (SPEC-008 CA-9 (b), (e), (f))."""
+    out = ["", "SoV ponderado del núcleo por run (ruido entre runs del mismo día; el criterio "
+               "Go usa la cifra de arriba, con los runs sumados):", "",
+           "| Run | SoV ponderado |", "|---|---|"]
+    for run, w in res["core_weighted_by_run"].items():
+        out.append(f"| {run} | {_fmt(w)} |")
+    st = res["core_stability"]
+    n = st["cells"]
+    out += ["", f"Estabilidad por pregunta × proveedor del núcleo: {client} en todos sus runs "
+                f"válidos: {_of(st['all'], n)}; en alguno: {_of(st['some'], n)}; en ninguno: "
+                f"{_of(st['none'], n)}."]
+    share = b.get("go", {}).get("min_valid_share")
+    if share is not None:
+        verdict = "sí" if res["go_complete"] else "no"
+        out += ["", f"Medición completa para el criterio Go: **{verdict}** (cada proveedor "
+                    f"con peso tiene ≥ {share * 100:.0f} % de sus filas del núcleo con "
+                    "status=ok; si no, `--resume` en la misma semana)."]
+    return out
+
+
+def _bare_lines(res: dict, level: str, client: str, aliases: list[str]) -> list[str]:
+    """F-SPEC-008-3 / CA-9 (h): answers naming the client only through a common-word alias."""
+    if not aliases:
+        return []
+    bare = res.get("bare_client", {}).get(level, [])
+    listed = "; ".join(f"{pid} × {prov} (run {run})" for pid, prov, run in bare) or "ninguna"
+    quoted = " o ".join(f'"{a}"' for a in aliases)
+    return ["", f"Respuestas con {client} solo por {quoted} suelta (cuentan, RN-01; revisar "
+                f"a mano si es adjetivo, F-SPEC-008-3): {listed}."]
+
+
 def render_levels(res: dict, cfg: dict) -> str:
     b = _batch(cfg)
     core, client = res["core"], res["client"]
@@ -298,7 +387,16 @@ def render_levels(res: dict, cfg: dict) -> str:
                        f"{mid} {excl} |")
         if is_core:
             out += ["", "SoV ponderado del núcleo (RN-03/RN-04, normalizado a los proveedores "
-                        f"sondeados; pesos: {weights}): **{_fmt(res['core_weighted'])}**"]
+                        f"sondeados; pesos: {weights}; runs sumados por proveedor): "
+                        f"**{_fmt(res['core_weighted'])}**"]
+            out += _ceiling_warning(res, b)
+            out += _core_go_lines(res, b, client)
+        else:
+            cw = res["cells_with_client"].get(k, [])
+            listed = "; ".join(f"{pid} × {prov} ({_of(h, v)} runs)" for pid, prov, h, v in cw)
+            out += ["", f"Casillas pregunta × proveedor con {client} (para comparar periodos "
+                        f"a mano, dictamen CA-9 (g) del ledger de SPEC-008): {listed or 'ninguna'}."]
+        out += _bare_lines(res, k, client, b.get("client_review_aliases", []))
         n = res["valid"].get(k, 0)
         out += ["", f"Clínicas nombradas en {k} (respuestas válidas que la nombran):", "",
                 "| Marca | Respuestas |", "|---|---|"]
@@ -317,6 +415,10 @@ def render_levels(res: dict, cfg: dict) -> str:
             out.append(f"| {lv['prefix']} | {prov} | {eur:.2f} |")
             total += eur
     out.append(f"| lote | total | {total:.2f} |")
+    out += ["", "## Modelos servidos (columna model; D-5/RN-10, dictamen CA-9 (f))", "",
+            "| Proveedor | Modelo(s) |", "|---|---|"]
+    for prov, ms in sorted(res.get("models", {}).items()):
+        out.append(f"| {prov} | {'; '.join(ms)} |")
     if b.get("review_terms"):
         out += ["", "## Observaciones para revisar a mano (no es una métrica)", "",
                 "Frases de respuestas válidas que nombran una clínica junto a expresiones como "

@@ -425,8 +425,8 @@ def test_ca5_simple_pilot_command_uses_runs_per_level(tmp_path):
     runs = {}
     for r in read_csv(tmp_path / "results.csv"):
         runs.setdefault(r["prompt_id"][:2], set()).add(r["run"])
-    assert runs == {"AV": {"1", "2"}, "AR": {"1"}, "AG": {"1"}}
-    assert len(ask.calls) == 15 * 2 + 9
+    assert runs == {"AV": {"1", "2", "3"}, "AR": {"1"}, "AG": {"1"}}  # official baseline
+    assert len(ask.calls) == 15 * 3 + 9 == MAX_CALLS_PER_PROVIDER
 
 
 def test_ca5_levels_option_selects_levels_and_runs_override(tmp_path):
@@ -482,3 +482,123 @@ def test_review_observations_list_brand_with_no_doctor_terms(vcfg):
     md = analysis.render_summary(res, vcfg)
     obs = md.split("## Observaciones para revisar a mano", 1)[1]
     assert "no es una métrica" in obs and "AV01" in obs and "AV02" not in obs
+
+
+# ---------------------------------------------------------------- CA-9 / CA-10 (Go with the probe)
+
+def core_rows(with_client):
+    """AV rows: {(pid, provider, run): True/False}; every provider answers every cell."""
+    return [analysis_row(pid, prov, run, "ok",
+                         "Te recomiendo Clínica Ártica." if hit else "No conozco ninguna.")
+            for (pid, prov, run), hit in with_client.items()]
+
+
+def _all_cells(runs=3, n=4, hit=lambda pid, prov, run: False):
+    return {(f"AV{i:02d}", prov, run): hit(f"AV{i:02d}", prov, run)
+            for i in range(1, n + 1) for prov in ("openai", "gemini", "claude")
+            for run in range(1, runs + 1)}
+
+
+def test_ca9_config_fixes_the_go_instrument(vcfg):
+    b = settings.batch(vcfg)
+    runs = {lv["prefix"]: lv["runs"] for lv in b["levels"]}
+    assert runs == {"AV": 3, "AR": 1, "AG": 1}  # dictamen CA-9 (a)/(c): baseline = "after"
+    assert b["go"]["ceiling"] == 0.85           # CA-10
+    assert b["go"]["min_valid_share"] == 0.9    # dictamen CA-9 (f)
+    assert b["client_review_aliases"] == ["Ártica"]  # dictamen CA-9 (h)
+
+
+@pytest.mark.parametrize("hits,warned", [(20, True), (17, True), (16, False), (0, False)])
+def test_ca10_ceiling_warning_only_from_core_weighted(vcfg, hits, warned):
+    # 20 AV prompts x 1 run x 3 providers; the client in the first `hits` of each provider
+    cells = {(f"AV{i:02d}", prov, 1): i <= hits
+             for i in range(1, 21) for prov in ("openai", "gemini", "claude")}
+    res = analysis.analyze(core_rows(cells), _members(vcfg), vcfg)
+    assert res["core_weighted"] == pytest.approx(hits / 20)
+    md = analysis.render_summary(res, vcfg)
+    assert ("Aviso de techo" in md) is warned
+    if warned:
+        core = md.split("## Nivel AV", 1)[1].split("\n## Nivel AR", 1)[0]
+        assert "Aviso de techo" in core and "85 %" in core
+
+
+def test_ca10_ceiling_ignores_other_levels(vcfg):
+    rows = core_rows(_all_cells(runs=1))  # core at 0 %
+    rows += [analysis_row(f"AR0{i}", p, 1, "ok", "Clínica Ártica.")
+             for i in range(1, 6) for p in ("openai", "gemini", "claude")]
+    md = analysis.render_summary(analysis.analyze(rows, _members(vcfg), vcfg), vcfg)
+    assert "Aviso de techo" not in md
+
+
+def test_ca9_weighted_sov_per_run_and_pooled(vcfg):
+    # openai: client in run 1 only; gemini/claude never -> run1 = 0.55/0.90, others 0
+    cells = _all_cells(runs=3, hit=lambda pid, prov, run: prov == "openai" and run == 1)
+    res = analysis.analyze(core_rows(cells), _members(vcfg), vcfg)
+    assert res["core_weighted_by_run"] == pytest.approx(
+        {"1": 0.55 / 0.90, "2": 0.0, "3": 0.0})
+    assert res["core_weighted"] == pytest.approx((1 / 3) * 0.55 / 0.90)  # pooled, (b)
+    md = analysis.render_summary(res, vcfg)
+    core = md.split("## Nivel AV", 1)[1].split("\n## Nivel AR", 1)[0]
+    assert "SoV ponderado del núcleo por run" in core
+    assert "| 1 | 61.1 % |" in core and "| 3 | 0.0 % |" in core
+
+
+def test_ca9_stability_per_question_and_provider(vcfg):
+    def hit(pid, prov, run):
+        if prov != "openai":
+            return False
+        return {"AV01": True, "AV02": run == 2}.get(pid, False)
+    res = analysis.analyze(core_rows(_all_cells(runs=3, hit=hit)), _members(vcfg), vcfg)
+    assert res["core_stability"] == {"all": 1, "some": 1, "none": 10, "cells": 12}
+    md = analysis.render_summary(res, vcfg)
+    assert "en todos sus runs válidos: 1 de 12" in md
+    assert "en alguno: 1 de 12" in md and "en ninguno: 10 de 12" in md
+
+
+def test_ca9_go_measurement_complete_only_with_enough_valid_rows_per_provider(vcfg):
+    cells = _all_cells(runs=3, n=4)
+    rows = core_rows(cells)  # 12 rows per provider, all ok
+    res = analysis.analyze(rows, _members(vcfg), vcfg)
+    assert res["go_complete"] is True
+    # two errors of 12 for gemini: 10/12 = 0.83 < 0.9 -> not complete
+    bad = [dict(r, status="error") if r["provider"] == "gemini" and r["run"] == "1"
+           and r["prompt_id"] in ("AV01", "AV02") else r for r in rows]
+    res = analysis.analyze(bad, _members(vcfg), vcfg)
+    assert res["go_complete"] is False
+    assert "Medición completa para el criterio Go: **no**" in analysis.render_summary(res, vcfg)
+    # a weighted provider missing altogether -> not complete
+    res = analysis.analyze([r for r in rows if r["provider"] != "claude"], _members(vcfg), vcfg)
+    assert res["go_complete"] is False
+
+
+def test_ca9_bare_artica_answers_are_counted_and_flagged_for_review(vcfg):
+    rows = [analysis_row("AV01", "openai", 1, "ok", "La zona ártica es fría."),
+            analysis_row("AV02", "openai", 1, "ok", "Clínica Ártica en Viveiro."),
+            analysis_row("AV03", "openai", 1, "ok", "Ártica, en clinicaartica.com."),
+            analysis_row("AV04", "openai", 1, "ok", "Nada.")]
+    res = analysis.analyze(rows, _members(vcfg), vcfg)
+    assert res["levels"]["AV"]["openai"]["with_client"] == 3  # RN-01 literal: all count
+    assert res["bare_client"]["AV"] == [("AV01", "openai", "1")]
+    md = analysis.render_summary(res, vcfg)
+    assert "solo por \"Ártica\" suelta" in md and "AV01 × openai (run 1)" in md
+
+
+def test_ca9_levels_outside_core_list_cells_with_client_without_percentages(vcfg):
+    rows = [analysis_row("AR01", "openai", 1, "ok", "Clínica Ártica."),
+            analysis_row("AR02", "gemini", 1, "ok", "Nada."),
+            analysis_row("AG01", "claude", 1, "ok", "Clínica Ártica.")]
+    res = analysis.analyze(rows, _members(vcfg), vcfg)
+    assert res["cells_with_client"]["AR"] == [("AR01", "openai", 1, 1)]
+    md = analysis.render_summary(res, vcfg)
+    ar = md.split("## Nivel AR", 1)[1].split("\n## Nivel AG", 1)[0]
+    assert "AR01 × openai (1 de 1 runs)" in ar and "%" not in ar
+
+
+def test_ca9_models_served_are_reported(vcfg):
+    rows = [dict(analysis_row("AV01", "openai", 1, "ok", "x"), model="gpt-a"),
+            dict(analysis_row("AV01", "openai", 2, "ok", "x"), model="gpt-b"),
+            dict(analysis_row("AR01", "claude", 1, "ok", "x"), model="claude-a")]
+    res = analysis.analyze(rows, _members(vcfg), vcfg)
+    assert res["models"] == {"openai": ["gpt-a", "gpt-b"], "claude": ["claude-a"]}
+    md = analysis.render_summary(res, vcfg)
+    assert "## Modelos servidos" in md and "| openai | gpt-a; gpt-b |" in md

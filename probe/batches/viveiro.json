@@ -12,11 +12,18 @@
     "title": "Resumen del probe — piloto Clínica Ártica (lote Viveiro)",
     "prompt_prefixes": ["AV", "AR", "AG"],
     "levels": [
-      {"prefix": "AV", "label": "núcleo: Viveiro y A Mariña (único nivel del criterio Go)", "core": true, "runs": 2},
+      {"prefix": "AV", "label": "núcleo: Viveiro y A Mariña (único nivel del criterio Go)", "core": true, "runs": 3},
       {"prefix": "AR", "label": "área de influencia (indicador aparte, no cuenta para el Go)", "runs": 1},
       {"prefix": "AG", "label": "Galicia (indicador aparte, sin objetivo)", "runs": 1}
     ],
-    "_runs_comment": "Runs per level (SPEC-008 CA-5, cadence accepted by the human 2026-09-29): the plain command is the safe baseline (AV 2 runs, AR/AG 1 run). --runs overrides every selected level; use --levels AV --runs 3 when the smoke cost allows it.",
+    "_runs_comment": "Runs per level (SPEC-008 CA-5 and CA-9 dictamen, 2026-09-29): the plain command is the official baseline of the Go criterion (AV 3 runs, smoke c = 0.1142 EUR <= 0.19; AR/AG 1 run) and --levels AV is each Go 'after' measurement (same 3 runs). Weekly tracking overrides with --levels AV --runs 1. --runs overrides every selected level.",
+    "go": {
+      "_comment": "Go criterion with the probe (SPEC-008 CA-9 dictamen, CA-10): ceiling warning when the core weighted SoV is >= ceiling (only AV, only the probe); a Go measurement is complete when every weighted provider has >= min_valid_share of its AV rows with status=ok (relaunch with --resume in the same week otherwise).",
+      "ceiling": 0.85,
+      "min_valid_share": 0.9
+    },
+    "_client_review_aliases_comment": "Client aliases that are also a common word (F-SPEC-008-3, CA-9 (h)): answers naming the client only through them still count (RN-01 literal) and are listed in summary.md for manual review.",
+    "client_review_aliases": ["Ártica"],
     "review_terms": ["sin medico", "sin medicos", "no medico", "no medicos", "no es medico",
                      "no es un medico", "no tiene medico", "no tienen medico",
                      "no tiene medicos", "no tienen medicos", "esteticista", "esteticistas",
