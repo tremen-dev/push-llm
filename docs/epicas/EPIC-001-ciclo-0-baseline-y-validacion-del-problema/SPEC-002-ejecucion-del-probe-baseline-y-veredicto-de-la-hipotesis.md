@@ -2,11 +2,13 @@
 id: SPEC-002
 tipo: spec
 epica: EPIC-001
-estado: aprobada
+estado: borrador
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-23, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-23, por: Alberto Fojo}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
 ---
 # SPEC-002 — Ejecución del probe baseline y veredicto de la hipótesis
 
@@ -17,6 +19,12 @@ historial:
 > revisión de respuestas, ampliación de `brands.csv`, documento de veredicto.
 > Los agentes trabajan sobre los ficheros del espacio privado (ADR-001); nunca llaman a las
 > APIs de pago.
+
+> **Enmienda 2026-09-29 (sdd-arquitecto) — claves en un `.env` local ignorado (ADR-006).**
+> Por decisión del humano (Alberto Fojo, 2026-09-29), las claves pueden vivir en un `.env`
+> en la raíz de la copia local del repo, ignorado por git, además de en la sesión. Cambian
+> CA-1 y P-2; el resto de CA no cambia. La spec vuelve a `borrador` y necesita
+> re-aprobación humana.
 
 ## Problema
 EPIC-001 (criterios de éxito 1 y 2) necesita un baseline medido y una respuesta con dato a la
@@ -40,7 +48,9 @@ real es desconocido (estimación del dictamen sdd-probe: ~20–30 €).
   (follow-up de ADR-001). Esta spec **no** lo fija. En el ledger se anota solo el tipo de
   ubicación y de respaldo, nunca la ruta literal.
 - **P-2 [Humano] Claves** de Anthropic, OpenAI y Gemini con límite de gasto configurado en
-  cada consola (recomendado ≤ 20 € por proveedor).
+  cada consola (recomendado ≤ 20 € por proveedor). Custodia según ADR-006: en la sesión o en
+  el `.env` local ignorado; el contenido del `.env` se guarda como nota segura en el gestor
+  de contraseñas (enmienda 2026-09-29).
 - **P-3** SPEC-006 en `hecho` (y por tanto ADR-002 aprobado) antes de CA-4. El humo (CA-3)
   puede lanzarse antes.
 - **Convención de ejecución** (observaciones V-1/V-2 del verificador de SPEC-001): todos los
@@ -52,12 +62,20 @@ real es desconocido (estimación del dictamen sdd-probe: ~20–30 €).
 
 ## Criterios de aceptación
 - **CA-1 (claves y salida fuera del repo) [Humano, comprueba el verificador]**: Dado P-1 y P-2,
-  cuando se lance cualquier comando del probe, entonces las claves solo existen en variables
-  de entorno de la sesión (como documenta `probe/README.md`, sin ficheros), `PUSHLLM_PRIVADO`
-  apunta fuera del árbol de trabajo del repo, y ni `git ls-files` ni `git log -p` contienen
-  claves. *Evidencia*: búsqueda de `sk-`, `sk-ant-` y `AIza` en `git log -p --all` sin
-  coincidencias; `git -C "$PUSHLLM_PRIVADO" rev-parse --show-toplevel` no devuelve la raíz de
-  este repo; tipo de ubicación y respaldo anotados en el ledger (P-1).
+  cuando se lance cualquier comando del probe, entonces las claves existen solo en variables
+  de entorno de la sesión o de usuario, o en un `.env` en la raíz del árbol de trabajo local
+  ignorado por git (ADR-006; ~~solo en variables de entorno de la sesión, sin ficheros~~,
+  enmienda 2026-09-29); ningún otro fichero del árbol de trabajo contiene claves;
+  `PUSHLLM_PRIVADO` apunta fuera del árbol de trabajo del repo, y ni `git ls-files` ni
+  `git log -p` contienen claves. *Evidencia* (salidas en el ledger, sin valores de clave):
+  (a) `git check-ignore -v .env` responde con una regla de `.gitignore`; (b)
+  `git log --all --oneline -- .env` sale vacío; (c) `git status --porcelain` no lista `.env`;
+  (d) `git ls-files` no lista ningún `.env` ni `.env.*`; (e) búsqueda de `sk-`, `sk-ant-` y
+  `AIza` en `git log -p --all` sin coincidencias; (f) la misma búsqueda sobre los ficheros
+  versionados (`git grep`) sin coincidencias; (g) `git -C "$PUSHLLM_PRIVADO" rev-parse
+  --show-toplevel` no devuelve la raíz de este repo; tipo de ubicación y respaldo anotados en
+  el ledger (P-1). Si el humano no usa `.env`, (a)–(c) se anotan igual (protegen contra uno
+  creado más tarde).
 - **CA-2 (modelos por defecto re-comprobados) [Agente: sdd-probe + sdd-implementador]**: Dado
   F-SPEC-001-3 (GPT-6 Luna anunciado el 2026-09-22, aún no en Chat), antes del humo y a ≤ 2 días
   de lanzar la completa (si pasan más, se repite), entonces consta en el ledger de esta spec un
@@ -148,7 +166,8 @@ real es desconocido (estimación del dictamen sdd-probe: ~20–30 €).
   weight.
 - RN-01, RN-11 (ADR-002), RN-02 (aquí sobre un único lote, no semanal), RN-03, RN-04, RN-10.
 - D-5, D-6; No-negociables de coste y de conservación de respuestas en bruto.
-- ADR-001 (frontera de datos), ADR-002 (siglas).
+- ADR-001 (frontera de datos), ADR-002 (siglas), ADR-006 (custodia de claves; enmienda
+  2026-09-29).
 - Follow-ups de SPEC-001: F-SPEC-001-1 (limitación en CA-8 y contraste Gemini en CA-9),
   F-SPEC-001-3 (CA-2), F-SPEC-001-4 (resuelto por ADR-002 / SPEC-006), F-SPEC-001-5
   (aceptado, CA-2 y CA-8), F-SPEC-001-6 (CA-6), F-SPEC-001-7 (el probe se niega a
@@ -166,6 +185,14 @@ real es desconocido (estimación del dictamen sdd-probe: ~20–30 €).
   combinación en CA-4.
 
 ## Notas para el gate humano
+- **Enmienda 2026-09-29 (re-aprobación)**: solo cambian CA-1 y P-2 (claves en `.env` local
+  ignorado, ADR-006). Mirad con lupa: (i) ADR-006 acepta para las claves lo que ADR-001
+  rechazó como única medida para los datos (depender de `.gitignore`); la mitigación es
+  revocar y los límites de gasto; (ii) los agentes pueden leer el `.env` del árbol de
+  trabajo: conviene negarles la lectura en la configuración local; (iii) la actualización de
+  `probe/README.md` y de la guía de claves, y la carga opcional del `.env` por
+  `run_probe.py`, van como follow-up F-SPEC-002-1 al implementador. Aprobad ADR-006 junto con
+  la spec.
 - **Umbrales que decido yo y debéis mirar con lupa** (CA-7): (a) la pata dental/estética usa
   el agregado **ponderado** y exige que **ambas** especialidades estén < 50 %; (b) "aparece
   siempre la misma clínica" = **≥ 80 %** de las respuestas válidas. Alternativas: sin
