@@ -18,8 +18,7 @@ historial:
 > contenido de la media página (CA-3, sin la nota de método fijada a Vigo), la frase gancho
 > con cifra real (CA-4), las reglas sin promesas ni descalificaciones (CA-6) y la variante
 > agencia (CA-7). Para reutilizarla hace falta un lote de medición del nicho nuevo (catálogo
-> y marcas por zona) y reescribir la spec sobre ese lote. ADR-008 §7: no se generan
-> extractos de competidoras de Clínica Ártica con datos del piloto.
+> y marcas por zona) y reescribir la spec sobre ese lote.
 
 > Trabajo de **agente**: requiere **código nuevo en `probe/`** (un generador de
 > extractos que lee el fichero de resultados de SPEC-001/002). No es código de

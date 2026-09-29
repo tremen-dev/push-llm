@@ -17,7 +17,7 @@ historial:
 > (CA-3), preguntas estilo Mom Test (CA-4), cierre explícito (CA-5), frases de apoyo (CA-6),
 > plantilla de notas y hoja de puntuación fijadas ex ante (CA-7), procedimiento (CA-8),
 > dictamen normativo antes del primer envío (CA-9; en Asturias y León, ampliado según
-> ADR-008 §8), envío bloqueado (CA-10), ensayo (CA-11) y sin jerga ni datos personales
+> ADR-008 §7), envío bloqueado (CA-10), ensayo (CA-11) y sin jerga ni datos personales
 > (CA-12). **No rescatable tal cual**: la lista de objetivos (CA-1), basada en
 > `03-local-market-vigo-pontevedra.md` y el veredicto de Vigo. SPEC-009 (EPIC-002) reutiliza
 > las **reglas** de CA-3, CA-4, CA-6 y CA-11 como texto de referencia: siguen siendo

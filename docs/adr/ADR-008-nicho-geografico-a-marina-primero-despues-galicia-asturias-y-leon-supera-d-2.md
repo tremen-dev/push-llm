@@ -11,8 +11,9 @@ historial:
   sdd-producto lo recogió en `docs/fundacion/vision.md`, `docs/roadmap.md` y el cierre de
   EPIC-001. Propone este ADR sdd-arquitecto (2026-09-29), que fija **qué parte de D-2 se
   supera, qué queda vigente de ADR-003 y ADR-005 y cómo se aplica al repo**. Aprueba: humano
-  (pendiente). Los puntos que no vienen de la decisión del humano y que propone el
-  arquitecto van marcados como *(propuesta)*.
+  (Alberto Fojo, gate del 2026-09-29): acepta las propuestas del arquitecto marcadas
+  *(aceptada por el humano, 2026-09-29)* y **rechaza** la regla sobre datos del piloto y
+  prospección de competidoras (ver Alternativas), que se ha quitado.
 - Specs relacionadas: SPEC-002 (alcance reducido), SPEC-003, SPEC-004 y SPEC-005
   (bloqueadas), SPEC-007 a SPEC-012 (EPIC-002, sin cambio de fondo).
 - **Supera D-2** (FOUNDATION; origen DECISIONS.md D-002) en su parte geográfica y en el
@@ -51,7 +52,7 @@ Vigo/Pontevedra y SPEC-008 CA-4 exige que no cambie. El lote de Viveiro ya es co
 1. **Geografía del nicho.** El nicho primario pasa a ser clínicas sanitarias privadas del
    noroeste: **A Mariña primero**; después el **resto de Galicia**, **Asturias** (todo el
    Principado) y la **provincia de León**. Entre estas tres no se fija orden en este ADR: lo
-   decide sdd-producto en la épica de validación del nicho nuevo, con datos *(propuesta)*.
+   decide sdd-producto en la épica de validación del nicho nuevo, con datos *(aceptada por el humano, 2026-09-29)*.
    "Primero" se lee como **orden de trabajo comercial y de medición** (dónde se buscan
    clientes, se construyen catálogos y se mide primero), no como prohibición de atender a un
    cliente de otra zona del nicho que llegue solo.
@@ -61,18 +62,19 @@ Vigo/Pontevedra y SPEC-008 CA-4 exige que no cambie. El lote de Viveiro ya es co
    por defecto, sin tocar (SPEC-008 CA-4 sigue vigente), para poder retomarlo sin coste.
    **Retomarlos** es decisión del humano que sdd-producto registra en el roadmap (ya prevé
    el criterio de corte "sin vía creíble hacia unas 10 clínicas de pago, reevaluar Vigo");
-   no hace falta otro ADR, porque la geografía de §1 ya los incluye *(propuesta)*.
+   no hace falta otro ADR, porque la geografía de §1 ya los incluye *(aceptada por el humano, 2026-09-29)*.
 3. **Especialidades: sanidad privada en general.** El orden de especialidades de D-2
    (dental = volumen, oftalmología y fertilidad = demo, estética = segundo mercado) **deja de
    ser vinculante**: salía del mapa de oferta de Vigo (`02-icp-and-niche.md`,
    `03-local-market-vigo-pontevedra.md`) y no se ha medido en el nicho nuevo. El orden por
    zona lo fija sdd-producto con datos. Se **mantienen** de D-2, porque no dependen de la
-   geografía y el humano no los ha cambiado *(propuesta, a confirmar en el gate)*:
+   geografía y el humano no los ha cambiado *(aceptada por el humano, 2026-09-29)*:
    hospitales en fase 2; fisioterapia solo vía agencias; nicho secundario de educación
    privada en el año 2; y la consecuencia "los catálogos de prompts, fuentes y listas de
    marcas se construyen por especialidad × ciudad" (hoy, por lote).
 4. **Alcance de FOUNDATION.** "Fuera" pasa a decir: cualquier geografía distinta de
-   **Galicia, Asturias y la provincia de León** (configurable, pero no se vende). D-1
+   **Galicia, Asturias y la provincia de León** (configurable, pero no se vende). León es la
+   provincia entera, **El Bierzo incluido** *(aceptada por el humano, 2026-09-29)*. D-1
    (vertical + geográfico, sin generalizar) no cambia.
 5. **ADR-003: qué se deroga y qué sigue vigente.**
    - **Derogado**: el encuadre del piloto como "excepción acotada a D-2"; §2 (prohibición de
@@ -97,16 +99,7 @@ Vigo/Pontevedra y SPEC-008 CA-4 exige que no cambie. El lote de Viveiro ya es co
      del piloto con sede en Vigo o Pontevedra se registran en el lote del piloto y **no
      alteran el lote de Vigo**, SPEC-008 CA-4); §6 (el nivel Galicia no se promete a la
      clínica).
-7. **Datos del piloto y prospección** *(propuesta; sustituye a las prohibiciones derogadas
-   con una regla más estrecha)*. Prospectar en A Mariña y en el resto del nicho está
-   permitido, pero **dentro de la épica de validación del nicho nuevo** y con sus propias
-   mediciones. Las respuestas medidas **para** Clínica Ártica (lote de Viveiro y pasadas
-   manuales de SPEC-007) no se usan como lista de objetivos ni como "hallazgo" de apertura
-   con competidoras suyas mientras dure el piloto: son datos del servicio a un cliente
-   (ADR-004), no un estudio de mercado. Si se quiere contactar competidoras directas de
-   Ártica en A Mariña, lo decide el humano (es una cuestión comercial y de confianza con el
-   cliente, no técnica).
-8. **Normativa fuera de Galicia.** Antes de publicar material de cliente o de contactar en
+7. **Normativa fuera de Galicia.** Antes de publicar material de cliente o de contactar en
    frío a clínicas de Asturias o León, `sdd-sanidad-regulacion` emite dictamen sobre la
    normativa de publicidad sanitaria de esas comunidades (su dominio hoy es "España y
    Galicia"). Medir preguntas que nombran esas zonas no lo necesita.
@@ -132,7 +125,7 @@ Vigo/Pontevedra y SPEC-008 CA-4 exige que no cambie. El lote de Viveiro ya es co
 - EPIC-001 queda cerrada sin veredicto de la hipótesis de Vigo: SPEC-002 se reduce a lo ya
   hecho (claves, modelos, humo) y SPEC-003, SPEC-004 y SPEC-005 quedan `bloqueada`, con lo
   rescatable anotado en cada una.
-- `sdd-sanidad-regulacion` necesita ampliar su dominio a Asturias y Castilla y León (§8).
+- `sdd-sanidad-regulacion` necesita ampliar su dominio a Asturias y Castilla y León (§7).
 - El lote de Vigo por defecto en `probe_config.json` sigue siendo Vigo: cuando el nicho
   nuevo tenga su propio lote de validación, se decidirá (otra spec) si el defecto cambia.
 
@@ -148,6 +141,11 @@ Vigo/Pontevedra y SPEC-008 CA-4 exige que no cambie. El lote de Viveiro ya es co
   los descarta, y el roadmap prevé volver si el nicho nuevo no da volumen.
 - **Fijar ya el orden Galicia → Asturias → León**: rechazada; el humano no ha dado orden
   entre ellas y no hay datos. Lo decide sdd-producto con la épica de validación.
+- **No usar los datos medidos para Clínica Ártica para prospectar a sus competidoras
+  mientras dure el piloto** (propuesta del arquitecto): **rechazada por el humano** en el
+  gate del 2026-09-29. Contactar o no a competidoras de Ártica es una decisión comercial
+  suya. La frontera de datos de ADR-004 (cifras, capturas y datos del piloto solo en el
+  espacio privado) no cambia.
 - **Mantener el orden de especialidades de D-2**: rechazada; venía del mapa de oferta de
   Vigo y el humano ha dicho "sanidad privada en general".
 

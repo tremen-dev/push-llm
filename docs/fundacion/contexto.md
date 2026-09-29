@@ -52,8 +52,7 @@ León**. **Vigo y Pontevedra quedan aparcados** (sin trabajo activo; no se aband
   RN-11) · ADR-003 (piloto de Clínica Ártica; vigentes §1, §3, §4 y §5 reinterpretado) ·
   ADR-004 (frontera de datos aplicada al piloto) · ADR-005 (catálogo del piloto en tres
   niveles; vigentes §1, §4, §5 técnico y §6) · ADR-006 (claves en `.env` local ignorado) ·
-  ADR-007 (`.env.example` versionado) · ADR-008 (nicho nuevo; `borrador` hasta que lo apruebe
-  el humano).
+  ADR-007 (`.env.example` versionado) · ADR-008 (nicho nuevo).
 
 ## Riesgos y preguntas abiertas
 - H1: ¿se puede mover una respuesta de LLM hacia una clínica en 8–12 semanas? (el riesgo que
@@ -63,7 +62,7 @@ León**. **Vigo y Pontevedra quedan aparcados** (sin trabajo activo; no se aband
 - **Volumen del nicho nuevo**: A Mariña es pequeña; no hay ningún dato de mercado de resto de
   Galicia, Asturias ni León. Falta la épica de validación del nicho nuevo (sdd-producto).
 - Normativa de publicidad sanitaria de Asturias y Castilla y León sin revisar
-  (`sdd-sanidad-regulacion`, ADR-008 §8).
+  (`sdd-sanidad-regulacion`, ADR-008 §7).
 - Riesgo de plataforma: OpenAI/Google/Anthropic pueden lanzar analítica de marca o anuncios
   en respuestas.
 - Preguntas abiertas del MVP (`07-mvp-product-spec.md` §8): qué señal de atribución mantienen

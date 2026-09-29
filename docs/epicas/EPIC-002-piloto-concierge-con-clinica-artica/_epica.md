@@ -15,7 +15,7 @@ historial:
 > prohibiciones (ADR-003 §2 y §6, ADR-005 §2 y §3) quedan derogadas; siguen vigentes el lote
 > aparte, los niveles `AV`/`AR`/`AG` sin mezclar, el Go solo con `AV` y el nivel Galicia sin
 > prometer (ADR-003 §1, §3, §4; ADR-005 §1, §4, §6). La prospección de otras clínicas del
-> nicho va en su propia épica, no en esta (ADR-008 §7). El fondo del piloto no cambia.
+> nicho va en su propia épica, no en esta. El fondo del piloto no cambia.
 > Texto de la épica sin tocar: lo actualiza sdd-producto si lo cree necesario.
 
 ## Objetivo

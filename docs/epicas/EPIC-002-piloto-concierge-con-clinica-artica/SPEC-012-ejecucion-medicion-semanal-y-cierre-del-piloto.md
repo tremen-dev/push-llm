@@ -85,7 +85,7 @@ honesto sobre H1 y H3, incluido decir "no ha funcionado" a un cliente de confian
 
 ## Fuera de alcance
 - Automatizar la medición semanal o el informe (Ciclo 3).
-- Un segundo cliente piloto: no entra en esta épica; la prospección del nicho nuevo va en su propia épica (ADR-008 §7; ~~ADR-003 §2~~, derogado).
+- Un segundo cliente piloto: no entra en esta épica; la prospección del nicho nuevo va en su propia épica (ADR-008; ~~ADR-003 §2~~, derogado).
 
 ## Notas para el gate humano
 - **Pendiente de detalle** hasta SPEC-011 y SPEC-008 CA-5: lista de acciones, cadencia del
