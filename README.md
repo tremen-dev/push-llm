@@ -29,11 +29,16 @@ is written.
 ## Ground rules for agents
 
 1. **Do not build product before Cycle 2 of `05-lean-plan.md` has produced evidence.** The first deliverables are the probe run, interviews and a manual (concierge) pilot. Code is Cycle 3.
-2. **The niche is fixed until a pivot signal fires.** Private healthcare in Vigo and Pontevedra. Do not generalise the product to "any business" in the MVP.
+2. **The niche is fixed until a pivot signal fires.** Private healthcare in the northwest of Spain: A Mariña first, then the rest of Galicia, Asturias and the province of León (ADR-008, `DECISIONS.md` D-009, 2026-09-29; Vigo and Pontevedra are parked). Do not generalise the product to "any business" in the MVP.
 3. **Attribution is a day-one feature, not a follow-up.** See `04-mechanics-of-llm-visibility.md` §3 and `07-mvp-product-spec.md` §5.
 4. **Probe with the model each consumer app serves by default, not the premium model.** See `06-models-costs-and-usage-share.md`.
 5. **Every metric shown to a clinic must be weighted by assistant usage share.** See `07-mvp-product-spec.md` §4.
 6. Decisions live in `DECISIONS.md`. To change one, add a new entry that supersedes it; do not edit history.
+
+## Internal documentation (private)
+
+- **Internal operating report** (Spanish, for tremen.dev only): how push-llm works end to end — probe, metrics, the Clínica Ártica pilot method, costs, the tremen-sdd workflow, decisions, privacy and operations. It contains real client figures, so it lives outside this public repo, in a private Claude Doc shared only within tremen.dev: <https://claude.ai/code/artifact/b3228bc3-3104-42d2-9487-28084168f0bc>. The link opens only for people it has been shared with.
+- Current state of every spec is always in `docs/tablero.md`; the project context for agents is `docs/fundacion/contexto.md`.
 
 ## Provenance
 

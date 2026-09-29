@@ -10,8 +10,37 @@ historial:
   - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
 ---
 # SPEC-009 — Reunión de descubrimiento y propuesta para Clínica Ártica
+
+> **Enmienda 2026-09-29 (d) (sdd-arquitecto) — la propuesta cuenta el objetivo nuevo
+> (ADR-009, aprobado). Cierra F-SPEC-009-1. Requiere re-aprobación humana.** El humano
+> (Alberto Fojo, 2026-09-29) decidió que la propuesta **sí** cuenta a la clínica el Go
+> "crecer fuera, defender dentro", **sin garantía y sin cifras**: "ya sois la clínica que la
+> IA recomienda en A Mariña; el objetivo es aparecer también en el área de influencia
+> (Ferrolterra, norte e interior de Lugo, occidente de Asturias) sin perder la comarca".
+> Cambian CA-3 (objetivo y "cómo sabremos si funciona"), y por dependencia CA-1 (el bloque
+> "cómo funciona" del guion dice el mismo objetivo), CA-5 (una objeción más) y CA-10 (sin
+> promesa de aparecer en el área de influencia). Expectativas sin cambio (4–12 semanas, sin
+> garantía). El nivel Galicia sigue **sin mencionarse** (ADR-005 §6 y ADR-009 §3). La spec
+> pasa `aprobada` → `bloqueada` → `borrador` y espera nueva aprobación.
+
+> **Nota 2026-09-29 (c) (sdd-arquitecto) — Go "crecer fuera, defender dentro" (ADR-009,
+> borrador). No cambia ningún CA ni requiere re-aprobación por sí misma; deja una decisión
+> pendiente.** *(Resuelta por la enmienda (d): F-SPEC-009-1 cerrado.)* Esta spec no promete "+15 pts en el núcleo" en ningún sitio, así que no hay
+> nada que retirar. Pero su CA-3 dice que "cómo sabremos si funciona" usa "los dos criterios
+> de la épica, referidos al **núcleo**", y que el área de influencia aparece "solo como
+> también lo medimos, sin objetivo". Con ADR-009 el núcleo pasa a ser condición de
+> **defensa** y el crecimiento se mide en `AR`. **Follow-up F-SPEC-009-1 (→ humano, antes
+> de redactar `propuesta.md`)**: decidir si la propuesta cuenta a la clínica el Go nuevo
+> (p. ej. "que os recomienden también a pacientes de Ferrolterra, norte de Lugo y occidente
+> de Asturias, sin perder lo que ya tenéis en A Mariña", sin garantía) o lo deja como
+> criterio interno de Tremendev. Si se cuenta, CA-3 necesita enmienda y la spec,
+> re-aprobación; si no, CA-3 queda como está y el Go se explica solo en el cierre
+> (SPEC-012). El nivel Galicia sigue sin aparecer (ADR-005 §6, vigente).
 
 > **Nota 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008). No cambia ningún CA ni
 > requiere re-aprobación.** Las citas a ADR-003 y ADR-005 de esta spec siguen valiendo en lo
@@ -68,7 +97,8 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   SPEC-007 CA-10 y callar); preguntas (CA-2); cómo funciona, en lenguaje llano (las cuatro
   palancas de `04-…md` §2 sin jerga, qué hace Tremendev y qué aporta la clínica, que el
   movimiento tarda 4–12 semanas y que **no se garantiza** aparecer ni un número de
-  pacientes); acuerdos que se piden (CA-4); cierre (fecha concreta en la que llega la
+  pacientes; por la enmienda (d), dice el mismo objetivo que la propuesta de CA-3, sin
+  garantía y sin cifras); acuerdos que se piden (CA-4); cierre (fecha concreta en la que llega la
   propuesta y quién la recibe). Ningún bloque es una instrucción sin texto. *Evidencia*:
   revisión estructural; suma del minutaje.
 - **CA-2 (preguntas) [Agente]**: Dado lo que la épica necesita saber, cuando se revisen las
@@ -92,24 +122,35 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   fuera de ese bloque, sin coincidencias.
 - **CA-3 (propuesta de una página) [Agente]**: Dado D-7, cuando se publique la plantilla
   `docs/piloto-artica/reunion/propuesta.md`, entonces cabe en una página (≤ 450 palabras)
-  y contiene, en lenguaje de clínica: el objetivo ("que ChatGPT, Gemini y Google os
-  recomienden cuando alguien de la zona pregunta por {tratamientos}, y saber cuántos
-  pacientes llegan por ahí"); qué incluye (foto de partida, medición de pacientes desde el
+  y contiene, en lenguaje de clínica: **punto de partida y objetivo** (enmienda (d),
+  ADR-009), con este sentido y sin cifras: "ya sois la clínica que la IA recomienda en
+  A Mariña; el objetivo es aparecer también en el área de influencia (Ferrolterra, norte e
+  interior de Lugo, occidente de Asturias) sin perder la comarca, cuando alguien pregunta
+  por {tratamientos}, y saber cuántos pacientes llegan por ahí"; el objetivo va
+  acompañado, en la misma sección o inmediatamente después, de que **no se garantiza**; qué
+  incluye (foto de partida, medición de pacientes desde el
   día uno, diagnóstico, acciones ejecutadas por Tremendev, medición semanal, informe cada
   15 días, reunión de cierre); qué aporta la clínica (contenidos, aprobación, pregunta en
   recepción, accesos); duración de 12 semanas desde la primera acción; **precio exacto de
   D-7** en sus dos opciones (450 € por 3 meses prepago o 199 €/mes) con el tratamiento del
   IVA explícito; expectativas (movimiento en 4–12 semanas, sin garantía de aparecer ni de
-  número de pacientes); "cómo sabremos si funciona", en palabras llanas, con los dos
-  criterios de la épica, referidos al **núcleo** (Viveiro y A Mariña); qué pasa al terminar
-  (renovar o no, sin permanencia). Por la enmienda de 2026-09-29 (ADR-005 §6): el nivel
-  Galicia **no aparece** en la propuesta como objetivo, entregable ni expectativa, y el área
-  de influencia, si aparece, lo hace solo como "también lo medimos y os lo contamos", sin
-  objetivo. No hay
+  número de pacientes, también en el área de influencia); "cómo sabremos si funciona", en
+  palabras llanas y sin umbrales numéricos, con las tres condiciones de ADR-009 (que os
+  recomienden más en el área de influencia que al empezar; que en A Mariña no se pierda lo
+  que ya tenéis; y que llegue al menos un paciente por esta vía); qué pasa al terminar
+  (renovar o no, sin permanencia). Por la enmienda de 2026-09-29 (ADR-005 §6, ADR-009 §3):
+  el nivel Galicia **no aparece** en la propuesta como objetivo, entregable ni expectativa.
+  La enmienda (d) sustituye la regla anterior "el área de influencia, si aparece, solo como
+  dato que se informa, sin objetivo": ahora es el objetivo, sin garantía. La propuesta no
+  incluye ninguna cifra de visibilidad de la clínica (ADR-004); el punto de partida es un
+  veredicto en palabras. No hay
   opción gratuita ni descuento sobre D-7; cualquier desviación exige decisión del humano
-  registrada en el ledger antes del envío. *Evidencia*: conteo de palabras; checklist;
+  registrada en el ledger antes del envío. *Evidencia*: conteo de palabras; checklist
+  (objetivo con las tres zonas del área de influencia y "sin perder la comarca"; "no se
+  garantiza" junto al objetivo; las tres condiciones de "cómo sabremos"; 4–12 semanas);
   cifras de precio iguales a D-7; búsqueda de "Galicia" en `propuesta.md`, sin
-  coincidencias.
+  coincidencias; búsqueda de `%` y de "puntos" en `propuesta.md`, sin coincidencias fuera
+  del precio y el IVA.
 - **CA-4 (acuerdos y consentimientos) [Agente]**: Dado que sin ellos no se puede medir ni
   publicar, cuando se publique `docs/piloto-artica/reunion/acuerdos.md` (anexo de la
   propuesta, para firmar o aceptar por escrito), entonces recoge: (a) la clínica avisa por
@@ -131,7 +172,9 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   revisión normativa, sin afirmar que se pueda), "¿esto no es SEO?" y (enmienda
   2026-09-29) "¿y saldremos cuando alguien de Coruña o Vigo busque un injerto capilar?"
   (respuesta honesta: se mide y se informa, compiten cadenas con varias sedes y no se
-  promete); y ≥ 4 frases para
+  promete); por la enmienda (d), "¿y si por buscar pacientes fuera perdemos lo que ya
+  tenemos en A Mariña?" (respuesta: la comarca se sigue midiendo cada semana y no perderla
+  es parte de cómo sabremos si funciona; sin garantía); y ≥ 4 frases para
   volver a hechos pasados. *Evidencia*: recuento y checklist.
 - **CA-6 (dictamen RGPD antes de enviar la propuesta) [Agente; consulta
   sdd-sanidad-regulacion]**: Dado que Tremendev accederá a la analítica de la clínica
@@ -164,15 +207,19 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
 - **CA-10 (sin jerga ni datos personales) [Verificador]**: Dado D-3 y ADR-004, cuando se
   revisen los textos de `docs/piloto-artica/reunion/`, entonces no aparecen "AEO", "GEO",
   "SoV", "share of voice", "LLM", "visibilidad en IA" ni "posicionamiento garantizado",
-  ni una promesa de aparecer en el nivel Galicia (ADR-005 §6), y
+  ni una promesa de aparecer en el nivel Galicia (ADR-005 §6), ni (enmienda (d)) una
+  promesa o garantía de aparecer en el área de influencia o de mantener la comarca, ni
+  cifras de visibilidad de la clínica (ADR-004), y
   no hay emails, teléfonos (salvo marcadores `{…}`) ni nombres de persona. *Evidencia*:
-  búsqueda por script, sin coincidencias.
+  búsqueda por script, sin coincidencias; revisión de que toda mención de "garantiz…" o
+  "aseguramos" en los textos es negativa ("no se garantiza").
 
 ## Entidades y reglas afectadas
 - Dominio: Clinic, Provider (como "asistente"), AttributionEvent, Action (qué hace cada
   parte).
 - D-3 (se vende pacientes, no visibilidad), D-7 (precio), D-8 (idioma), RN-07, RN-09.
-- ADR-003, ADR-004, ADR-005 (§6: el nivel Galicia no se promete). Reutiliza las reglas de SPEC-004 CA-3, CA-4, CA-6, CA-11 y CA-12 sin
+- ADR-003, ADR-004, ADR-005 (§6: el nivel Galicia no se promete), ADR-009 (Go "crecer en
+  `AR`, defender `AV`, ≥ 1 paciente"; la propuesta lo cuenta sin garantía, enmienda (d)). Reutiliza las reglas de SPEC-004 CA-3, CA-4, CA-6, CA-11 y CA-12 sin
   copiar sus ficheros. Depende de SPEC-007 CA-5 y CA-10.
 
 ## Fuera de alcance
@@ -193,8 +240,17 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
 - La reunión puede prepararse ya en paralelo a SPEC-007; solo exige la pasada 1 hecha.
 - **Enmienda 2026-09-29 — a mirar**: (1) la propuesta no menciona Galicia en absoluto
   (test simple y a prueba de despistes); si quieres poder decir "pacientes de toda
-  Galicia para capilar" aunque sea sin compromiso, hay que relajar CA-3. (2) El área de
-  influencia puede aparecer en la propuesta solo como dato que se informa, no como objetivo.
+  Galicia para capilar" aunque sea sin compromiso, hay que relajar CA-3. (2) ~~El área de
+  influencia puede aparecer en la propuesta solo como dato que se informa, no como
+  objetivo.~~ Sustituido por la enmienda (d): es el objetivo, sin garantía.
   (3) La respuesta de la clínica a "qué tratamientos queréis atraer de fuera" puede cambiar
   el set `AR`/`AG` solo si llega **antes** de la pasada 1 de SPEC-007 (después, el set está
   congelado y cualquier pregunta nueva se informa aparte).
+- **Enmienda (d), 2026-09-29 — a mirar para re-aprobar**: (1) "ya sois la clínica que la
+  IA recomienda en A Mariña" es una afirmación sobre la clínica: se apoya en el baseline
+  oficial (aviso de techo, SPEC-008 CA-10) y, si se enseña como dato del probe, en la regla
+  de SPEC-007 CA-7 (calibración). Si la calibración dijera que app y probe no coinciden, la
+  frase se revisa antes de enviar. (2) "Cómo sabremos si funciona" nombra las tres
+  condiciones de ADR-009 en llano y sin umbrales: los umbrales de `sdd-metricas` (SPEC-008
+  CA-11) son criterio interno y no se cuentan. (3) Nueva objeción en CA-5 ("¿perdemos
+  A Mariña?"). (4) Galicia sigue fuera de la propuesta con el mismo test de búsqueda.

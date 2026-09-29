@@ -71,6 +71,17 @@ def test_ca1_brand_questions_am_are_not_in_the_probe():
     assert not [r for r in read_csv(PROBE_DIR / "prompts.csv") if r["id"].startswith("AM")]
 
 
+def test_ca7_pilot_prompts_equal_to_set_frozen_at_official_baseline():
+    """SPEC-007 CA-8: the set froze when the official baseline started (ledger of SPEC-008,
+    "Registro de la congelación del set"). A new question needs a new id, never an edit."""
+    lines = (FIXTURES / "pilot-set-frozen.tsv").read_text(encoding="utf-8").splitlines()
+    frozen = [tuple(line.split("\t", 1)) for line in lines if line and not line.startswith("#")]
+    assert len(frozen) == 24
+    probe = [(r["id"], r["prompt"]) for r in read_csv(PROBE_DIR / "prompts.csv")
+             if r["id"][:2] in LEVELS]
+    assert probe == frozen
+
+
 def test_ca1_prompt_ids_unique():
     ids = [r["id"] for r in read_csv(PROBE_DIR / "prompts.csv")]
     assert len(ids) == len(set(ids))
@@ -356,7 +367,7 @@ def test_ca4_every_brand_belongs_to_some_batch(default_cfg, vcfg):
 # ---------------------------------------------------------------- CA-6
 
 PY_CMD = re.compile(r"^(?:\.\\\.venv\\Scripts\\)?python(?:\.exe)? run_probe\.py (.*)$")
-MAX_CALLS_PER_PROVIDER = 54  # CA-5 baseline: AV 15 x 3 runs + AR/AG 9 x 1 run
+MAX_CALLS_PER_PROVIDER = 64  # plain command since CA-11: AV 15 x 3 + AR 5 x 3 + AG 4 x 1
 LEDGER = (REPO_DIR / "docs" / "epicas" / "EPIC-002-piloto-concierge-con-clinica-artica"
           / "SPEC-008-catalogo-de-viveiro-y-a-marina-en-el-probe.ledger.md")
 
@@ -406,7 +417,12 @@ def test_ca6_readme_documents_pilot_batch_with_working_commands(tmp_path):
 def test_ca6_ledger_human_commands_within_budget_and_use_venv_python(tmp_path):
     steps = LEDGER.read_text(encoding="utf-8").split("## Instrucciones para el humano", 1)[1]
     steps = steps.split("\n## ", 1)[0]
-    assert "Activate.ps1" not in steps and "pasada 1" in steps
+    assert "Activate.ps1" not in steps
+    # order of the enmienda (b): smoke -> SPEC-013 hecho -> CA-9 -> freeze -> baseline -> CA-10
+    for step in ("F-SPEC-013-5", "SPEC-013", "CA-9", "congelación", "Aviso de techo",
+                 "primera acción", "probe-smoke-spec013"):
+        assert step in steps, step
+    assert "después de la pasada 1" not in steps
     run_lines = [ln for ln in steps.splitlines()
                  if "run_probe.py" in ln and not ln.lstrip().startswith("#")
                  and not ln.lstrip().startswith("-")]
@@ -425,8 +441,8 @@ def test_ca5_simple_pilot_command_uses_runs_per_level(tmp_path):
     runs = {}
     for r in read_csv(tmp_path / "results.csv"):
         runs.setdefault(r["prompt_id"][:2], set()).add(r["run"])
-    assert runs == {"AV": {"1", "2"}, "AR": {"1"}, "AG": {"1"}}
-    assert len(ask.calls) == 15 * 2 + 9
+    assert runs == {"AV": {"1", "2", "3"}, "AR": {"1", "2", "3"}, "AG": {"1"}}  # CA-11 (i)
+    assert len(ask.calls) == 15 * 3 + 5 * 3 + 4 == MAX_CALLS_PER_PROVIDER
 
 
 def test_ca5_levels_option_selects_levels_and_runs_override(tmp_path):
@@ -482,3 +498,312 @@ def test_review_observations_list_brand_with_no_doctor_terms(vcfg):
     md = analysis.render_summary(res, vcfg)
     obs = md.split("## Observaciones para revisar a mano", 1)[1]
     assert "no es una métrica" in obs and "AV01" in obs and "AV02" not in obs
+
+
+# ---------------------------------------------------------------- CA-9 / CA-10 (Go with the probe)
+
+def core_rows(with_client):
+    """AV rows: {(pid, provider, run): True/False}; every provider answers every cell."""
+    return [analysis_row(pid, prov, run, "ok",
+                         "Te recomiendo Clínica Ártica." if hit else "No conozco ninguna.")
+            for (pid, prov, run), hit in with_client.items()]
+
+
+def _all_cells(runs=3, n=4, hit=lambda pid, prov, run: False):
+    return {(f"AV{i:02d}", prov, run): hit(f"AV{i:02d}", prov, run)
+            for i in range(1, n + 1) for prov in ("openai", "gemini", "claude")
+            for run in range(1, runs + 1)}
+
+
+def test_ca9_config_fixes_the_go_instrument(vcfg):
+    b = settings.batch(vcfg)
+    runs = {lv["prefix"]: lv["runs"] for lv in b["levels"]}
+    assert runs == {"AV": 3, "AR": 3, "AG": 1}  # CA-9 (a)/(c); CA-11 (i): AR "antes" = "después"
+    assert b["go"]["ceiling"] == 0.85           # CA-10
+    assert b["go"]["min_valid_share"] == 0.9    # dictamen CA-9 (f)
+    assert b["client_review_aliases"] == ["Ártica"]  # dictamen CA-9 (h)
+
+
+@pytest.mark.parametrize("hits,warned", [(20, True), (17, True), (16, False), (0, False)])
+def test_ca10_ceiling_warning_only_from_core_weighted(vcfg, hits, warned):
+    # 20 AV prompts x 1 run x 3 providers; the client in the first `hits` of each provider
+    cells = {(f"AV{i:02d}", prov, 1): i <= hits
+             for i in range(1, 21) for prov in ("openai", "gemini", "claude")}
+    res = analysis.analyze(core_rows(cells), _members(vcfg), vcfg)
+    assert res["core_weighted"] == pytest.approx(hits / 20)
+    md = analysis.render_summary(res, vcfg)
+    assert ("Aviso de techo" in md) is warned
+    if warned:
+        core = md.split("## Nivel AV", 1)[1].split("\n## Nivel AR", 1)[0]
+        assert "Aviso de techo" in core and "85 %" in core
+
+
+def test_ca10_ceiling_ignores_other_levels(vcfg):
+    rows = core_rows(_all_cells(runs=1))  # core at 0 %
+    rows += [analysis_row(f"AR0{i}", p, 1, "ok", "Clínica Ártica.")
+             for i in range(1, 6) for p in ("openai", "gemini", "claude")]
+    md = analysis.render_summary(analysis.analyze(rows, _members(vcfg), vcfg), vcfg)
+    assert "Aviso de techo" not in md
+
+
+def test_ca9_weighted_sov_per_run_and_pooled(vcfg):
+    # openai: client in run 1 only; gemini/claude never -> run1 = 0.55/0.90, others 0
+    cells = _all_cells(runs=3, hit=lambda pid, prov, run: prov == "openai" and run == 1)
+    res = analysis.analyze(core_rows(cells), _members(vcfg), vcfg)
+    assert res["core_weighted_by_run"] == pytest.approx(
+        {"1": 0.55 / 0.90, "2": 0.0, "3": 0.0})
+    assert res["core_weighted"] == pytest.approx((1 / 3) * 0.55 / 0.90)  # pooled, (b)
+    md = analysis.render_summary(res, vcfg)
+    core = md.split("## Nivel AV", 1)[1].split("\n## Nivel AR", 1)[0]
+    assert "SoV ponderado del núcleo por run" in core
+    assert "| 1 | 61.1 % |" in core and "| 3 | 0.0 % |" in core
+
+
+def test_ca9_stability_per_question_and_provider(vcfg):
+    def hit(pid, prov, run):
+        if prov != "openai":
+            return False
+        return {"AV01": True, "AV02": run == 2}.get(pid, False)
+    res = analysis.analyze(core_rows(_all_cells(runs=3, hit=hit)), _members(vcfg), vcfg)
+    assert res["core_stability"] == {"all": 1, "some": 1, "none": 10, "cells": 12}
+    md = analysis.render_summary(res, vcfg)
+    assert "en todos sus runs válidos: 1 de 12" in md
+    assert "en alguno: 1 de 12" in md and "en ninguno: 10 de 12" in md
+
+
+def test_ca9_go_measurement_complete_only_with_enough_valid_rows_per_provider(vcfg):
+    cells = _all_cells(runs=3, n=4)
+    rows = core_rows(cells)  # 12 rows per provider, all ok
+    res = analysis.analyze(rows, _members(vcfg), vcfg)
+    assert res["go_complete"] is True
+    # two errors of 12 for gemini: 10/12 = 0.83 < 0.9 -> not complete
+    bad = [dict(r, status="error") if r["provider"] == "gemini" and r["run"] == "1"
+           and r["prompt_id"] in ("AV01", "AV02") else r for r in rows]
+    res = analysis.analyze(bad, _members(vcfg), vcfg)
+    assert res["go_complete"] is False
+    assert "Medición completa para la condición (D) del Go: **no**" in analysis.render_summary(res, vcfg)
+    # a weighted provider missing altogether -> not complete
+    res = analysis.analyze([r for r in rows if r["provider"] != "claude"], _members(vcfg), vcfg)
+    assert res["go_complete"] is False
+
+
+def test_ca9_bare_artica_answers_are_counted_and_flagged_for_review(vcfg):
+    rows = [analysis_row("AV01", "openai", 1, "ok", "La zona ártica es fría."),
+            analysis_row("AV02", "openai", 1, "ok", "Clínica Ártica en Viveiro."),
+            analysis_row("AV03", "openai", 1, "ok", "Ártica, en clinicaartica.com."),
+            analysis_row("AV04", "openai", 1, "ok", "Nada.")]
+    res = analysis.analyze(rows, _members(vcfg), vcfg)
+    assert res["levels"]["AV"]["openai"]["with_client"] == 3  # RN-01 literal: all count
+    assert res["bare_client"]["AV"] == [("AV01", "openai", "1")]
+    md = analysis.render_summary(res, vcfg)
+    assert "solo por \"Ártica\" suelta" in md and "AV01 × openai (run 1)" in md
+
+
+def test_ca9_levels_outside_core_list_cells_with_client_without_percentages(vcfg):
+    rows = [analysis_row("AR01", "openai", 1, "ok", "Clínica Ártica."),
+            analysis_row("AR02", "gemini", 1, "ok", "Nada."),
+            analysis_row("AG01", "claude", 1, "ok", "Clínica Ártica.")]
+    res = analysis.analyze(rows, _members(vcfg), vcfg)
+    assert res["cells_with_client"]["AR"] == [("AR01", "openai", 1, 1)]
+    md = analysis.render_summary(res, vcfg)
+    ar = md.split("## Nivel AR", 1)[1].split("\n## Nivel AG", 1)[0]
+    assert "AR01 × openai (1 de 1 runs)" in ar and "%" not in ar
+
+
+def test_ca9_models_served_are_reported(vcfg):
+    rows = [dict(analysis_row("AV01", "openai", 1, "ok", "x"), model="gpt-a"),
+            dict(analysis_row("AV01", "openai", 2, "ok", "x"), model="gpt-b"),
+            dict(analysis_row("AR01", "claude", 1, "ok", "x"), model="claude-a")]
+    res = analysis.analyze(rows, _members(vcfg), vcfg)
+    assert res["models"] == {"openai": ["gpt-a", "gpt-b"], "claude": ["claude-a"]}
+    md = analysis.render_summary(res, vcfg)
+    assert "## Modelos servidos" in md and "| openai | gpt-a; gpt-b |" in md
+
+
+# ---------------------------------------------------------------- CA-11 (Go: grow AR, defend AV)
+
+PROVS = ("openai", "gemini", "claude")
+
+
+def ar_rows(hit=lambda pid, prov, run: False, runs=3, n=5, prefix="AR"):
+    """Every question x provider x run of a level answers; the client where `hit` says."""
+    return [analysis_row(f"{prefix}{i:02d}", prov, run, "ok",
+                         "Te recomiendo Clínica Ártica." if hit(f"{prefix}{i:02d}", prov, run)
+                         else "No conozco ninguna.")
+            for i in range(1, n + 1) for prov in PROVS for run in range(1, runs + 1)]
+
+
+def _res(vcfg, rows):
+    return analysis.analyze(rows, _members(vcfg), vcfg)
+
+
+def _with_go(cfg, part, **values):
+    go = cfg["batch"]["go"]
+    return {**cfg, "batch": {**cfg["batch"], "go": {**go, part: {**go[part], **values}}}}
+
+
+def test_ca11_config_fixes_growth_and_defense(vcfg):
+    go = settings.batch(vcfg)["go"]
+    assert go["growth"] == {"level": "AR", "runs": 3, "min_rise_pts": 12.0,
+                            "after_measurements": 2}
+    assert go["defense"] == {"level": "AV", "max_drop_pts": 10.0, "after_measurements": 2}
+    labels = {lv["prefix"]: lv["label"] for lv in settings.batch(vcfg)["levels"]}
+    assert "(D)" in labels["AV"] and "(C)" in labels["AR"] and "sin objetivo" in labels["AG"]
+
+
+def test_ca11_ar_weighted_uses_only_ar_rows(vcfg):
+    ar = ar_rows(lambda pid, prov, run: pid == "AR01" and prov == "openai")
+    others = (ar_rows(lambda *a: True, prefix="AV", n=4)
+              + ar_rows(lambda *a: True, runs=1, prefix="AG", n=4))
+    alone, mixed = _res(vcfg, ar), _res(vcfg, ar + others)
+    # openai 3/15, others 0: 0.2 * 0.55 / 0.90
+    assert alone["growth"]["weighted"] == pytest.approx(0.2 * 0.55 / 0.90)
+    assert mixed["growth"]["weighted"] == pytest.approx(alone["growth"]["weighted"])
+    assert mixed["core_weighted"] == pytest.approx(_res(vcfg, others)["core_weighted"])
+    assert alone["growth"]["runs"] == 3 and alone["growth"]["complete"] is True
+
+
+def test_ca11_ar_summary_gives_its_own_weighted_only_with_design_runs(vcfg):
+    md = analysis.render_summary(_res(vcfg, ar_rows(lambda pid, prov, run: prov == "openai")),
+                                 vcfg)
+    ar = md.split("## Nivel AR", 1)[1].split("\n## Nivel AG", 1)[0]
+    assert "SoV ponderado de AR" in ar and "61.1 %" in ar
+    assert "Medición completa para la condición (C) del Go: **sí**" in ar
+    ag = md.split("## Nivel AG", 1)[1].split("\n## Coste", 1)[0]
+    assert "%" not in ag
+    # weekly tracking with 1 run: no percentage for AR (dictamen (j) of SPEC-007 still holds)
+    md1 = analysis.render_summary(_res(vcfg, ar_rows(lambda *a: True, runs=1)), vcfg)
+    ar1 = md1.split("## Nivel AR", 1)[1].split("\n## Nivel AG", 1)[0]
+    assert "%" not in ar1 and "no se da" in ar1
+
+
+def test_ca11_ar_measurement_incomplete_with_errors(vcfg):
+    rows = [dict(r, status="error") if r["provider"] == "gemini" and r["prompt_id"] in
+            ("AR01", "AR02") and r["run"] == "1" else r for r in ar_rows()]
+    assert _res(vcfg, rows)["growth"]["complete"] is False  # 13/15 < 0.9
+
+
+def test_ca11_completeness_does_not_apply_to_a_level_that_was_not_measured(vcfg):
+    """An AR-only run (CA-12) did not measure AV: (D) "no aplica", not "no"; and vice versa."""
+    md = analysis.render_summary(_res(vcfg, ar_rows()), vcfg)
+    av = md.split("## Nivel AV", 1)[1].split("\n## Nivel AR", 1)[0]
+    assert "Medición completa para la condición (D) del Go: **no aplica** (no se midió AV)" in av
+    assert "**no**" not in av
+    ar = md.split("## Nivel AR", 1)[1].split("\n## Nivel AG", 1)[0]
+    assert "Medición completa para la condición (C) del Go: **sí**" in ar
+    md = analysis.render_summary(_res(vcfg, core_rows(_all_cells(runs=3))), vcfg)
+    ar = md.split("## Nivel AR", 1)[1].split("\n## Nivel AG", 1)[0]
+    assert "Medición completa para la condición (C) del Go: **no aplica** (no se midió AR)" in ar
+    assert "no se da" not in ar and "**no**" not in ar
+    av = md.split("## Nivel AV", 1)[1].split("\n## Nivel AR", 1)[0]
+    assert "Medición completa para la condición (D) del Go: **sí**" in av
+
+
+def _hits(cells):
+    return lambda pid, prov, run: (pid, prov) in cells
+
+
+BROAD = {("AR01", "openai"), ("AR02", "gemini")}    # two questions: +17.8 pts
+SINGLE = {("AR01", "openai"), ("AR01", "gemini")}   # one question: +17.8 pts
+
+
+def test_ca11_growth_needs_rise_in_both_afters_and_more_than_one_question(vcfg):
+    before = _res(vcfg, ar_rows())
+    broad = _res(vcfg, ar_rows(_hits(BROAD)))
+    single = _res(vcfg, ar_rows(_hits(SINGLE)))
+    small = _res(vcfg, ar_rows(lambda pid, prov, run: run == 1 and (pid, prov) in BROAD))
+    g = analysis.growth_verdict(before, [broad, broad], vcfg)
+    assert g["decidable"] is True and g["verdict"] is True
+    assert g["measurements"][0]["delta_pts"] == pytest.approx(100 * 0.2 * 0.80 / 0.90)
+    assert analysis.growth_verdict(before, [broad, single], vcfg)["verdict"] is False
+    assert analysis.growth_verdict(before, [broad, small], vcfg)["verdict"] is False
+    assert analysis.growth_verdict(before, [single, single], vcfg)["verdict"] is False
+
+
+def test_ca11_growth_threshold_is_inclusive_and_unrounded(vcfg):
+    before = _res(vcfg, ar_rows())
+    broad = _res(vcfg, ar_rows(_hits(BROAD)))
+    delta = 100 * 0.2 * 0.80 / 0.90
+    at = _with_go(vcfg, "growth", min_rise_pts=delta)
+    assert analysis.growth_verdict(before, [broad, broad], at)["verdict"] is True
+    above = _with_go(vcfg, "growth", min_rise_pts=delta + 0.01)
+    assert analysis.growth_verdict(before, [broad, broad], above)["verdict"] is False
+
+
+def test_ca11_growth_not_decidable_with_other_design_or_incomplete(vcfg):
+    before1 = _res(vcfg, ar_rows(runs=1))  # the 1-run AR of the official baseline
+    broad = _res(vcfg, ar_rows(_hits(BROAD)))
+    g = analysis.growth_verdict(before1, [broad, broad], vcfg)
+    assert g["decidable"] is False and g["verdict"] is None
+    assert analysis.growth_verdict(_res(vcfg, ar_rows()), [broad], vcfg)["verdict"] is None
+    bad = [dict(r, status="error") if r["provider"] == "openai" and r["run"] == "1" else r
+           for r in ar_rows()]
+    assert analysis.growth_verdict(_res(vcfg, bad), [broad, broad], vcfg)["verdict"] is None
+
+
+def test_ca11_defense_fails_only_with_a_drop_in_both_afters(vcfg):
+    base = _res(vcfg, ar_rows(lambda *a: True, prefix="AV", n=4))           # 100 %
+    drop = _res(vcfg, ar_rows(lambda pid, prov, run: not (pid == "AV01" and prov == "openai"),
+                              prefix="AV", n=4))                             # -15.3 pts
+    same = _res(vcfg, ar_rows(lambda *a: True, prefix="AV", n=4))
+    d = analysis.defense_verdict(base, [drop, drop], vcfg)
+    assert d["decidable"] is True and d["verdict"] is False
+    assert d["measurements"][0]["delta_pts"] == pytest.approx(-25 * 0.55 / 0.90)
+    assert analysis.defense_verdict(base, [drop, same], vcfg)["verdict"] is True
+    assert analysis.defense_verdict(base, [same, same], vcfg)["verdict"] is True
+    exact = _with_go(vcfg, "defense", max_drop_pts=25 * 0.55 / 0.90)
+    assert analysis.defense_verdict(base, [drop, drop], exact)["verdict"] is False  # <= -X
+    assert analysis.defense_verdict(base, [drop], vcfg)["verdict"] is None
+
+
+def test_ca11_verdicts_do_not_mix_levels(vcfg):
+    before = ar_rows()
+    after = ar_rows(_hits(BROAD))
+    core_good = ar_rows(lambda *a: True, prefix="AV", n=4)
+    core_bad = ar_rows(prefix="AV", n=4)
+    g1 = analysis.growth_verdict(_res(vcfg, before), [_res(vcfg, after)] * 2, vcfg)
+    g2 = analysis.growth_verdict(_res(vcfg, before + core_good),
+                                 [_res(vcfg, after + core_bad)] * 2, vcfg)
+    assert g1 == g2
+    d1 = analysis.defense_verdict(_res(vcfg, core_good), [_res(vcfg, core_bad)] * 2, vcfg)
+    d2 = analysis.defense_verdict(_res(vcfg, core_good + after),
+                                  [_res(vcfg, core_bad + before)] * 2, vcfg)
+    assert d1 == d2
+
+
+def test_ca11_go_verdict_report_gives_c_and_d_apart(vcfg):
+    before = _res(vcfg, ar_rows())
+    after = _res(vcfg, ar_rows(_hits(BROAD)))
+    core = _res(vcfg, ar_rows(lambda *a: True, prefix="AV", n=4))
+    md = analysis.render_go_verdict(analysis.growth_verdict(before, [after] * 2, vcfg),
+                                    analysis.defense_verdict(core, [core] * 2, vcfg), vcfg)
+    c = md.split("## (C)", 1)[1].split("\n## (D)", 1)[0]
+    d = md.split("## (D)", 1)[1].split("\n## (A)", 1)[0]
+    assert "AR" in c and "AV" not in c and "**sí**" in c
+    assert "AV" in d and "AR" not in d and "**sí**" in d
+    assert "## (A)" in md and "RN-07" in md
+    assert "ninguna cifra combina niveles" in md
+
+
+# ---------------------------------------------------------------- CA-12 (AR "antes")
+
+def test_ca12_ledger_command_is_the_ar_before_with_the_design_of_ca11(tmp_path):
+    text = LEDGER.read_text(encoding="utf-8")
+    steps = text.split("## Instrucciones para el humano (CA-12)", 1)[1].split("\n## ", 1)[0]
+    cmds = _commands(steps)
+    assert len(cmds) == 1
+    argv = cmds[0]
+    assert argv[argv.index("--levels") + 1] == "AR"
+    assert argv[argv.index("--runs") + 1] == "3"
+    assert argv[argv.index("--out") + 1].endswith("piloto-artica\\probe-AR-antes")
+    argv[argv.index("--config") + 1] = str(PROBE_DIR / argv[argv.index("--config") + 1])
+    del argv[argv.index("--out"):argv.index("--out") + 2]
+    ask = FakeAsk()
+    run_probe.main([*argv, "--out", str(tmp_path), "--sleep", "0"], env=KEYS, ask=ask)
+    rows = read_csv(tmp_path / "results.csv")
+    assert len(ask.calls) == 5 * 3 * 3 == 45
+    assert {r["prompt_id"] for r in rows} == {f"AR0{i}" for i in range(1, 6)}
+    assert {r["run"] for r in rows} == {"1", "2", "3"}
+    cfg = settings.load_config(VIVEIRO)
+    res = analysis.analyze(rows, _members(cfg), cfg)
+    assert res["growth"]["runs"] == 3 and res["growth"]["complete"] is True

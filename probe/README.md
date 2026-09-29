@@ -96,23 +96,27 @@ A batch is configuration, not code. The default config `probe_config.json` **is 
 
 - prompts: ids `AVnn` (core: Viveiro and A Mariña), `ARnn` (area of influence) and `AGnn` (Galicia), the same ids and literal texts as `docs/piloto-artica/prompts-baseline.md`; the level is the id prefix. Brand questions `AM` are not in the probe.
 - brands: only those listed in `batch.brands` take part (membership, not city). Pilot competitors based in Vigo or Pontevedra are listed there and **not** in the Vigo batch, so they never change the Vigo results.
-- `summary.md` reports each level apart: the client's answers per provider, the weighted SoV (RN-03) **only for `AV`**, and only "x of n" counts for `AR` and `AG`. No figure adds up levels.
-- runs: per level in `batch.levels` (`AV` 2, `AR` 1, `AG` 1), so the plain command is the safe baseline of the SPEC-008 cost dictamen (39 prompt-runs per provider). `--runs N` overrides every selected level; `--levels AV` (or `AR,AG`) selects levels.
+- `summary.md` reports each level apart: the client's answers per provider, the weighted SoV (RN-03) of `AV` computed only with `AV` rows, the weighted SoV of `AR` computed only with `AR` rows (only when the measurement has the 3 runs of the Go design; otherwise counts only) and only "x of n" counts for `AG`. No figure adds up levels (ADR-005 §4, ADR-009 §2).
+- The Go of the pilot (ADR-009; SPEC-008 CA-11 dictamen, `batch.go`) is three yes/no conditions, reported apart: **(C) grow** in `AR` (weighted SoV of `AR` against its CA-12 "before": ≥ +12 pts in **each** of the two "after" measurements, and still > 0 leaving out any single `AR` question), **(D) defend** `AV` (a significant drop is ≥ 10 pts below the official baseline in **both** "after" measurements) and **(A)** ≥ 1 attributed patient (outside the probe). `analysis.growth_verdict`, `analysis.defense_verdict` and `analysis.render_go_verdict` compute them from the `analysis.analyze` result of each measurement (the offline command that runs them is SPEC-012 work).
+- runs: per level in `batch.levels` (`AV` 3, `AR` 3, `AG` 1). The official baseline (2026-09-29) ran with `AR` 1, so it is **not** the base of (C): the base is the `AR` "before" of CA-12 (`--levels AR`, 3 runs). Each Go "after" measurement is `--levels AV,AR` (same 3 runs on both levels). `--runs N` overrides every selected level (tracking: `--levels AV --runs 1` weekly, `--levels AR,AG --runs 1` every 4 weeks; tracking figures are never compared with the Go measurements).
+- Go measurements (`batch.go`, SPEC-008 CA-9/CA-10/CA-11): the `AV` section of `summary.md` also gives the weighted core SoV per run, per question × provider stability, whether the measurement is complete for condition (D) (every weighted provider with ≥ 90 % of its `AV` rows `ok`; otherwise `--resume` the same week) and a **ceiling warning** when the weighted core SoV is ≥ 85 % (decided by the human on 2026-09-29, ADR-009). The `AR` section says whether the measurement is complete for condition (C). `AR`/`AG` list the question × provider cells naming the client. Answers naming the client only through the bare alias "Ártica" still count (RN-01) and are listed for manual review. A "served models" table closes the summary (D-5/RN-10).
 - `summary.md` ends with "observations to review by hand": sentences naming a clinic next to "sin médico", "esteticista", "no sanitario"… (`batch.review_terms`). Not a metric.
 - output: `$PUSHLLM_PRIVADO/piloto-artica/probe/` (private, ADR-001/ADR-004).
 
-`--only` must name prompts of the chosen batch; other ids are refused. `--out` empty or a drive root (e.g. `PUSHLLM_PRIVADO` unset) is refused. The baseline goes **after** pass 1 of the manual baseline (SPEC-007), which freezes the question set; the smoke can run before. From `probe/` (PowerShell, keys in the repo-root `.env`, `PUSHLLM_PRIVADO` set as a user variable):
+`--only` must name prompts of the chosen batch; other ids are refused. `--out` empty or a drive root (e.g. `PUSHLLM_PRIVADO` unset) is refused. Order (SPEC-008 ledger, "Instrucciones para el humano (CA-7)"): smoke → official baseline, whose start **freezes the question set** (SPEC-007 CA-8) → ceiling warning check (decided on 2026-09-29, ADR-009) → `AR` "before" (CA-12) → first pilot action. The baseline does not wait for any manual pass. It must start in a new directory: `--resume` refuses a `results.csv` written before SPEC-013 (no `searched_urls` column). From `probe/` (PowerShell, keys in the repo-root `.env`, `PUSHLLM_PRIVADO` set as a user variable):
 
 ```powershell
-# Pilot smoke: one prompt per level x 1 run x 3 providers = 9 calls
-.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --only AV01,AR01,AG01 --runs 1 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke"
+# Pilot smoke: one prompt per level x 1 run x 3 providers = 9 calls (new directory)
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --only AV01,AR01,AG01 --runs 1 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke-spec013"
 
-# Pilot baseline, runs per level (AV 2, AR/AG 1): 39 prompt-runs x 3 providers = 117 calls
-.\.venv\Scripts\python run_probe.py --config batches/viveiro.json
+# AR "before" of condition (C) (SPEC-008 CA-12): AR 5 prompts x 3 runs x 3 providers = 45 calls, new directory
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AR --runs 3 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-AR-antes"
 
-# ...or, if the smoke cost per prompt-run is <= 0.19 EUR (SPEC-008 ledger): AV with 3 runs, then AR/AG with 1
-.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AV --runs 3
-.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AR,AG --resume
+# Each Go "after" measurement (SPEC-012): AV and AR with 3 runs, 60 prompt-runs x 3 providers = 180 calls, dated directory
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AV,AR --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-go-AAAA-MM-DD"
+
+# Tracking every 4 weeks (SPEC-012): AR/AG with 1 run, 9 prompt-runs x 3 providers = 27 calls
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AR,AG --runs 1 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-AAAA-MM-DD"
 
 # Offline recount of the pilot batch (no calls)
 .\.venv\Scripts\python run_probe.py --config batches/viveiro.json --analyze

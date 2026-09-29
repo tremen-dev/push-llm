@@ -7,8 +7,9 @@ epica: EPIC-002
 
 ## Resumen
 - Fase: <!-- refleja el estado de la spec; la fuente de verdad es el frontmatter de la spec -->
-- Rama: `ft/SPEC-008-catalogo-de-viveiro-y-a-marina-en-el-probe` (sale de
-  `ft/SPEC-007-…`, que aún no está en `main`)
+- Rama: `ft/SPEC-008-catalogo-de-viveiro-y-a-marina-en-el-probe` (CA-1…CA-8, sale de
+  `ft/SPEC-007-…`). Enmienda (b), CA-9/CA-10 y baseline oficial:
+  `ft/SPEC-008-baseline-oficial`, apilada sobre `ft/SPEC-013-…` (PR #4), sin push.
 
 ## Matriz de criterios de aceptación
 <!-- Escritores: sdd-implementador rellena Implementado y Test; sdd-verificador rellena Verif. y Estado. Nunca al revés. -->
@@ -16,17 +17,31 @@ epica: EPIC-002
 <!-- Un CA está ✅ solo cuando Implementado + Test + Verif. aplicables están en verde. Una salvedad se marca ⚠️, nunca ✅. -->
 | CA | Implementado (fichero) | Test (fichero/caso) | Verif. | Estado |
 |---|---|---|---|---|
-| CA-1 | `probe/prompts.csv`: `AV01`–`AV15`, `AR01`–`AR05`, `AG01`–`AG04` (24), texto literal e intent de `docs/piloto-artica/prompts-baseline.md`, `specialty=aesthetic`, `city=Viveiro`; sin `AM`; sin columna nueva. Dependencia: el set aún no tiene fecha de congelación (ver "Dependencias") | `probe/tests/test_pilot_batch.py::test_ca1_pilot_prompts_equal_to_frozen_set_id_and_literal_text`, `::test_ca1_brand_questions_am_are_not_in_the_probe`, `::test_ca1_prompt_ids_unique` | Intermedia 2026-09-29: comparación propia (parser independiente) id+texto+intent de los 24 `AV/AR/AG` contra `prompts-baseline.md` → 0 diferencias; `AM` ausentes; 44 preguntas Vigo intactas. Salvedad: set aún sin fecha de congelación (SPEC-007 CA-8) | ⚠️ |
-| CA-2 | `probe/brands.csv`: Clínica Ártica (alias del dictamen `sdd-metricas` de SPEC-007 (a1)) + 15 competidoras verificadas + directorio Páxinas Galegas; Clínica Villoria L'Essence y Clínica Villoria (filas existentes) reutilizadas por pertenencia; ninguna sigla nueva. Tabla "Competidores verificados" y pendientes en este ledger | `test_pilot_batch.py::test_ca2_brands_csv_loads_and_has_the_client`, `::test_ca2_no_bare_common_word_alias_for_pilot_brands`, `::test_ca2_new_aliases_do_not_collide_with_existing_ones` (colisiones = ∅), `::test_ca2_no_alias_shared_between_two_brands_of_the_pilot_batch`, `::test_ca2_no_new_exact_aliases`, `::test_ca2_every_pilot_competitor_is_verified_in_the_ledger`, `::test_ca2_villoria_mentions_go_to_the_right_row_in_pilot_batch`, `::test_ca2_virxe_da_marina_domain_forms` | Intermedia 2026-09-29: `brands.csv` carga; 15 competidoras con URL+fecha en la tabla; muestreo propio de 3 fuentes (gaiaproaging.com, clinicamartaprieto.com/ferrol, medicalhair.es/vigo) confirma oferta y ciudad; patrones compartidos en todo el CSV solo los previos (vitaldent, povisa, villoria); sin siglas nuevas. Salvedad: en el lote piloto "Clínica Villoria" (oftalmología, fuera del lote) se atribuye a Villoria L'Essence por el alias "villoria" (riesgo en `AG03/AG04` blefaroplastia) + F-SPEC-008-2 | ⚠️ |
-| CA-3 | `probe/batches/viveiro.json` (`extends` de `probe_config.json`; `user_location` Viveiro; `batch`: prefijos `AV/AR/AG`, niveles, cliente, ciudades locales de A Mariña, marcas miembro, `output_subdir`); `probe/settings.py` (`extends`, `batch`, `prompt_matcher`); `probe/matching.py` (`batch_brands`, `is_local_clinic(…, local_cities)`); `probe/run_probe.py` (`batch_prompts`, `output_dir(…, batch)`, `--only` fuera del lote rechazado); `probe/analysis.py` (`analyze_levels`, `render_levels`; filas fuera del lote ignoradas) | `test_pilot_batch.py::test_ca3_*` (ubicación en peticiones Claude/OpenAI, Gemini solo por texto, solo preguntas del lote, salida `piloto-artica/probe`, marca del piloto con ciudad Vigo participa, ponderado del núcleo igual sin filas `AR`/`AG`, resumen por nivel sin `%` fuera del núcleo, `--analyze` del lote) | Intermedia 2026-09-29: tests en verde y revisión de código: ubicación Viveiro en Claude/OpenAI, Gemini solo texto; 24 preguntas del lote; marcas por pertenencia (`batch_brands`, nombre desconocido falla); ponderado solo con celdas del núcleo (`analysis.py` bucle sobre `cells[core]`); `AR/AG` sin `%`; salida `$PUSHLLM_PRIVADO/piloto-artica/probe` | ✅ |
-| CA-4 | `probe/probe_config.json`: sección `batch` del lote Vigo (prefijos `D F O E P H`, locales Vigo+Pontevedra, lista explícita de sus 52 marcas, salida `probe`). Golden generado con el código anterior (commit 8fe5132): `probe/tests/fixtures/vigo_results.csv` (incluye respuestas que nombran a Novoa, Medical Hair, Dorsia, Ártica, Hospital Capilar…) y `vigo_summary_before.md` | `test_pilot_batch.py::test_ca4_vigo_summary_identical_to_before_the_change`, `::test_ca4_default_batch_is_vigo`, `::test_ca4_default_run_never_executes_pilot_prompts`, `::test_ca4_pilot_brand_based_in_vigo_is_not_in_vigo_batch`, `::test_ca4_every_brand_belongs_to_some_batch`; todos los tests previos en verde (`python -m pytest -q probe/tests`: 156) | Intermedia 2026-09-29: regenerado el golden con el código de `8fe5132^` (git archive) → idéntico a `vigo_summary_before.md` (salvo CRLF); el mismo código viejo con el `brands.csv` nuevo da otro resumen (estética openai 25→50 %, ponderado 54,2→69,4 %), así que el test tiene dientes; lista Vigo = las 52 marcas previas; filas previas de `brands.csv`, `prompts.csv` y `probe_config.json` (salvo `batch`) sin cambios; `pytest probe/tests` 133 verde, `ruff` limpio | ✅ |
-| CA-5 | Dictamen `sdd-probe` y cálculo en este ledger ("Dictamen sdd-probe (CA-5)"); cadencia aceptada por el humano; runs por nivel en `probe/batches/viveiro.json` y `--levels` en `probe/run_probe.py` | Cálculo reproducible en el propio dictamen; `test_pilot_batch.py::test_ca5_*` | Intermedia 2026-09-29: recalculado: 72 p×e → 8,9/16,2 €; mes normal 9,2/16,8 €; baseline 102 p×e alto 22,97 € → regla de 2 runs 19,6 €; precios coinciden con `probe_config.json`; `AR/AG` a menor cadencia que `AV` | ✅ |
-| CA-6 | `probe/README.md` §"Batches" (lote Vigo = defecto; comandos del lote piloto con `.\.venv\Scripts\python`; runs por nivel; salida) y docstring de `run_probe.py` | `test_pilot_batch.py::test_ca6_readme_documents_pilot_batch_with_working_commands` y `::test_ca6_ledger_human_commands_within_budget_and_use_venv_python` (los comandos del README y del ledger se ejecutan offline: lote piloto y ≤ 54 llamadas por proveedor) | Intermedia 2026-09-29: sección "Batches" presente, lote Vigo = defecto, salida y comandos válidos. Salvedad: el comando de baseline del README (24 × 3 runs, 216 llamadas) no sigue la cadencia de CA-5 (`AR/AG` 1 run; regla 2/3 runs) que sí siguen las instrucciones del ledger | ⚠️ |
-| CA-7 | [Humano] pendiente de claves. Comandos exactos en "Instrucciones para el humano (CA-7)" | — (fechas frente a la primera acción de SPEC-012) | Pendiente [Humano]: no ejecutado en verificación intermedia; comandos del ledger revisados | ❌ |
-| CA-8 | [Verificador]. Ninguna salida en el repo: tests con `tmp_path`; la salida por defecto del lote es `$PUSHLLM_PRIVADO/piloto-artica/probe` y el respaldo `probe/out/piloto-artica/probe` está bajo `probe/out/` (ignorado); `run_probe.py` rechaza `--out` vacío o raíz de unidad (`unsafe_out`) | `test_run_probe.py::test_ca8_default_inside_repo_is_gitignored` (sin cambios); `test_pilot_batch.py::test_ca8_out_empty_or_root_is_refused`, `::test_ca8_unsafe_out_rules` | Intermedia 2026-09-29: `git ls-files` solo lista fixtures sintéticos de test (`probe/tests/fixtures/vigo_results.csv`, `vigo_summary_before.md`), ninguna salida de lote; `git status --ignored` sin `probe/out/` (no existe); `probe/out/` en `.gitignore`. Repetir al cierre tras CA-7 | ✅ |
+| CA-1 | `probe/prompts.csv`: `AV01`–`AV15`, `AR01`–`AR05`, `AG01`–`AG04` (24), texto literal e intent de `docs/piloto-artica/prompts-baseline.md`, `specialty=aesthetic`, `city=Viveiro`; sin `AM`; sin columna nueva. Dependencia: el set aún no tiene fecha de congelación (ver "Dependencias") | `probe/tests/test_pilot_batch.py::test_ca1_pilot_prompts_equal_to_frozen_set_id_and_literal_text`, `::test_ca1_brand_questions_am_are_not_in_the_probe`, `::test_ca1_prompt_ids_unique` | Cierre 2026-09-29 (sdd-verificador): `test_ca1_*` y `test_ca7_pilot_prompts_equal_to_set_frozen_at_official_baseline` en verde; comparación propia: las 24 `id`/`prompt` de `prompts.csv` en `60863af` = fixture `pilot-set-frozen.tsv` = `prompts.csv` en HEAD = `prompt` de todos los `request` de `raw_responses.jsonl` del baseline y de CA-12. Salvedad de la intermedia (set sin congelar) resuelta | ✅ |
+| CA-2 | `probe/brands.csv`: Clínica Ártica (alias del dictamen `sdd-metricas` de SPEC-007 (a1)) + 15 competidoras verificadas + directorio Páxinas Galegas; Clínica Villoria L'Essence y Clínica Villoria (filas existentes) reutilizadas por pertenencia; ninguna sigla nueva. Tabla "Competidores verificados" y pendientes en este ledger | `test_pilot_batch.py::test_ca2_brands_csv_loads_and_has_the_client`, `::test_ca2_no_bare_common_word_alias_for_pilot_brands`, `::test_ca2_new_aliases_do_not_collide_with_existing_ones` (colisiones = ∅), `::test_ca2_no_alias_shared_between_two_brands_of_the_pilot_batch`, `::test_ca2_no_new_exact_aliases`, `::test_ca2_every_pilot_competitor_is_verified_in_the_ledger`, `::test_ca2_villoria_mentions_go_to_the_right_row_in_pilot_batch`, `::test_ca2_virxe_da_marina_domain_forms` | Cierre 2026-09-29 (sdd-verificador): tests CA-2 en verde; finding 2 de la intermedia (Villoria) corregido y con test. Sigue la salvedad F-SPEC-008-1: competidoras que salgan en respuestas reales (probe y pasadas manuales) aún sin revisar | ⚠️ |
+| CA-3 | `probe/batches/viveiro.json` (`extends` de `probe_config.json`; `user_location` Viveiro; `batch`: prefijos `AV/AR/AG`, niveles, cliente, ciudades locales de A Mariña, marcas miembro, `output_subdir`); `probe/settings.py` (`extends`, `batch`, `prompt_matcher`); `probe/matching.py` (`batch_brands`, `is_local_clinic(…, local_cities)`); `probe/run_probe.py` (`batch_prompts`, `output_dir(…, batch)`, `--only` fuera del lote rechazado); `probe/analysis.py` (`analyze_levels`, `render_levels`; filas fuera del lote ignoradas) | `test_pilot_batch.py::test_ca3_*` (ubicación en peticiones Claude/OpenAI, Gemini solo por texto, solo preguntas del lote, salida `piloto-artica/probe`, marca del piloto con ciudad Vigo participa, ponderado del núcleo igual sin filas `AR`/`AG`, resumen por nivel sin `%` fuera del núcleo, `--analyze` del lote) | Cierre 2026-09-29 (sdd-verificador): tests en verde; `--analyze` del lote re-ejecutado por el verificador sobre copias de los `results.csv` privados: resumen por nivel, ponderado del núcleo solo con `AV`, ponderado de `AR` solo con `AR` y solo con 3 runs | ✅ |
+| CA-4 | `probe/probe_config.json`: sección `batch` del lote Vigo (prefijos `D F O E P H`, locales Vigo+Pontevedra, lista explícita de sus 52 marcas, salida `probe`). Golden generado con el código anterior (commit 8fe5132): `probe/tests/fixtures/vigo_results.csv` (incluye respuestas que nombran a Novoa, Medical Hair, Dorsia, Ártica, Hospital Capilar…) y `vigo_summary_before.md` | `test_pilot_batch.py::test_ca4_vigo_summary_identical_to_before_the_change`, `::test_ca4_default_batch_is_vigo`, `::test_ca4_default_run_never_executes_pilot_prompts`, `::test_ca4_pilot_brand_based_in_vigo_is_not_in_vigo_batch`, `::test_ca4_every_brand_belongs_to_some_batch`; todos los tests previos en verde (`python -m pytest -q probe/tests`: 156) | Cierre 2026-09-29 (sdd-verificador): `test_ca4_*` en verde (golden con `env={}`); `vigo_results.csv` y `vigo_summary_before.md` sin cambios en la rama; sin cambios en `prompts.csv`/`brands.csv`/`probe_config.json` desde `60863af` | ✅ |
+| CA-5 | Dictamen `sdd-probe` y cálculo en este ledger ("Dictamen sdd-probe (CA-5)"); cadencia aceptada por el humano; runs por nivel en `probe/batches/viveiro.json` (`AV` 3 desde la enmienda (b)) y `--levels` en `probe/run_probe.py`. Enmienda (b): "Mes del cierre y mes del baseline (enmienda (b))" con `c` = 0,1142 € y umbrales de `c'`. Enmienda (d): "Opción A y diseño de CA-11" con `c` real 0,1245 €, `AR` ≈ 5,6 € en el piloto, cierre sin palancas 20,5/22,2 € y palancas 1–4 en orden (la 1, del humano: `AG` cada 8 semanas) → 19,6/19,2 € | Cálculo reproducible en el propio dictamen; `test_pilot_batch.py::test_ca5_*` (`test_ca5_simple_pilot_command_uses_runs_per_level`: 15 × 3 + 9 = 54 llamadas por proveedor) | Cierre 2026-09-29 (sdd-verificador): recalculado: `c` = 6,7252 € ÷ 54 (Σ `cost_eur` del `results.csv` privado); `AR` 15 p×e ≈ 1,87 €; cierre típico 164,75 → 20,5 €, peor 178 → 22,2 €; palancas 1–3 → 157,2/154 → 19,6/19,2 €; 20 ÷ 154 = 0,1299 y 20 ÷ 139 = 0,1439: cuadra. Nunca baja runs del Go. Peor mes en el límite (ver veredicto) | ✅ |
+| CA-6 | `probe/README.md` §"Batches" (lote Vigo = defecto; comandos del lote piloto con `.\.venv\Scripts\python`; runs por nivel; salida). Enmienda (b): comando simple = baseline oficial (`AV` 3, `AR`/`AG` 1; cierra el finding 1), medición "después" con `--levels AV`, humo en directorio nuevo, orden sin pasada manual, líneas del Go en `summary.md` | `test_pilot_batch.py::test_ca6_readme_documents_pilot_batch_with_working_commands` y `::test_ca6_ledger_human_commands_within_budget_and_use_venv_python` (los comandos del README y del ledger se ejecutan offline: lote piloto y ≤ 54 llamadas por proveedor; el ledger sigue el orden de la enmienda (b)) | Cierre 2026-09-29 (sdd-verificador): sección "Batches" vigente: lote Vigo = defecto, comandos del humo, del "antes" de `AR`, de cada "después" (`--levels AV,AR`) y de seguimiento con `--runs 1`; ya no presenta el comando simple como baseline (salvedad de la intermedia cerrada; F-SPEC-008-16) | ✅ |
+| CA-7 | **Ejecutado el 2026-09-29** (orquestador, con autorización del humano), en el orden de las instrucciones: humo de seguimiento (F-SPEC-013-5 cerrado sin reabrir) → congelación (2026-09-29T15:30:43Z, `60863af`) → baseline oficial `run_probe.py --config batches/viveiro.json`, 15:31:12Z–16:15:10Z. 162 llamadas, 162 `ok` (54 por proveedor, 0 excluidas); modelos servidos = `probe_config.json` (`claude-sonnet-5-5`, `gemini-3.6-flash`, `gpt-5.6-luna`); coste 6,73 € (c real 0,1245 € ≤ 0,1307: CA-5 sin cambios); "Medición completa": sí; **Aviso de techo (CA-10): sí** (decisión del humano pendiente, paso 5). Cifras de visibilidad y revisión de "Ártica" suelta solo en privado (ADR-004 §2): `$PUSHLLM_PRIVADO\piloto-artica\ca7-baseline-evidencia.md`; salida en `…\piloto-artica\probe\`, log en `…\baseline-run.log`. Nada en el repo | Congelación: `test_pilot_batch.py::test_ca7_pilot_prompts_equal_to_set_frozen_at_official_baseline` con `probe/tests/fixtures/pilot-set-frozen.tsv` (24 `id`/`prompt` del commit `60863af`). Fechas: SPEC-013 `hecho` (`0ed5384`) y dictamen CA-9 antes de la congelación; congelación 29 s antes de la primera fila; primera acción de SPEC-012 aún no ocurrida | Cierre 2026-09-29 (sdd-verificador): recalculado desde el `results.csv` privado: 162 filas, 54 `ok` por proveedor, `AV` runs 1–3 y `AR`/`AG` run 1 (= CA-9 (a)), modelos = `probe_config.json`, Σ coste = total del ledger, 15:31:12Z–16:15:10Z. Orden de fechas: SPEC-013 `hecho` (`0ed5384`, 14:54Z) < dictamen CA-9 (`60863af`, 15:11Z) < congelación 15:30:43Z (`congelacion-set.txt`) < primera fila; primera acción no ocurrida (SPEC-012 `borrador`). Set idéntico al fixture. Ponderado del núcleo recalculado con detector propio (regex de alias sobre `answer`) = columna `brands_mentioned` = `analysis.py`; veredicto "supera 85 %" confirmado (cifra solo en privado) | ✅ |
+| CA-8 | [Verificador]. Ninguna salida en el repo: tests con `tmp_path`; la salida por defecto del lote es `$PUSHLLM_PRIVADO/piloto-artica/probe` y el respaldo `probe/out/piloto-artica/probe` está bajo `probe/out/` (ignorado); `run_probe.py` rechaza `--out` vacío o raíz de unidad (`unsafe_out`) | `test_run_probe.py::test_ca8_default_inside_repo_is_gitignored` (sin cambios); `test_pilot_batch.py::test_ca8_out_empty_or_root_is_refused`, `::test_ca8_unsafe_out_rules` | Cierre 2026-09-29 (sdd-verificador): `git ls-files` sin salidas del lote ni ficheros privados (solo fixtures sintéticos); `git status --ignored` sin `probe/out/`; ningún patrón de clave en `git log -p --all` (solo el fixture `FIXTURE-openai-environ`) | ✅ |
+| CA-9 | Dictamen `sdd-metricas` fechado 2026-09-29 en "Dictamen sdd-metricas (CA-9)" con tabla condición → cambio; `probe/batches/viveiro.json` (`AV` 3 runs, `go.min_valid_share` 0,9, `client_review_aliases`); `probe/analysis.py` (`analyze_levels`: ponderado por run, estabilidad por casilla, medición completa, respuestas solo por "Ártica", casillas `AR`/`AG` con la clínica, modelos servidos; `_core_go_lines`, `_bare_lines`); README; instrucciones de este ledger. **Sustituido en parte (enmienda (d))**: el punto (d) (Δ ≥ +15 en el núcleo) y el (g) en lo que toca a `AR` quedan sustituidos por CA-11 (ii)/(iii) y (i)/(ii); su implementación está en la fila CA-11. Siguen vigentes (a)–(c), (e), (f), (h), (i) y (g) para `AG` | `test_pilot_batch.py::test_ca9_config_fixes_the_go_instrument`, `::test_ca9_weighted_sov_per_run_and_pooled`, `::test_ca9_stability_per_question_and_provider`, `::test_ca9_go_measurement_complete_only_with_enough_valid_rows_per_provider`, `::test_ca9_bare_artica_answers_are_counted_and_flagged_for_review`, `::test_ca9_levels_outside_core_list_cells_with_client_without_percentages`, `::test_ca9_models_served_are_reported`; golden de Vigo intacto (`test_ca4_vigo_summary_identical_to_before_the_change`) | Cierre 2026-09-29 (sdd-verificador): dictamen fechado antes del baseline (commit `60863af` < congelación), puntos (a)–(i) con conclusión y tabla condición → cambio; `viveiro.json` y `analysis.py` implementan lo vigente; sustitución de (d) y de (g) en `AR` por CA-11 anotada según la enmienda (d); tests CA-9 en verde | ✅ |
+| CA-10 | `probe/batches/viveiro.json` (`go.ceiling` 0,85); `probe/analysis.py` (`_ceiling_warning`: línea "Aviso de techo (SPEC-008 CA-10)" en la sección `AV` de `summary.md` si el ponderado del núcleo es ≥ 85 %, solo con `AV`). Decisión humana, si aplica, tras el baseline (paso 5 de las instrucciones). **Aviso saltado en el baseline oficial; decisión del humano del 2026-09-29, antes de la primera acción, registrada en "Decisiones del humano" (c) (ADR-009)**; el texto del aviso en `summary.md` recoge la decisión | `test_pilot_batch.py::test_ca10_ceiling_warning_only_from_core_weighted` (20/20, 17/20 = 85 % avisa; 16/20 no; 0 no), `::test_ca10_ceiling_ignores_other_levels` (`AR` al 100 % no avisa) | Cierre 2026-09-29 (sdd-verificador): aviso recalculado solo con `AV` desde el CSV privado (≥ 85 %: salta); `analysis.py` da lo mismo. Decisión del humano registrada ("Decisiones del humano" (c), ADR-009 aprobado, EPIC-002 criterio 4) antes de la primera acción, que no ha ocurrido | ✅ |
+| CA-11 | Dictamen `sdd-metricas` fechado 2026-09-29 en "Dictamen sdd-metricas (CA-11)" (opción A; (i)–(v); 5 preguntas bastan con condiciones) con tabla condición → cambio; `probe/batches/viveiro.json` (`AR` 3 runs; `go.growth` +12 pts, 2 "después"; `go.defense` −10 pts en las dos; etiquetas (C)/(D)); `probe/analysis.py` (`analyze_levels` → `growth`, `core_runs`; `_growth_lines`; `growth_verdict`, `defense_verdict`, `render_go_verdict`; completitud por nivel); `probe/README.md` "Batches"; CA-5 recalculado ("Opción A y diseño de CA-11") | `test_pilot_batch.py::test_ca11_config_fixes_growth_and_defense`, `::test_ca11_ar_weighted_uses_only_ar_rows`, `::test_ca11_ar_summary_gives_its_own_weighted_only_with_design_runs`, `::test_ca11_ar_measurement_incomplete_with_errors`, `::test_ca11_growth_needs_rise_in_both_afters_and_more_than_one_question`, `::test_ca11_growth_threshold_is_inclusive_and_unrounded`, `::test_ca11_growth_not_decidable_with_other_design_or_incomplete`, `::test_ca11_defense_fails_only_with_a_drop_in_both_afters`, `::test_ca11_verdicts_do_not_mix_levels`, `::test_ca11_go_verdict_report_gives_c_and_d_apart`; ajustados `test_ca9_config_fixes_the_go_instrument`, `test_ca5_simple_pilot_command_uses_runs_per_level` (64 por proveedor) y `test_ca9_go_measurement_complete_…` (rótulo (D)); golden de Vigo intacto | Cierre 2026-09-29 (sdd-verificador): dictamen fechado (commit `2a78315`, 17:41Z) antes de CA-12 (17:43Z) y de la primera acción; (i)–(v) presentes; +12 pts inclusivo con amplitud, −10 en las dos, 3 runs, 2 "después" en `viveiro.json` y en `growth_verdict`/`defense_verdict`; ninguna cifra combina niveles (ADR-009 §2). Ponderado de `AR` del "antes" y los cinco "sin una pregunta" recalculados desde el CSV = evidencia privada = `analysis.py` | ✅ |
+| CA-12 | **Ejecutado el 2026-09-29** (orquestador, con autorización del humano; antes, `pytest probe/tests` 238 passed), con el diseño de CA-11 (opción A), después del dictamen CA-11 y **antes de la primera acción** (SPEC-012 sigue en `borrador`): `run_probe.py --config batches/viveiro.json --levels AR --runs 3 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-AR-antes"` (directorio nuevo), 17:43:23Z–17:55:48Z. 45 llamadas, 45 `ok` (15 por proveedor, 0 excluidas), solo `AR01`–`AR05`, runs 1–3 (= runs de CA-11); modelos servidos = `probe_config.json` (`claude-sonnet-5-5`, `gemini-3.6-flash`, `gpt-5.6-luna`); coste 1,60 €; "Medición completa para la condición (C)": sí; "SoV ponderado de AR" sale con cifra. Petición = la del baseline oficial: los `request` de `raw_responses.jsonl` de las 15 casillas `AR` × proveedor son idénticos a los de CA-7, modelo incluido (CA-9 (f), CA-11 (iv)). Revisión de "Ártica" suelta: todas las respuestas que `summary.md` lista así se refieren a la clínica; ninguna es adjetivo (F-SPEC-008-3; cuántas y cuáles, en privado). **Paso 0 (CA-11 (iv))**: sin comprobación nueva; descansa en el dictamen `sdd-probe` de SPEC-002 CA-2 del 2026-09-29 (con adenda de effort), del mismo día y anterior al humo, a CA-7 y a CA-12. Que los modelos servidos coincidan con la configuración solo prueba que el instrumento no cambió: el probe pide un id fijo, así que no detecta un cambio del modelo por defecto de la app. **Antes de cada medición "después" hace falta una re-comprobación real de `sdd-probe`** (CA-9 (f), CA-11 (iv); F-SPEC-008-14). Cifras de visibilidad y umbral absoluto de (C) solo en privado (ADR-004 §2): `$PUSHLLM_PRIVADO\piloto-artica\ca12-ar-antes-evidencia.md`; salida en `…\piloto-artica\probe-AR-antes\`. Nada en el repo | `test_pilot_batch.py::test_ca12_ledger_command_is_the_ar_before_with_the_design_of_ca11` (ejecuta offline el comando del ledger: 45 llamadas, solo `AR01`–`AR05`, runs 1–3, medición completa con 3 runs); test CA-1 y `test_ca7_pilot_prompts_equal_to_set_frozen_at_official_baseline` en verde (set sin cambios, opción A) | Re-verificación 2026-09-29, iteración 2 (sdd-verificador): medición correcta: `ok` en todas las filas, solo `AR01`–`AR05`, runs 1–3, modelos = configuración, Σ coste = ledger, completa para (C); `request` idénticos a los del baseline, modelo incluido. Esta fila y F-SPEC-008-3 (CA-12) ya dan solo el veredicto; paso 0 anotado. `--analyze` sobre copia del CSV privado: (D) "no aplica", (C) "sí". Iteración 3 (sdd-verificador): finding 1 de la iteración 2 resuelto (el handoff (g) ya no cita el recuento; `git diff origin/main` sin ningún dato de visibilidad del "antes" de `AR`) | ✅ |
 
 Tests (2026-09-29, tras los findings): `python -m pytest -q probe/tests` → 156 en verde;
 `python -m pytest -q docs/piloto-artica/tools/tests` → 143 en verde; `ruff check probe` limpio.
+Tests (2026-09-29, enmienda (b), CA-9/CA-10, con `PUSHLLM_PRIVADO` en el entorno):
+`pytest probe/tests` → 226 en verde; `pytest docs/piloto-artica/tools/tests` → 143 en verde;
+`ruff check probe` limpio.
+Tests (2026-09-29, registro de CA-7 y congelación): `pytest probe/tests` → 227 en verde;
+`pytest docs/piloto-artica/tools/tests` → 143 en verde; `py -m ruff check probe` limpio.
+Tests (2026-09-29, enmienda (d), CA-11/CA-12): `pytest probe/tests` → 238 en verde;
+`pytest docs/piloto-artica/tools/tests` → 143 en verde; `py -m ruff check probe` limpio.
+Tests (2026-09-29, tras el RED de cierre): `pytest probe/tests` (con `PUSHLLM_PRIVADO`) →
+239 en verde (nuevo `test_ca11_completeness_does_not_apply_to_a_level_that_was_not_measured`);
+`pytest docs/piloto-artica/tools/tests` → 143 en verde; `py -m ruff check probe` limpio.
 
 ## Diseño (mecanismo de CA-3, propuesto por el implementador)
 - **Lote = fichero de configuración** pasado con `--config`. `batches/viveiro.json` hereda
@@ -189,35 +204,456 @@ Contraste: con el típico, las 132 preguntas × ejecución del lote Vigo (396 ll
   F-SPEC-001-3) y los precios; si cambian, se actualiza `probe_config.json` (vale para los
   dos lotes) y se rehace este cálculo.
 
-## Dependencias
-> **Actualizado por la enmienda 2026-09-29 (b) (sdd-arquitecto)**: el set ya no lo congela la
-> pasada 1 manual sino, como tarde, el propio baseline oficial (SPEC-007 CA-8), y CA-7 depende
-> además de **SPEC-013 en `hecho`** y del dictamen de CA-9. El texto de abajo es el previo;
-> lo reescribe el implementador (F-SPEC-008-9).
+**Mes del cierre y mes del baseline (enmienda (b), 2026-09-29)** — mismo emisor y fuentes,
+más el dictamen CA-9. `c` medido en el humo de Viveiro = 0,3425 € ÷ 3 = **0,1142 €** por
+pregunta × ejecución (los 3 proveedores), con precios de `probe_config.json`.
+| Mes | Composición (preguntas × ejecución) | Total | € con `c` = 0,1142 |
+|---|---|---|---|
+| Baseline (peor caso) | humo antiguo 3 + humo de seguimiento 3 + baseline 54 (`AV` 15 × 3 + `AR`/`AG` 9) + 4 semanas de `AV` semanal 60 + 1 `AR`/`AG` 9 | 129 | **14,7** |
+| Normal (SPEC-012) | ver tabla de cadencia | 74,75 | 8,5 |
+| Cierre, típico (4,33 semanas) | 2 mediciones "después" 90 (`AV` 15 × 3 cada una, sustituyen a su semanal) + 2,33 semanales 35 + 1,08 `AR`/`AG` 9,75 | 134,75 | **15,4** |
+| Cierre, peor mes natural | 2 "después" 90 + 3 semanales 45 + 2 `AR`/`AG` 18 (semanas 8 y 12 en el mismo mes) | 153 | **17,5** |
 
-- **Set congelado (SPEC-007 CA-8)**: CA-1 pide el set "congelado". El texto de los tres
-  niveles es el definitivo y se ha copiado tal cual, pero la fecha de congelación es el
-  inicio de la pasada 1 manual, que aún no ha empezado. Dependencia pendiente, **no
-  bloqueo**: se cumple cuando el humano fije esa fecha en el ledger de SPEC-007. Si el set
-  cambiara antes, `test_ca1_pilot_prompts_equal_to_frozen_set_id_and_literal_text` falla y
-  obliga a sincronizar `prompts.csv`.
-- **Claves (SPEC-002 CA-1)**: solo para CA-7.
+- **Cabe en ≤ 20 €** con el `c` medido, sin bajar los runs del Go (3) por debajo de los del
+  baseline.
+- **Condición** (el humo de seguimiento da `c'`, ya con `include` en OpenAI):
+  - `c' ≤ 0,1307 €` (20 ÷ 153): nada cambia.
+  - `0,1307 € < c' ≤ 0,155 €`: palancas para el mes del cierre, en este orden, sin tocar las
+    mediciones del Go:
+    1. una sola ejecución `AR`/`AG` en ese mes (la de la semana 8 se adelanta a la 7):
+       144 preguntas × ejecución, `c' ≤ 0,139 €`;
+    2. sin `AV` semanal en la semana anterior a la primera medición "después": 129,
+       `c' ≤ 0,155 €`.
+    El mes del baseline (129) también cabe hasta 0,155 €.
+  - `c' > 0,155 €`: no se lanza el baseline. Vuelve a `sdd-probe` y al humano.
+  - `c' > 0,19 €`: además, la regla de CA-7 daría 2 runs, lo que cambia la forma del Go
+    (dictamen CA-9 (a)).
+- Un humo de 3 preguntas es una muestra pequeña. El baseline da el `c` real, que se recalcula
+  al cerrar CA-7.
+- Si SPEC-007 necesitara una ejecución `AV` extra para su ventana de calibración (15
+  preguntas × ejecución con 1 run), el mes del baseline sube a 144 → 16,4 €.
+
+**Opción A y diseño de CA-11 (enmienda (d), 2026-09-29)**. Mismo emisor y mismas fuentes,
+más el dictamen CA-11 y la regla de recorte del humano (ver "Decisiones del humano" (e)).
+- `c` real del baseline oficial = 6,7252 € ÷ 54 = **0,1245 €** por pregunta × ejecución (los
+  3 proveedores). Solo `AR`: ≈ 0,126 €.
+- **Coste de `AR` en el piloto**: el "antes" (CA-12) y cada "después" son 5 preguntas ×
+  3 runs = 15 preguntas × ejecución (45 llamadas) ≈ **1,9 €**. Son tres ejecuciones:
+  **≈ 5,6 €** en todo el piloto.
+- Cada medición "después" = `--levels AV,AR` = 60 preguntas × ejecución (180 llamadas)
+  ≈ 7,5 €. Sustituye a la `AV` semanal de su semana. En la semana 12 sustituye también al
+  `AR` de 1 run; ahí `AG`, si toca, se lanza solo con `--levels AG --runs 1`.
+
+| Mes | Composición (preguntas × ejecución) | Total | € con `c` = 0,1245 |
+|---|---|---|---|
+| Septiembre (baseline y, si se lanza ya, CA-12) | humos 0,34 € + 0,36 € + baseline 6,73 € + CA-12 15 | — | **≈ 9,3** |
+| Arranque (CA-12 en el mes de la primera acción) | CA-12 15 + 5 semanales `AV` 75 + 1 `AR`/`AG` 9 | 99 | 12,3 |
+| Normal (SPEC-012) | tabla de cadencia (sin cambios) | 74,75 | 9,3 |
+| Cierre típico (4,33 semanas), sin palancas | 2 "después" 120 + 2,33 semanales 35 + 1,08 `AR`/`AG` 9,75 | 164,75 | **20,5** ✗ |
+| Cierre, peor mes natural (semanas 8–12), sin palancas | 2 "después" 120 + 3 semanales (8, 9, 10) 45 + `AR`/`AG` semana 8: 9 + `AG` semana 12: 4 | 178 | **22,2** ✗ |
+
+- **No cabe sin palancas.** El orden de las palancas es fijo. La primera la decidió el humano;
+  las demás las propone `sdd-probe`. Nunca se bajan los runs de las mediciones del Go (3 en
+  `AV` y en `AR`) ni el número de mediciones "después":
+  1. **`AG` cada 8 semanas** (semanas 0 y 8), decisión del humano. Peor mes 174 → 21,7 €;
+     típico 162,6 → 20,2 €. No basta.
+  2. **Sin `AR` de 1 run en el mes del cierre** (la de la semana 8): las mediciones `AR` del Go
+     ya lo miden. Peor mes 169 → 21,0 €; típico 157,2 → **19,6 €** ✓.
+  3. **Sin `AV` semanal en la semana anterior a la primera medición "después"** (semana 10),
+     la palanca 2 del cálculo (b). Peor mes 154 → **19,2 €** ✓.
+- **Con las palancas 1–3, el cierre cabe hasta `c` ≤ 0,1299 €** (20 ÷ 154). Si el `c` medido
+  antes del cierre supera ese valor, se añade:
+  4. sin `AV` semanal en la semana 9: 139, `c` ≤ 0,1439 €.
+  Por encima de 0,1439 €, PARA: vuelve a `sdd-probe` y al humano.
+- Las palancas se deciden **al planificar el mes del cierre** (SPEC-012), no después de ver
+  datos. No tocan el Go: las `AV` semanales y el `AR` de 1 run son solo seguimiento.
+- Opción A con 5 runs (descartada en CA-11 (v)): cada ejecución `AR` ≈ 3,1 €. El peor mes
+  no cabría ni con las palancas 1–4.
+- **CA-12 en concreto**: 5 preguntas × 3 runs × 3 proveedores = **45 llamadas** (15 por
+  proveedor), **≈ 1,9 €** (1,87 € con `c` = 0,1245; 1,89 € con el `c` de `AR`). Si se lanza en
+  septiembre, el mes queda en ≈ 9,3 € ≤ 20 €.
+
+
+## Dictamen sdd-metricas (CA-9)
+- **Fecha**: 2026-09-29, **antes del baseline oficial** (CA-7 sin lanzar: no existe
+  `$PUSHLLM_PRIVADO/piloto-artica/probe/`). **Emisor**: sdd-implementador aplicando
+  `.ai-context/skills/sdd-metricas.md` (advisory; no implementa ni cambia reglas).
+  **Fuentes**: `docs/fundacion/reglas.md` RN-01–RN-06, RN-10, RN-11; EPIC-002, criterios 1 y 4;
+  ADR-005 §4 (vigente según ADR-008 §6); dictámenes `sdd-metricas` del ledger de SPEC-007
+  ((a)–(j); P-1, P-3) y de SPEC-013 (CA-7, URLs consultadas y citadas); `probe/analysis.py`,
+  `probe/batches/viveiro.json` y `probe/probe_config.json` (leídos el 2026-09-29); humo de
+  Viveiro (c = 0,1142 €) y evidencia CA-6 de SPEC-013.
+- **¿Cambia alguna regla de negocio? No.** Todo lo de abajo son condiciones de medición y
+  lectura del criterio Go. RN-01, RN-02, RN-03, RN-04, RN-05, RN-06 y RN-10 se aplican tal
+  cual. Si alguna condición llegara a exigir cambiar una RN, se devuelve al arquitecto; no ha
+  hecho falta.
+
+### (a) Forma del baseline — **correcto con condiciones**
+- Una sola ejecución del lote: `AV` con **3 runs** (regla de CA-7: c = 0,1142 € ≤ 0,19 €),
+  `AR` y `AG` con **1 run**. En total, 54 preguntas × ejecución × 3 proveedores = 162 llamadas.
+  Es el comando simple de `batches/viveiro.json`.
+- **No hacen falta dos ejecuciones en semanas distintas.** El ruido del baseline es común a
+  las dos comparaciones "después", así que una segunda ejecución solo baja el error típico de
+  cada diferencia de √2·σ a √1,5·σ (≈ −13 %). A cambio, retrasaría la primera acción al
+  menos 7 días. La protección frente al ruido la da la regla (d), que exige la subida en
+  **cada** medición "después".
+- **Condiciones**:
+  1. Se lanza en un directorio nuevo con la columna `searched_urls`.
+  2. Queda **completa**: cada proveedor con peso tiene ≥ 90 % de sus filas `AV` con
+     `status=ok`. Si no, `--resume` en la misma semana. `summary.md` lo dice ("Medición
+     completa para el criterio Go: sí/no").
+  3. Su inicio **congela el set** (SPEC-007 CA-8).
+  4. Ninguna acción del piloto empieza antes de que termine y se haya leído el aviso de
+     techo (CA-10).
+
+### (b) Cómo se agregan los runs — **correcto**
+- SoV bruto (RN-02) por proveedor = respuestas válidas con Clínica Ártica ÷ respuestas
+  válidas, sumando todos los runs de la ejecución. Es lo que hace `analysis.py`: 45 respuestas
+  por proveedor si no hay exclusiones.
+- SoV ponderado del núcleo (RN-03/RN-04) = Σ SoV bruto × peso ÷ Σ pesos de los proveedores con
+  respuestas válidas. Con ChatGPT 0,55, Gemini 0,25 y Claude 0,10, la suma es 0,90 y los pesos
+  normalizados quedan en 0,611, 0,278 y 0,111.
+- Claude **sí** entra: en el probe se sondea en todas las mediciones (a diferencia de la
+  manual).
+- La media de los SoV por run coincide con la cifra agregada cuando los runs tienen las
+  mismas respuestas válidas. El Go usa **la cifra agregada**. `summary.md` da además el
+  ponderado por run, que es solo lectura de ruido.
+- Solo `AV` (ADR-005 §4).
+
+### (c) Forma de las dos mediciones "después" — **correcto con condiciones**
+- Misma forma que el baseline en `AV`: **3 runs**, con `--levels AV`, que toma los runs del
+  lote.
+- Semana 0 = semana de la primera acción. Primera medición en la **semana 11** y segunda en
+  la **12**, cada una ± 1. Entre sus inicios, **≥ 7 días**. Las dos, antes del cierre del
+  piloto.
+- Cada una **sustituye** a la ejecución `AV` semanal de 1 run de su semana.
+- La ejecución `AR`/`AG` que toque en la semana 12 se lanza aparte con `--levels AR,AG` y
+  1 run. No entra en el Go.
+- Cada medición debe quedar **completa** (condición (a).2). Si una no se completa en su
+  semana, se repite entera la semana siguiente, siempre dentro de la ventana ± 1 y con los
+  7 días de separación.
+
+### (d) Regla de estabilidad del Go — **correcto** (P-3 del humano)
+- **Go de visibilidad ⇔ Δ₁ ≥ +15,0 pts y Δ₂ ≥ +15,0 pts**. Δᵢ = ponderado del núcleo de la
+  medición "después" i − ponderado del núcleo del baseline. Se calcula sin redondear y con
+  las dos mediciones completas.
+- **No se usa la media** de las dos: una sola medición alta no basta.
+- Se decide con sí/no desde los tres `results.csv`:
+  1. Al emitir el veredicto se recalculan los tres `summary.md` con `--analyze`, con el
+     **mismo** `brands.csv` y el **mismo** `probe_config.json` (mismos pesos: si RN-05 los
+     refresca, se aplican iguales a los dos lados).
+  2. Se lee la línea "SoV ponderado del núcleo".
+- El criterio Go completo exige además ≥ 1 paciente atribuido (EPIC-002, criterio 4;
+  SPEC-012). Eso no es de este dictamen.
+
+### (e) Ruido esperable frente a +15 pts — **correcto con condiciones**
+- Error típico del ponderado del núcleo (binomial; Σw² = 0,463):
+  - con n = 45 respuestas por proveedor (3 runs independientes);
+  - entre paréntesis, con n efectivo = 15, si los 3 runs del mismo día salen iguales.
+- La realidad cae entre los dos. El cálculo **no** incluye la deriva de semana a semana
+  (índice de búsqueda, modelo), así que es una cota inferior.
+
+| SoV "antes" | Error típico | Margen 95 % de una diferencia | P(Go falso) con Δ real 0 y la regla (d) | P(Go) con Δ real +20 |
+|---|---|---|---|---|
+| 5 % | 2,2 pts (3,8) | ± 6 (± 11) | < 0,1 % | 55–73 % |
+| 10 % | 3,0 (5,3) | ± 8 (± 15) | 0,4 % | — |
+| 20 % | 4,1 (7,0) | ± 11 (± 19) | 0,05–1,8 % | 51–65 % |
+| 35 % | 4,8 (8,4) | ± 13 (± 23) | 0,2–3,4 % | — |
+| 50 % | 5,1 (8,8) | ± 14 (± 24) | 0,3–3,9 % | — |
+
+- **Lectura**: con la regla (d), un Go falso es improbable (≤ 4 %). La regla es
+  **conservadora**: una subida real de +20 pts pasa en 51–73 % de los casos, y una de +25 o
+  +30 en 69–100 %. Es la contrapartida de exigir estabilidad (P-3), y se acepta.
+- **Las ejecuciones `AV` semanales de 1 run no sirven como medida del ruido del Go**:
+  - tras la primera acción mezclan efecto y ruido;
+  - tienen n = 15 por proveedor, con un margen de ± 15–24 pts frente al baseline.
+  - Sirven para ver la tendencia y fechar movimientos (registro acción → efecto, SPEC-012),
+    nunca para decidir el Go.
+- **Medida del ruido**: en cada medición, `summary.md` da el ponderado por run (ruido del
+  mismo día) y la estabilidad por pregunta × proveedor (en todos, en alguno o en ningún run).
+  El veredicto informa además |Δ₁ − Δ₂| como ruido de semana a semana observado al final. Es
+  informativo: no cambia el sí/no.
+
+### (f) Mismo instrumento; cambio de modelo por defecto — **correcto con condiciones**
+- **Idéntico entre el baseline y las mediciones "después"**:
+  - el set congelado (CA-8);
+  - los runs de `AV` (3);
+  - la ubicación Viveiro/Galicia/ES;
+  - los prompts de sistema e instrucciones;
+  - la configuración de búsqueda y de la petición: herramienta y versión, `max_uses`,
+    `include` de OpenAI, `effort`, `max_tokens`.
+  - Se comprueba con el `request` de `raw_responses.jsonl`: mismos campos salvo `model`.
+- Un cambio en `probe/` que altere la petición entre el baseline y una medición "después" es
+  **cambio de instrumento**: no se hace sin un dictamen nuevo anterior a esa medición.
+- En particular, si el seguimiento **F-SPEC-013-5** del humo reabre el `include` de OpenAI,
+  se decide **antes** del baseline. Cambiarlo después rompe el instrumento.
+- **Modelo por defecto (D-5, RN-10)**:
+  - El probe debe usar el modelo por defecto de cada app. `summary.md` lista los modelos
+    servidos. Antes del baseline y antes de cada medición "después", `sdd-probe` vuelve a
+    comprobar el modelo por defecto y los precios; si cambian, se actualiza
+    `probe_config.json` con fecha.
+  - Si cambia **entre el baseline y la primera acción**, se **repite el baseline** con el
+    modelo nuevo, en un directorio nuevo y antes de la primera acción. Cuesta unos 6 €. La
+    fecha de congelación no cambia.
+  - Si cambia **después de la primera acción**, la comparación **sigue valiendo**. RN-10
+    manda medir lo que contesta el modelo que ve el paciente: el cambio forma parte del
+    entorno, como un cambio del índice de búsqueda.
+  - En ese caso el veredicto anota el proveedor, el modelo anterior y el nuevo, y la fecha.
+    No se rehace el baseline ni se descarta ninguna medición.
+  - Se fija ahora, antes de ver datos.
+- **Pesos y alias**: los dos lados se calculan con los mismos (condición (d).1). Los alias de
+  Clínica Ártica no cambian durante el piloto. Añadir competidoras no cambia la cifra del Go.
+
+### (g) Indicadores `AR` y `AG` con el probe — **correcto con condiciones**
+- Se trasladan las definiciones de SPEC-007 (g)–(j) con la cadencia de CA-5: `AR`/`AG` cada
+  4 semanas, 1 run. Las ejecuciones son en las semanas 0 (el baseline), 4, 8 y 12.
+- **Casilla** = pregunta × proveedor (ChatGPT, Gemini, Claude). Solo recuentos "x de n",
+  nunca porcentajes ni ponderado. Nada se suma al núcleo.
+- **Periodo "antes"** = la ejecución de la semana 0. **Periodo "después"** = semanas 8 y 12
+  para `AR`, y semanas 4, 8 y 12 para `AG`.
+- `AR`:
+  - "No aparece" antes ⇔ 0 casillas con la clínica en la semana 0.
+  - "Aparece con cierta regularidad" después ⇔ **≥ 2 casillas** con la clínica **en las
+    dos** ejecuciones (8 y 12).
+  - Si ya aparecía antes, se informa tal cual.
+- `AG`:
+  - "Aparece alguna vez" en un periodo ⇔ **≥ 1** respuesta válida con la clínica en alguna
+    de sus ejecuciones.
+  - Nivel sin objetivo y que no se promete (ADR-005 §6).
+- **Asimetría conocida**: el "antes" de `AR` es una sola ejecución de 1 run. Se acepta: no
+  es criterio Go.
+- **Posición** (RN-06): puesto de la clínica en `brands_mentioned`, que ya excluye
+  directorios. Se da como **lista de puestos**, sin media.
+- Una cadena es una marca: ya es así en `brands.csv` (Dorsia, Medical Hair…).
+- `summary.md` lista por nivel las casillas con la clínica. La comparación entre
+  ejecuciones la hace SPEC-012 (F-SPEC-008-10).
+
+### (h) "Ártica" como adjetivo — **correcto con condiciones** (P-1, F-SPEC-008-3)
+- RN-01 literal: "Ártica" suelta **cuenta** en el probe, igual que en la manual. No se
+  descuenta nada a mano, ni en el baseline ni en las mediciones "después".
+- `summary.md` lista las respuestas en que la clínica aparece **solo** por "Ártica" suelta
+  (sin "Clínica Ártica", "Ártica Medicina Estética" ni `clinicaartica`), por nivel. Así se
+  pueden leer y anotar como adjetivo en el ledger. Configuración: `client_review_aliases`.
+- El veredicto informa cuántas hay en cada medición. También dice si quitar las de uso
+  adjetivo cambiaría el sí/no de alguna Δ. Es sensibilidad **informativa**: la cifra del Go
+  es la literal, fijada antes de ver datos.
+
+### (i) URLs consultadas y citadas (SPEC-013) — **correcto**
+- El SoV del Go usa solo el texto de la respuesta (RN-01/RN-02).
+- `searched_urls` y `cited_urls` **no** son mención: una URL de la clínica en esas columnas
+  sin su nombre en el texto no cuenta. Sí cuenta el dominio `clinicaartica` si está en el
+  texto, que es el alias de siempre.
+- El baseline oficial es el primer fichero del piloto con las dos columnas y significado
+  homogéneo en los tres proveedores. Es el que usa SPEC-011 CA-1 para fuentes (dictamen
+  SPEC-013, punto 4). No se mezcla con el humo antiguo de Viveiro, sin `searched_urls` y con
+  `cited_urls` de Gemini en el significado anterior.
+- El directorio nuevo garantiza que `--resume` no mezcle ficheros.
+- Si la web de la clínica aparece entre las consultadas o las citadas, es un indicador de
+  fuentes de SPEC-011 ("consultada por"), sin peso. No entra en el Go.
+
+### Tabla condición → cambio
+| Condición | Cambio | Dónde |
+|---|---|---|
+| (a) baseline `AV` 3 runs, `AR`/`AG` 1, una ejecución | `levels[].runs` = 3/1/1; comando simple = baseline | `probe/batches/viveiro.json`; README "Batches"; instrucciones CA-7 paso 3; `test_ca9_config_fixes_the_go_instrument`, `test_ca5_simple_pilot_command_uses_runs_per_level` |
+| (a)/(c) medición completa (≥ 90 % `ok` por proveedor con peso) | `go.min_valid_share`; línea "Medición completa para el criterio Go" | `viveiro.json`; `analysis.py` (`analyze_levels`, `_core_go_lines`); `test_ca9_go_measurement_complete_only_with_enough_valid_rows_per_provider` |
+| (a) congelación al inicio del baseline | Registro previo al comando del baseline | Instrucciones CA-7 paso 3; "Registro de la congelación del set" |
+| (b) runs sumados por proveedor; ponderado normalizado con Claude | Sin cambio de cálculo; rótulo "runs sumados por proveedor" | `analysis.py`; `test_ca9_weighted_sov_per_run_and_pooled`, `test_ca3_core_weighted_sov_uses_only_av` |
+| (c) "después" = `AV` 3 runs, semanas 11 y 12 ± 1, ≥ 7 días | Comando `--levels AV` con directorio fechado | README "Batches"; F-SPEC-008-5 (→ SPEC-012) |
+| (d) Δ ≥ +15 en cada "después", mismos `brands.csv`/pesos | Regla para el veredicto; `--analyze` de los tres | F-SPEC-008-5 y F-SPEC-008-10 (→ SPEC-012 CA-7) |
+| (e) ruido: ponderado por run y estabilidad por casilla | Tabla "por run" y línea de estabilidad en `AV` | `analysis.py` (`_core_go_lines`); `test_ca9_weighted_sov_per_run_and_pooled`, `test_ca9_stability_per_question_and_provider` |
+| (f) mismo instrumento; modelos servidos | Tabla "Modelos servidos"; revisión de `request` y del modelo por defecto antes de cada medición | `analysis.py`; `test_ca9_models_served_are_reported`; instrucciones CA-7 pasos 0 y 2 |
+| (f) F-SPEC-013-5 antes del baseline | Humo de seguimiento y umbral antes del paso 3 | Instrucciones CA-7 pasos 1–2 |
+| (g) `AR`/`AG`: casillas con la clínica | Línea "Casillas pregunta × proveedor con Clínica Ártica" por nivel, sin % | `analysis.py`; `test_ca9_levels_outside_core_list_cells_with_client_without_percentages` |
+| (h) "Ártica" suelta cuenta y se lista | `client_review_aliases`; línea por nivel | `viveiro.json`; `analysis.py` (`_bare_lines`); `test_ca9_bare_artica_answers_are_counted_and_flagged_for_review` |
+| (i) URLs no son mención; directorio nuevo | Sin cambio de cálculo; baseline en `piloto-artica/probe` (nuevo) | README "Batches"; instrucciones CA-7 |
+| CA-10 aviso de techo ≥ 85 %, solo `AV` | `go.ceiling`; línea "Aviso de techo" | `viveiro.json`; `analysis.py` (`_ceiling_warning`); `test_ca10_*` |
+
+**Enmienda (d) (ADR-009)**: siguen valiendo (a), (b), (c), (e), (f), (h) e (i). El punto (d)
+(Δ ≥ +15 pts en el núcleo) queda sustituido por CA-11 (ii) y (iii), y el punto (g), en lo que
+toca a `AR`, por CA-11 (i) y (ii). En `AG`, (g) sigue igual.
+
+## Dictamen sdd-metricas (CA-11)
+- **Fecha**: 2026-09-29. Es anterior al "antes" de `AR` (CA-12, sin lanzar: no existe
+  `$PUSHLLM_PRIVADO/piloto-artica/probe-AR-antes/`) y a la primera acción del piloto.
+  **Emisor**: sdd-implementador aplicando `.ai-context/skills/sdd-metricas.md` (advisory: no
+  cambia reglas).
+- **Fuentes**:
+  - ADR-009 (§1–§6), ADR-005 §4 y §6, EPIC-002 criterio 4;
+  - `docs/fundacion/reglas.md` RN-01–RN-04, RN-07, RN-10, RN-11;
+  - dictámenes CA-9 (arriba) y (g)–(j) de SPEC-007;
+  - el baseline oficial (CA-7) y su evidencia privada
+    (`$PUSHLLM_PRIVADO/piloto-artica/probe/summary.md`, `ca7-baseline-evidencia.md`), leídos
+    solo para estimar el ruido. Aquí van solo reglas, umbrales y probabilidades, sin cifras de
+    visibilidad (ADR-004 §2).
+  - Simulación Monte Carlo propia (binomial por casilla, con y sin deriva semanal) para las
+    probabilidades de (ii) y (iii). No se guarda en el repo: es un cálculo de apoyo.
+- **Opción de medición: A**, decidida por el humano el 2026-09-29 (ver "Decisiones del
+  humano"): más runs con las mismas 5 preguntas `AR`. No se reabre la congelación.
+- **¿Cambia alguna regla de negocio? No.**
+  - (C) aplica la fórmula de RN-03/RN-04 a las filas `AR` solas, como permite ADR-009 §5.
+  - Las reglas de mención (RN-01, RN-02, RN-11) son las del núcleo.
+  - Ninguna cifra combina niveles (ADR-009 §2).
+  - La cifra de `AR` es interna del Go. Cómo se cuenta a la clínica es de SPEC-009.
+
+### (i) Diseño de medición de `AR` — **correcto con condiciones**
+- **Preguntas**: las 5 `AR` congeladas (`AR01`–`AR05`, sin cambios de id ni de texto).
+- **Runs**: **3 por pregunta × proveedor**, en el "antes" y en cada "después". Son los mismos
+  runs que el núcleo, así que el instrumento es uno solo.
+- **Cifra**: el **SoV ponderado de `AR`**. Se calcula como el del núcleo, pero solo con filas
+  `AR`:
+  - SoV bruto por proveedor = respuestas válidas con la clínica ÷ respuestas válidas, con los
+    3 runs sumados;
+  - después se pondera con RN-04 (ChatGPT 0,55, Gemini 0,25, Claude 0,10), normalizado a los
+    proveedores con respuestas válidas.
+  - Se elige frente al recuento de casillas porque respeta RN-03 (pesa por uso). Además, con
+    el mismo riesgo de Go falso, detectó más subidas reales en la simulación.
+- **"Antes"**: una ejecución `--levels AR --runs 3` en un directorio nuevo, **antes de la
+  primera acción** (CA-12).
+  - Las filas `AR` de 1 run del baseline oficial **no** sirven como base de (C): tienen otro
+    diseño.
+  - Siguen siendo la ejecución de la semana 0 del seguimiento.
+- **"Después"**: **dos** mediciones, en las mismas semanas que las del núcleo (CA-9 (c)):
+  - semanas 11 y 12 desde la primera acción, ± 1, con ≥ 7 días entre sus inicios;
+  - cada una es una sola ejecución `--levels AV,AR` con 3 runs en los dos niveles;
+  - si una no queda completa, se repite entera dentro de la ventana, como en CA-9 (c).
+- **Seguimiento**: `AR` con 1 run cada 4 semanas (semanas 4 y 8). Es solo tendencia: su
+  cifra nunca se compara con el "antes" ni entra en (C). Por eso `summary.md` solo da el
+  ponderado de `AR` cuando la medición tiene los 3 runs del diseño.
+- **Medición completa** de `AR`: cada proveedor con peso tiene ≥ 90 % de sus filas `AR` con
+  `status=ok` (misma regla que CA-9 (a).2). Si no, `--resume` en la misma semana.
+- La regularidad de `AR` del dictamen CA-9 (g) ("≥ 2 casillas en las dos ejecuciones") queda
+  sustituida por (C). Para `AG`, CA-9 (g) sigue igual.
+
+### (ii) Umbral de crecimiento y regla de estabilidad, condición (C) — **correcto con condiciones**
+- **(C) ⇔ en cada una de las dos mediciones "después"** (no en su media) se cumplen las dos
+  cosas:
+  1. **Subida**: Δᵢ = ponderado `AR` después i − ponderado `AR` antes **≥ +12,0 pts**.
+  2. **Amplitud**: al quitar **cualquier** pregunta `AR` (sus filas, en el antes y en el
+     después) y recalcular, Δᵢ sigue **> 0**. Es decir, la subida no depende de una sola
+     pregunta.
+- La regla se calcula sin redondear y solo con mediciones completas y con 3 runs. Si falta
+  algo, la condición es "no decidible" y la medición se repite.
+- **Por qué +12**: con 5 preguntas, una pregunta que pasa entera a mencionar la clínica en
+  ChatGPT mueve el ponderado +12,2 pts; en Gemini, +5,6; en Claude, +2,2. +12 pide como mínimo
+  el equivalente a una pregunta entera en ChatGPT. La amplitud obliga a que haya al menos una
+  segunda pregunta que suba.
+- **Ruido y probabilidades** (simulación con casillas desde estables hasta 6 de 15
+  inestables, p = 0,35–0,5, con y sin deriva semanal, en la que el 10 % de las casillas cambia
+  de probabilidad cada semana):
+  - **Go falso** (sin cambio real): **0–4 %**.
+  - **Detectar una subida real** de 2 preguntas en ChatGPT y Gemini (p = 0,8): **49–97 %**.
+    Si la subida es de 2 preguntas en ChatGPT y 1 en Gemini: **34–87 %**. Los valores bajos
+    corresponden a muchas casillas inestables y deriva.
+  - Una subida de **una sola pregunta** en los 3 proveedores pasa solo en el 18–32 % de los
+    casos, y siempre por ruido de otras preguntas: la amplitud la frena a propósito.
+  - Igual que la regla del núcleo (CA-9 (e)), la regla es **conservadora**: se prefiere no
+    dar un Go falso a detectar toda subida real.
+- **Informativo** (no cambia el sí/no): el veredicto da |Δ₁ − Δ₂| (deriva de semana a
+  semana), las casillas que ganan o pierden a la clínica y la sensibilidad a "Ártica" adjetivo
+  (CA-9 (h)).
+
+### (iii) Umbral de defensa del núcleo, condición (D) — **correcto con condiciones**
+- **Caída significativa ⇔ Δᵢ ≤ −10,0 pts en las dos mediciones "después"**.
+  - Δᵢ = ponderado del núcleo después i − ponderado del núcleo del baseline oficial (CA-7).
+  - Se calcula sin redondear, con las dos mediciones de CA-9 (c): `AV`, 3 runs, completas.
+- **(D) se cumple ⇔ no hay caída significativa.** Una sola medición con caída no basta para
+  romper (D). Es la misma exigencia de estabilidad que en (C), en sentido contrario.
+- **Por qué −10 y en las dos**: se estimó con las cifras privadas del baseline.
+  - La dispersión entre runs del mismo día es menor que el umbral.
+  - El ruido estimado con los datos privados (error típico de una diferencia, entre runs
+    independientes y runs idénticos del mismo día) queda por debajo del umbral de 10 pts. La
+    cifra, en privado (ADR-004 §2).
+  - **Caída falsa** (sin cambio real): 0,1–2,4 %.
+  - **Detectar una caída real** de −15 pts: 63–82 %; de −20 pts: 86–99 %. Una caída real de
+    −10 pts se detecta en torno a un tercio de las veces.
+  - Exigir la caída en **una** sola medición subiría la caída falsa hasta ≈ 15 %: el Go
+    fallaría por ruido.
+- Con el núcleo por encima del umbral de techo, una subida no aporta nada a (D). (D) solo
+  mira caídas.
+- **Informativo**: Δ de cada medición y ponderado por run (CA-9 (e)).
+
+### (iv) Mismo instrumento en `AR` — **correcto con condiciones**
+- Se aplica entero CA-9 (f). Son idénticos entre el "antes" de `AR` y los "después":
+  - el set congelado;
+  - los runs (3);
+  - la ubicación Viveiro/Galicia/ES;
+  - los prompts y la configuración de la petición;
+  - los pesos y los alias. El veredicto recalcula los `summary` con el **mismo**
+    `brands.csv` y `probe_config.json`.
+  - Se comprueba con el `request` de `raw_responses.jsonl`: mismos campos salvo `model`.
+- **Modelo por defecto**:
+  - Antes de lanzar CA-12, `sdd-probe` comprueba que el modelo por defecto y los precios de
+    cada app siguen siendo los de `probe_config.json`.
+  - Si **no** han cambiado, CA-12 se lanza. Su petición es la del baseline oficial.
+  - Si **han** cambiado antes de la primera acción, CA-12 se lanza con el modelo nuevo
+    (RN-10) y, como dice CA-9 (f), se repite también el baseline del núcleo antes de la
+    primera acción. Así las bases de (C) y de (D) usan el mismo modelo.
+  - Si cambia **después** de la primera acción, la comparación sigue valiendo, se anota y no
+    se rehace nada (CA-9 (f)).
+- CA-12 va días después del baseline del núcleo. Se acepta (ADR-009 §4): sigue siendo
+  anterior a la primera acción.
+
+### (v) ¿Bastan 5 preguntas? — **sí, con condiciones**
+- **Sí** para fijar (ii) con una regla decidible:
+  - con 3 runs, un Go falso queda en ≤ 4 % en todos los escenarios de ruido simulados;
+  - la amplitud impide que el Go descanse en una sola pregunta, que es la salvedad del
+    arquitecto.
+- **Límites que se aceptan** (lo que la opción A no arregla):
+  1. **Potencia moderada**: una subida real de 2 preguntas puede no verse en el 3–66 % de
+     los casos. El (C) de este piloto puede dar "no" con una mejora real pequeña.
+  2. **Alcance**: (C) habla de las 5 preguntas y de sus zonas (Ferrolterra, norte e interior
+     de Lugo, occidente de Asturias), no de "todo el área de influencia".
+  3. Más runs (5) apenas mejoran la potencia en la simulación (+3–13 pts) y no caben en el
+     mes del cierre. La potencia la limitan las 5 preguntas y la deriva semanal, no los runs.
+- **No se recomienda la opción B.** Si el humano quiere más potencia o más alcance, la
+  palanca es la opción B (más preguntas), que decide él. Así no hace falta para decidir.
+
+### Tabla condición → cambio (CA-11)
+| Condición | Cambio | Dónde |
+|---|---|---|
+| (i) `AR` 3 runs en "antes" y "después" | `levels[AR].runs` = 3; `go.growth.runs` = 3; comando CA-12 `--levels AR --runs 3` | `probe/batches/viveiro.json`; README "Batches"; "Instrucciones para el humano (CA-12)"; `test_ca11_config_fixes_growth_and_defense`, `test_ca5_simple_pilot_command_uses_runs_per_level`, `test_ca12_ledger_command_is_the_ar_before_with_the_design_of_ca11` |
+| (i) cifra = ponderado de `AR` solo con filas `AR`; solo con los runs del diseño | `analyze_levels` → `growth`; línea "SoV ponderado de AR" (o "no se da" con otros runs) | `probe/analysis.py` (`_growth_lines`); `test_ca11_ar_weighted_uses_only_ar_rows`, `test_ca11_ar_summary_gives_its_own_weighted_only_with_design_runs` |
+| (i) medición `AR` completa (≥ 90 % `ok`) | "Medición completa para la condición (C)" | `analysis.py`; `test_ca11_ar_measurement_incomplete_with_errors` |
+| (i) "después" = `--levels AV,AR`, semanas 11 y 12 ± 1 | Comando del README; cadencia | README "Batches"; F-SPEC-008-5 y F-SPEC-008-14 (→ SPEC-012) |
+| (ii) Δ ≥ +12 en cada "después" + amplitud (quitar una pregunta, Δ > 0); no decidible sin diseño | `go.growth.min_rise_pts` = 12, `after_measurements` = 2; `growth_verdict` | `viveiro.json`; `analysis.py`; `test_ca11_growth_needs_rise_in_both_afters_and_more_than_one_question`, `test_ca11_growth_threshold_is_inclusive_and_unrounded`, `test_ca11_growth_not_decidable_with_other_design_or_incomplete` |
+| (iii) caída ⇔ Δ ≤ −10 en las dos; (D) se cumple si no | `go.defense.max_drop_pts` = 10; `defense_verdict` | `viveiro.json`; `analysis.py`; `test_ca11_defense_fails_only_with_a_drop_in_both_afters` |
+| ADR-009 §2: (C) y (D) por separado, sin mezclar niveles | `render_go_verdict` con secciones (C), (D) y (A) separadas; etiquetas de nivel | `analysis.py`; `test_ca11_verdicts_do_not_mix_levels`, `test_ca11_go_verdict_report_gives_c_and_d_apart`; `test_ca3_core_weighted_sov_uses_only_av` (sigue en verde) |
+| (iv) mismo instrumento; modelo por defecto antes de CA-12 | Comprobación de `sdd-probe` antes del comando | "Instrucciones para el humano (CA-12)" paso 0 |
+| CA-10 decidido | Texto del aviso de techo con la decisión (ADR-009) | `analysis.py` (`_ceiling_warning`); `test_ca10_*` |
+| Veredicto entre ejecuciones (lectura de los `results.csv` y el comando) | Funciones listas; el comando y el informe son de SPEC-012 | F-SPEC-008-10 (→ SPEC-012) |
+
+## Dependencias
+Reescrito el 2026-09-29 por la enmienda (b) (F-SPEC-008-9.5). CA-7 (baseline oficial del Go)
+depende de:
+- **SPEC-013 en `hecho`**: **cumplido** el 2026-09-29 (commit `0ed5384`, veredicto GREEN).
+  El probe escribe `searched_urls` y `raw_responses.jsonl`.
+- **Dictamen CA-9**: **cumplido** el 2026-09-29 (arriba), antes del baseline.
+- **Claves (SPEC-002 CA-1)**: cumplido. Están en el `.env` de la raíz y el humo de Viveiro
+  del 2026-09-29 dio 9/9 `ok`.
+- **Set congelado (SPEC-007 CA-8)**: se congela **al empezar el baseline oficial**, salvo que
+  el humano fije antes otra fecha en el ledger de SPEC-007. El texto de los tres niveles es el
+  de `docs/piloto-artica/prompts-baseline.md`. Si cambiara antes de la congelación,
+  `test_ca1_pilot_prompts_equal_to_frozen_set_id_and_literal_text` falla y obliga a
+  sincronizar `prompts.csv`. Registro: "Registro de la congelación del set", abajo.
+- **Ya no depende** de ninguna pasada manual de SPEC-007. La pasada "antes" de calibración va
+  **después** del baseline y emparejada con él (ventana del dictamen (k) de SPEC-007).
 
 ## Instrucciones para el humano (CA-7)
-> **Orden OBSOLETO desde la enmienda 2026-09-29 (b) (sdd-arquitecto).** El baseline ya **no**
-> va después de la pasada 1 manual: va después de SPEC-013 (`hecho`) y del dictamen de CA-9,
-> y antes de la primera acción; es el baseline oficial del criterio Go. No lances el baseline
-> hasta la re-aprobación de la spec y F-SPEC-008-9. El humo sigue valiendo.
+Reescritas el 2026-09-29 (enmienda (b)). **Ejecutadas el 2026-09-29.** Desde CA-11, el
+comando simple del paso 3 lanza `AR` con 3 runs: no se repite. El siguiente paso es CA-12.
+**Orden**:
+1. humo de seguimiento (F-SPEC-013-5);
+2. SPEC-013 `hecho` (ya) y dictamen CA-9 (ya);
+3. congelación del set, que se registra justo antes del baseline;
+4. **baseline oficial**;
+5. revisión del Aviso de techo (CA-10);
+6. primera acción del piloto (SPEC-012).
+Ninguna acción del piloto antes del paso 5.
 
-**Orden**: el humo puede lanzarse ya; el **baseline va después de la pasada 1 manual de
-SPEC-007** (su inicio congela el set, SPEC-007 CA-8) y **antes de la primera acción del
-piloto** (SPEC-012). `PUSHLLM_PRIVADO` ya es variable de usuario: no se fija aquí. Sin
-activar el venv: se llama a `.\.venv\Scripts\python` directamente. **Claves** (ADR-006,
-ADR-007; F-SPEC-002-2, actualizado el 2026-09-29): en el `.env` de la raíz del repo (copia
-de `.env.example` con los valores rellenos); el probe lo carga solo, sin
-`Read-Host` ni fragmentos de PowerShell, nunca pisa una variable ya definida en la sesión
-y nunca escribe los valores. En PowerShell, desde la raíz del repo (el `cd probe` entra en
-`probe\`; venv instalado según `probe/README.md`, "Install"):
+`PUSHLLM_PRIVADO` ya es variable de usuario: no se fija aquí. Sin activar el venv: se llama
+a `.\.venv\Scripts\python` directamente. **Claves** (ADR-006, ADR-007): en el `.env` de la
+raíz del repo. El probe lo carga solo, nunca pisa una variable ya definida en la sesión y
+nunca escribe los valores. En PowerShell, desde la raíz del repo:
 
 ```powershell
 cd probe
@@ -226,29 +662,134 @@ if (-not $env:PUSHLLM_PRIVADO) { throw "PUSHLLM_PRIVADO no está definida" }
 # 0) Comprobación offline (sin claves ni red): todo en verde
 .\.venv\Scripts\python -m pytest -q tests
 
-# 1) HUMO (se puede ya): 3 preguntas x 1 run x 3 proveedores = 9 llamadas
-.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --only AV01,AR01,AG01 --runs 1 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke"
-Select-String "lote \| total" "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke\summary.md"
-# c = "lote | total" / 3  (coste por pregunta x ejecución, los 3 proveedores)
+# 1) HUMO DE SEGUIMIENTO (F-SPEC-013-5): 3 preguntas x 1 run x 3 proveedores = 9 llamadas, ~0,35 EUR
+#    Directorio NUEVO: el humo antiguo (probe-smoke) no tiene searched_urls
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --only AV01,AR01,AG01 --runs 1 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke-spec013"
+Select-String "lote \| total" "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke-spec013\summary.md"
+Import-Csv "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke-spec013\results.csv" | Where-Object provider -eq "openai" | Measure-Object -Property web_searches,cost_eur -Average | Select-Object Property,Average
 
-# 2) BASELINE (solo después de la pasada 1 manual de SPEC-007)
-#    Si c > 0,19 EUR: un solo comando (AV 2 runs, AR/AG 1 run)
+# 2) Decide con el paso 1 (umbrales abajo). Si alguno salta, PARA y avisa: no hay baseline.
+
+# 3) BASELINE OFICIAL DEL GO: AV 3 runs + AR/AG 1 run = 54 preguntas x 3 proveedores = 162 llamadas, ~6,2 EUR
+#    Registra la congelación del set JUSTO ANTES (su inicio congela el set, SPEC-007 CA-8)
+if (git status --porcelain -- prompts.csv ..\docs\piloto-artica\prompts-baseline.md) { throw "el set tiene cambios sin commit" }
+"congelacion_set_utc=$((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')) commit=$(git rev-parse --short HEAD)" | Tee-Object -FilePath "$env:PUSHLLM_PRIVADO\piloto-artica\congelacion-set.txt"
 .\.venv\Scripts\python run_probe.py --config batches/viveiro.json
-#    Si c <= 0,19 EUR: en su lugar, estos dos (AV 3 runs; después AR/AG 1 run)
-.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AV --runs 3
-.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AR,AG --resume
 
-# 3) Si se corta: repetir la misma línea añadiendo --resume (solo llama lo que falta)
-# 4) Recuento offline cuando quieras (sin llamadas)
+# 4) Si se corta: repite la MISMA línea del paso 3 añadiendo --resume (solo llama lo que falta; misma semana)
+# 5) Aviso de techo (CA-10) y validez: léelo antes de cualquier acción
+Select-String "Aviso de techo|SoV ponderado del núcleo \(|Medición completa|lote \| total" "$env:PUSHLLM_PRIVADO\piloto-artica\probe\summary.md"
+
+# 6) Recuento offline cuando quieras (sin llamadas)
 .\.venv\Scripts\python run_probe.py --config batches/viveiro.json --analyze
 ```
 
-- Salida: `$env:PUSHLLM_PRIVADO\piloto-artica\probe\results.csv` y `summary.md`. Nada al
-  repo (ADR-001/ADR-004). El probe rechaza un `--out` vacío o raíz de unidad.
-- Después, avisa con: fecha y hora de inicio y fin, nº de llamadas por estado (tabla de
-  `summary.md`) y coste total. Con eso el agente rellena CA-7 aquí y revisa el resumen.
-- Si las claves llegan **después** de la primera acción, no lances el baseline como tal:
-  CA-7 pasa a n-a y el probe solo sirve para tendencia.
+**Umbrales del paso 2** (decídelos con los números del paso 1; `c'` = "lote | total" ÷ 3):
+- **F-SPEC-013-5 (OpenAI)**: se compara con dos referencias.
+  - Humo de SPEC-002: 1 búsqueda por llamada, 0,0119 € de media.
+  - Humo antiguo de Viveiro, **mismas 3 preguntas** y sin `include`: 1,33 búsquedas por
+    llamada (1, 1, 2) y 0,0146 € de media.
+  - Si la media de `web_searches` de OpenAI es **≥ 1,67** (≈ 2) **y** su coste medio por
+    llamada supera **0,0144 €** (+20 % sobre 0,012 €), se reabre con `sdd-probe` y el humano
+    decide sobre el `include` **antes** del baseline (dictamen CA-9 (f): cambiarlo después
+    rompe el instrumento).
+  - Ojo: el humo antiguo de Viveiro ya pasaba de 0,0144 € con 1,33 búsquedas. La señal que
+    importa es la subida de búsquedas por llamada frente a las mismas preguntas.
+- **Coste (CA-5)**:
+  - `c' ≤ 0,1307 €`: sigue.
+  - `0,1307 € < c' ≤ 0,155 €`: sigue, y en el mes del cierre se aplican las palancas de CA-5.
+  - `c' > 0,155 €`: PARA.
+- **Modelos**: la tabla "Modelos servidos" del `summary.md` del humo debe coincidir con
+  `probe_config.json` (dictamen vigente de `sdd-probe`). Si no, PARA.
+
+**Qué avisar después del paso 5**:
+- la línea de `congelacion-set.txt`;
+- fecha y hora de inicio y fin;
+- nº de llamadas por estado (tablas de `summary.md`);
+- coste total;
+- modelos servidos;
+- "Medición completa" sí/no;
+- si aparece el **Aviso de techo**.
+Con eso el agente rellena CA-7 y el registro de congelación.
+
+**Si sale el Aviso de techo** (ponderado del núcleo ≥ 85 %): antes de la primera acción, el
+humano decide y se registra aquí, con fecha, una de estas opciones:
+- mantener el criterio;
+- medir sobre un subconjunto de `AV` (p. ej. Lugo o capilar);
+- cambiar el umbral.
+Nunca se decide después de ver el efecto (CA-10).
+
+- Salida: `$env:PUSHLLM_PRIVADO\piloto-artica\probe\` con `results.csv` (con
+  `searched_urls`), `raw_responses.jsonl` y `summary.md`. Es un directorio nuevo: no existía
+  el 2026-09-29. Nada al repo (ADR-001/ADR-004). El probe rechaza un `--out` vacío o raíz de
+  unidad, y `--resume` sobre un `results.csv` anterior a SPEC-013.
+- Si la primera acción ya hubiera ocurrido sin baseline del probe, no hay criterio Go
+  (CA-7): avisa y no lances nada.
+- Antes del paso 1, `sdd-probe` (orquestador) confirma que el modelo por defecto de cada app
+  y los precios siguen siendo los de `probe_config.json` (dictamen CA-9 (f)).
+
+### Registro de la congelación del set (SPEC-007 CA-8)
+Preparado el 2026-09-29. Lo rellena el agente con lo que avise el humano tras el paso 3:
+| Campo | Valor |
+|---|---|
+| Fecha y hora UTC de congelación (inicio del baseline, `congelacion-set.txt`) | **2026-09-29T15:30:43Z** |
+| Commit del repo en ese momento (`prompts.csv` y `prompts-baseline.md` sin cambios pendientes) | **`60863af`** (sin cambios pendientes en el set; `git diff 60863af HEAD` de los dos ficheros vacío el 2026-09-29) |
+| Preguntas congeladas | `AV01`–`AV15`, `AR01`–`AR05`, `AG01`–`AG04` (24), texto literal de `docs/piloto-artica/prompts-baseline.md`; copia en `probe/tests/fixtures/pilot-set-frozen.tsv` |
+| Primera fila `timestamp_utc` de `piloto-artica/probe/results.csv` | **2026-09-29T15:31:12Z** (última 16:15:10Z) |
+
+Registrado el 2026-09-29 por sdd-implementador. Hecho el paso 1 de abajo (fixture y
+`test_ca7_pilot_prompts_equal_to_set_frozen_at_official_baseline`); el paso 2 queda para el
+orquestador: fecha **2026-09-29T15:30:43Z**, commit `60863af`, al ledger de SPEC-007 CA-8.
+
+- Tras el registro, el agente:
+  1. copia en `probe/tests/fixtures/pilot-set-frozen.tsv` las 24 filas (`id`, `prompt`) del
+     commit registrado, con un test que compare `prompts.csv` con esa copia (patrón de
+     `docs/piloto-artica/tools/tests/av-2026-09-29.tsv`);
+  2. pasa la fecha al orquestador para el ledger de SPEC-007 CA-8. Este implementador no
+     edita ese ledger.
+- Desde esa fecha, una pregunta nueva lleva id nuevo, se informa aparte y no cuenta para
+  el Go.
+
+## Instrucciones para el humano (CA-12)
+Preparadas el 2026-09-29 (sdd-implementador) con el diseño del dictamen CA-11. Es el "antes"
+de `AR` de la condición (C). Se lanza **antes de la primera acción** del piloto y en un
+directorio nuevo. Comprobado offline con `test_ca12_ledger_command_is_the_ar_before_with_the_design_of_ca11`:
+lanza 45 llamadas (15 por proveedor), solo `AR01`–`AR05`, runs 1–3, y la medición sale
+completa con 3 runs. Coste ≈ 1,9 € (CA-5).
+
+Orden:
+0. `sdd-probe` (orquestador) confirma que el modelo por defecto y los precios de cada app
+   siguen siendo los de `probe_config.json` (CA-11 (iv)). Si han cambiado, PARA: se aplica
+   CA-11 (iv) (CA-12 con el modelo nuevo y repetición del baseline del núcleo).
+1. Lanzar el comando de abajo.
+2. Leer las líneas de validez.
+3. Avisar al agente, que rellena CA-12 en la matriz.
+4. Después, primera acción del piloto (SPEC-012).
+
+En PowerShell, desde `probe\` (claves en el `.env` de la raíz; `PUSHLLM_PRIVADO` como variable
+de usuario):
+
+```powershell
+if (-not $env:PUSHLLM_PRIVADO) { throw "PUSHLLM_PRIVADO no está definida" }
+if (Test-Path "$env:PUSHLLM_PRIVADO\piloto-artica\probe-AR-antes\results.csv") { throw "ya existe: no repetir sin --resume" }
+
+# CA-12: "antes" de AR del Go (opción A): 5 preguntas x 3 runs x 3 proveedores = 45 llamadas, ~1,9 EUR
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AR --runs 3 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-AR-antes"
+
+# Si se corta: repite la MISMA línea añadiendo --resume (misma semana)
+# Validez: medición completa de (C), runs, coste y modelos
+Select-String "SoV ponderado de AR|Medición completa para la condición \(C\)|lote \| total" "$env:PUSHLLM_PRIVADO\piloto-artica\probe-AR-antes\summary.md"
+```
+
+**Qué avisar**:
+- fecha y hora de inicio y fin;
+- número de llamadas por estado (tablas de `summary.md`);
+- coste total;
+- la tabla "Modelos servidos";
+- "Medición completa para la condición (C)": sí/no.
+La línea "SoV ponderado de AR" debe salir con cifra, no con "no se da"; si sale "no se da",
+faltan runs. Las cifras de visibilidad se quedan en el espacio privado (ADR-004): al ledger
+solo van los veredictos.
 
 ## Decisiones del humano
 Del 2026-09-29, **decidido por el humano (Alberto Fojo)**:
@@ -263,11 +804,105 @@ Del 2026-09-29, **decidido por el humano (Alberto Fojo)**:
   cifra. Tests `test_review_observations_*`. Follow-up F-SPEC-008-7.
 - **(b) Cadencia**: **aceptada**: `AV` semanal con 1 run; `AR` y `AG` cada 4 semanas; en el
   baseline, 3 runs en `AV` si el humo da `c ≤ 0,19 €` y 2 si no (F-SPEC-008-5).
-- **Orden**: el baseline del probe va después de la pasada 1 manual de SPEC-007; el humo
-  puede ir antes (instrucciones de arriba).
+- ~~**Orden**: el baseline del probe va después de la pasada 1 manual de SPEC-007; el humo
+  puede ir antes.~~ **Sustituida** por la enmienda (b), re-aprobada por el humano el
+  2026-09-29. El probe es el instrumento del Go. Orden: humo → baseline oficial (congela el
+  set) → aviso de techo → primera acción. La pasada manual "antes" va después del baseline,
+  emparejada con él (SPEC-007).
+- **(c) CA-10, aviso de techo (2026-09-29, decidido por el humano)**: en el baseline oficial
+  saltó el aviso de techo. El humano decidió, **antes de la primera acción**, cambiar el
+  criterio Go a "crecer fuera, defender dentro": (C) crecer en `AR`, (D) defender `AV`
+  frente al baseline oficial y (A) ≥ 1 paciente atribuido (ADR-009, aprobado el 2026-09-29;
+  EPIC-002, criterio 4). No eligió ninguna de las tres opciones de CA-10. Cierra
+  F-SPEC-008-12.
+- **(d) Medición de `AR`: opción A (2026-09-29, decidido por el humano)**: más runs con las
+  mismas 5 preguntas `AR`. **No se reabre la congelación** del set. Los runs, los umbrales y
+  la regla los fija el dictamen CA-11.
+- **(e) Recorte de coste (2026-09-29, decidido por el humano)**: si el mes del cierre supera
+  20 €, lo primero es pasar `AG` a **cada 8 semanas**. Las palancas siguientes, en orden,
+  están en el dictamen `sdd-probe` (CA-5, "Opción A y diseño de CA-11").
 
 ## Veredicto del verificador
 <!-- GREEN/RED + fecha + resumen. Lo escribe SOLO sdd-verificador. -->
+
+**GREEN — re-verificación de cierre 2026-09-29, iteración 3 (sdd-verificador)**, rama
+`ft/SPEC-008-baseline-oficial` (`7df08fe` local, sin push, más cambios sin commit en
+`analysis.py`, `test_pilot_batch.py`, spec y ledger). Spec a `hecho`.
+- Finding 1 de la iteración 2 resuelto: el handoff (g) ya no cita el recuento del "antes"
+  de `AR`; la búsqueda de ese recuento en las líneas añadidas de `git diff origin/main`
+  sale vacía.
+- Búsqueda repetida en todo el diff frente a `origin/main` (docs, código, tests,
+  fixtures), contrastada con la evidencia privada de CA-7 y CA-12: porcentajes, "n de m" en
+  cifra y en letra, casillas `AR0n`/`AV0n` × proveedor, runs y recuentos. Solo aparecen
+  umbrales, pesos y su aritmética, simulaciones, costes, recuentos operativos de filas
+  `ok` y datos sintéticos de tests; ninguno coincide con una cifra medida de visibilidad.
+- Sin regresiones: `pytest probe/tests` (con `PUSHLLM_PRIVADO`) 239 passed; `pytest
+  docs/piloto-artica/tools/tests` 143 passed; `py -m ruff check probe` limpio; `valida.mjs`
+  OK; golden de Vigo (`test_ca4_vigo_summary_identical_to_before_the_change`) en verde y
+  fixtures de Vigo sin cambios; `test_ca11_completeness_does_not_apply_to_a_level_that_was_not_measured`
+  en verde; `git status --ignored` sin salidas del lote (CA-8).
+- Estado: CA-1, CA-3–CA-12 ✅; CA-2 ⚠️ (F-SPEC-008-1, aceptada: no bloquea el cierre).
+- Siguen vigentes, para el humano, las salvedades de la iteración 2 (historial remoto
+  con estadísticos de ruido en `57b0023`/`2bf0149`; mes del cierre en el límite de 20 €;
+  drift "Aprueba: humano (pendiente)" en ADR-009).
+
+**RED — re-verificación de cierre 2026-09-29, iteración 2 (sdd-verificador)**, rama
+`ft/SPEC-008-baseline-oficial` (`7df08fe` local, sin push, más cambios sin commit en
+`analysis.py`, `test_pilot_batch.py`, spec y ledger). Spec devuelta a `en-progreso`.
+Gates re-ejecutados: `pytest probe/tests` (con `PUSHLLM_PRIVADO`) 239 passed; `pytest
+docs/piloto-artica/tools/tests` 143 passed; `py -m ruff check probe` limpio; `valida.mjs` OK;
+golden de Vigo regenerado con `--analyze` sobre `tests/fixtures/vigo_results.csv`: idéntico
+a `vigo_summary_before.md`. CA-8: `git ls-files` sin salidas del lote; `git status
+--ignored` solo muestra `.env` (sin `probe/out/`).
+
+Resuelto de la iteración 1:
+- Finding 1 (el ledger publicaba recuentos de menciones del "antes" de `AR`, ADR-004 §2):
+  corregido en la fila CA-12 y en F-SPEC-008-3 (CA-12), que dan solo el veredicto.
+- Finding 2 (paso 0 de CA-12): anotado en la fila CA-12; la re-comprobación real de
+  `sdd-probe` antes de cada "después" está en F-SPEC-008-14.
+- Salvedad del `summary.md`: `analysis.py` dice "**no aplica** (no se midió AV/AR)";
+  `test_ca11_completeness_does_not_apply_to_a_level_that_was_not_measured` lo prueba en los
+  dos sentidos. Comprobado además con `--analyze` sobre copias de los CSV privados: el
+  "antes" de `AR` da (D) "no aplica" y (C) "sí"; el baseline da (D) "sí".
+- Dictamen CA-11 (iii): ya no lleva la cifra de error típico ("por debajo del umbral";
+  la cifra, en privado).
+
+CA-1, CA-3–CA-11 siguen ✅ y CA-2 ⚠️ (F-SPEC-008-1), como en la iteración 1: desde entonces
+solo cambian `analysis.py` (líneas de completitud), su test, la spec (historial) y el
+ledger. CA-12: medición válida, bloqueada por el finding 1.
+
+Búsqueda de datos de visibilidad de Ártica en todo el diff frente a `origin/main` (docs,
+tests, fixtures, código), contrastada con las cifras privadas: porcentajes, "n de m",
+casillas `AR0n`/`AV0n` × proveedor, runs y recuentos. Lo que aparece son umbrales (85 %,
++12, −10, 90 %), pesos y su aritmética, probabilidades de simulación, costes y datos
+sintéticos de tests; ninguno coincide con una cifra medida. Excepción: el finding 1.
+
+Findings:
+1. **(media, bloqueante; ADR-004 §2)** El handoff (g) de "Cómo retomar" vuelve a escribir,
+   entre comillas, los dos textos que el finding 1 de la iteración 1 mandó quitar (el
+   recuento de respuestas del "antes" de `AR` que nombran a la clínica). Borrar esas citas
+   y dejar solo "la sección Veredicto está pendiente de reescritura", o quitar la viñeta: el
+   verificador ya la ha reescrito. Tras el cambio, `git diff origin/main` no debe contener
+   ningún recuento del "antes" de `AR`. Juntarlo en el mismo commit local que `7df08fe`, sin
+   commit encima.
+
+Salvedades para el humano (no bloquean):
+- **Ya en `origin`** (no lo arregla el commit único): el dictamen CA-11 (iii) con el error
+  típico en puntos está en `57b0023` (desde `2a78315`); el árbol de trabajo lo quita, pero
+  sigue en el historial remoto. ADR-009 ("Bajar el umbral del núcleo") dice que la
+  diferencia entre runs del mismo día es "del orden de" +5 pts, en `origin` desde
+  `2bf0149`. Son estadísticos de ruido, no SoV ni menciones, pero cerca de la frontera de
+  ADR-004. Decide el humano si reescribe el historial remoto o los deja.
+- Mes del cierre: solo cabe en ≤ 20 € con las palancas 1–3, en el límite; si `c` sube por
+  encima de 0,1299 €, hace falta la palanca 4.
+- `ADR-009` tiene `aprobada` en el frontmatter, pero en el cuerpo aún pone "Aprueba:
+  humano (pendiente)". Es drift de documento (→ sdd-arquitecto / documentalista).
+
+**RED — verificación de cierre 2026-09-29, iteración 1 (sdd-verificador)**, en `7df08fe`.
+CA-1, CA-3–CA-11 ✅, CA-2 ⚠️, CA-12 ❌. Findings: (1) el ledger publicaba recuentos de
+menciones del "antes" de `AR` (ADR-004 §2); (2) paso 0 de CA-12 sin registrar. Salvedad:
+el `summary.md` de una ejecución solo `AR` decía "no" en vez de "no aplica" en la
+completitud de (D). Resueltos en la iteración 2 (arriba).
 
 **Verificación intermedia 2026-09-29, CA-7 pendiente** (sin transición de estado; no es el
 veredicto de cierre). Parte offline apta para que el humano lance humo y baseline: CA-3,
@@ -328,6 +963,14 @@ Humo de Viveiro (informativo para CA-7): 9/9 `ok`, modelos = dictamen, Claude 0 
   `AR` y `AG` cada 4 semanas con 1 run (`--levels AR,AG`); baseline con 3 runs en `AV` si
   el humo da `c ≤ 0,19 €` y 2 si no; el "después" del cierre repite la forma del baseline.
   Los runs por nivel viven en `batches/viveiro.json` (`AV` 2, `AR` 1, `AG` 1).
+  **Actualizado 2026-09-29 (enmienda (b), dictamen CA-9)**:
+  - El baseline ya no espera a la pasada manual. Es el baseline oficial del Go.
+  - `AV` pasa a 3 runs en `batches/viveiro.json` (c = 0,1142 €).
+  - Las dos mediciones "después" (semanas 11 y 12 ± 1, ≥ 7 días) repiten los 3 runs con
+    `--levels AV --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-go-AAAA-MM-DD"`.
+  - El `AV` semanal lleva `--runs 1` explícito.
+  - `AR`/`AG` cada 4 semanas (0, 4, 8, 12).
+  - Regla del Go: dictamen CA-9 (d).
 - **F-SPEC-008-6** (→ sdd-documentalista): la matriz de este ledger venía con `\n`
   literales (como F-SPEC-007-3); se ha rehecho sin tocar el contenido de Verif./Estado.
 
@@ -336,7 +979,11 @@ Humo de Viveiro (informativo para CA-7): 9/9 `ok`, modelos = dictamen, Claude 0 
   titular). SPEC-011 lo usa en el diagnóstico; SPEC-012 lo revisa en cada informe con la
   sección "Observaciones para revisar a mano" del `summary.md` del probe y, en la medición
   manual, con una marca en `observaciones`. No es métrica ni se promete.
-- **F-SPEC-008-9** (→ sdd-implementador, **tras la re-aprobación humana** de la enmienda
+- **F-SPEC-008-9** — **hecho el 2026-09-29 (sdd-implementador)**, salvo la ejecución real
+  de CA-7 (humano). Commits en `ft/SPEC-008-baseline-oficial`. El dictamen CA-9 y el mes del
+  cierre están arriba; configuración, análisis, README e instrucciones están cambiados; CA-9
+  y CA-10 están en la matriz.
+  (→ sdd-implementador, **tras la re-aprobación humana** de la enmienda
   2026-09-29 (b); sdd-arquitecto). El probe es el instrumento del Go. **No tocar nada de
   esta lista antes de la re-aprobación.** Después, en este orden:
   1. **Dictamen CA-9**: pedir a `sdd-metricas` el dictamen (a)–(h) y añadirlo a este ledger
@@ -358,12 +1005,143 @@ Humo de Viveiro (informativo para CA-7): 9/9 `ok`, modelos = dictamen, Claude 0 
      quitar "después de la pasada 1 manual"; añadir CA-9 y CA-10 a la matriz; actualizar
      "Decisiones del humano" (Orden) y F-SPEC-008-5 (el baseline ya no espera a la manual).
   La comparación app frente a probe no se implementa aquí: es SPEC-007 CA-7 (F-SPEC-007-8).
+- **F-SPEC-008-10** (→ SPEC-012, sdd-arquitecto): comparación **entre ejecuciones**, que no
+  hace `analysis.py`, porque cada `summary.md` es de un solo `results.csv`:
+  - Δ₁/Δ₂ del Go y |Δ₁ − Δ₂| (dictamen CA-9 (d)–(e));
+  - regularidad `AR` (≥ 2 casillas con la clínica en las ejecuciones de las semanas 8 y 12);
+  - `AG` alguna vez;
+  - lista de puestos (CA-9 (g));
+  - sensibilidad de "Ártica" adjetivo (CA-9 (h));
+  - anotación de cambios de modelo (CA-9 (f)).
+  SPEC-012 decide si lo hace a mano desde los `summary.md` o con una herramienta.
+  **Actualizado 2026-09-29 (CA-11)**: la regla del Go ya no es Δ ≥ +15 en el núcleo, sino
+  (C) y (D) del dictamen CA-11. `probe/analysis.py` ya tiene `growth_verdict`,
+  `defense_verdict` y `render_go_verdict`, con tests. Reciben el resultado de
+  `analysis.analyze` de cada `results.csv`. Falta el comando o procedimiento que los lee y
+  escribe el veredicto en el espacio privado: es de SPEC-012. La regularidad `AR` de CA-9 (g)
+  queda sustituida por (C).
+- **F-SPEC-008-11** (→ orquestador, antes del paso 3 de CA-7): SPEC-007 dice que P-5
+  (Mondoñedo) debe resolverse antes de la congelación. El dictamen (k) de SPEC-007, en su
+  worktree, la da por "cerrada", pero el set publicado no cambia. Si la decisión añadiera o
+  cambiara preguntas, hay que sincronizar `prompts.csv` (el test CA-1 lo exige) **antes** del
+  baseline. Una vez congelado el set, no se toca.
 - **F-SPEC-008-8** (verificación intermedia, 2026-09-29): findings 1–4 corregidos: runs por
   nivel y `--levels` (1), Clínica Villoria como miembro del lote piloto (2), alias punycode
   de Virxe da Mariña (3), `--out` vacío o raíz rechazado y comprobación de
   `PUSHLLM_PRIVADO` en los pasos del humano (4).
+- **F-SPEC-013-5 — cerrado sin reabrir el 2026-09-29** (humo de seguimiento, paso 1 de
+  CA-7, `…\piloto-artica\probe-smoke-spec013`): 9/9 `ok`; OpenAI 1,00 búsquedas por llamada
+  (umbral 1,67) y 0,0116 € por llamada (umbral 0,0144 €), por debajo de los dos, así que el
+  `include` de OpenAI no se toca y el instrumento del Go queda fijado (dictamen CA-9 (f));
+  total 0,3646 €, c' = 0,1215 € ≤ 0,1307 € (CA-5 sin cambios); modelos servidos = configuración;
+  la cabecera de `results.csv` termina en `searched_urls`.
+- **F-SPEC-008-3 — revisión a mano del baseline oficial (2026-09-29, sdd-implementador)**: se
+  leyeron en privado todas las respuestas del núcleo que `summary.md` lista con la clínica solo
+  por "Ártica" suelta. **Todas se refieren a Clínica Ártica** (nombre comercial con su
+  dirección o su oferta); ninguna usa "ártica" como adjetivo, así que la sensibilidad del
+  dictamen CA-9 (h) no cambia nada en el baseline. Cuántas y cuáles, en privado
+  (`ca7-baseline-evidencia.md`, ADR-004 §2). Se repite en cada medición "después".
+- **F-SPEC-008-3 — revisión a mano del "antes" de `AR` (CA-12, 2026-09-29, sdd-implementador)**:
+  se leyeron en privado todas las respuestas que `summary.md` lista con la clínica solo por
+  "Ártica" suelta. **Todas se refieren a Clínica Ártica**; ninguna usa "ártica" como
+  adjetivo, así que la sensibilidad del dictamen CA-9 (h) no cambia el "antes". Cuántas y
+  cuáles, en privado (`ca12-ar-antes-evidencia.md`, ADR-004 §2).
+- **F-SPEC-008-12** — **cerrado el 2026-09-29**: el baseline oficial dio el **Aviso de
+  techo** y el humano decidió antes de la primera acción ("Decisiones del humano" (c);
+  ADR-009).
+- **F-SPEC-008-13** (→ sdd-implementador / verificador): `ruff` no está en el venv del probe
+  (`probe\.venv`); se ejecutó con `py -m ruff`. Valorar añadirlo a las dependencias de
+  desarrollo.
+- **F-SPEC-008-14** (→ SPEC-012, sdd-arquitecto; dictamen CA-11 y CA-5 de la enmienda (d)):
+  la cadencia del piloto cambia.
+  - Cada medición "después" del Go es `--levels AV,AR` con 3 runs, en las semanas 11 y
+    12 ± 1, con ≥ 7 días entre ellas.
+  - En la semana 12 sustituye al `AR` de 1 run. `AG`, si toca, va aparte con
+    `--levels AG --runs 1`.
+  - El seguimiento `AR`/`AG` lleva `--runs 1` explícito: sin él, `--levels AR,AG` lanzaría
+    `AR` con 3 runs.
+  - Las palancas de coste 1–4 del mes del cierre se deciden al planificarlo.
+  - Antes de **cada** medición "después", `sdd-probe` hace una re-comprobación real del
+    modelo por defecto y de los precios de cada app (CA-9 (f), CA-11 (iv)): los "modelos
+    servidos" del `summary.md` no la sustituyen, porque el probe pide un id fijo.
+  - SPEC-012 CA-3 y CA-7 deben recoger esto (ADR-009, Consecuencias).
+- **F-SPEC-008-15** (→ sdd-documentalista): `docs/fundacion/contexto.md` todavía dice "Go
+  solo con `AV`". Se actualiza con ADR-009 (ADR-009, Consecuencias). Este implementador no
+  edita documentos de verdad.
+- **F-SPEC-008-16** (→ sdd-arquitecto, informativo): el comando simple del lote (sin
+  `--levels`) lanza ahora `AV` 3 + `AR` 3 + `AG` 1 = 64 preguntas × ejecución por
+  proveedor. Ya no es la forma del baseline oficial, que se ejecutó con `AR` 1. Nadie debe
+  relanzarlo como baseline. El README lo documenta.
 
 ## Cómo retomar (handoff)
+- **2026-09-29 (g) (sdd-implementador, tras el RED de cierre)**: findings corregidos.
+  - Finding 1 (ADR-004 §2): F-SPEC-008-3 (revisión de CA-12), fila CA-12 y handoff (f) dan
+    solo el veredicto (todas se refieren a la clínica; ninguna es adjetivo), sin número,
+    casilla ni run. Revisados ledger y spec enteros: no queda ningún otro dato de
+    visibilidad de la clínica en lo que escribe el implementador.
+  - Finding 2: paso 0 de CA-12 anotado en la fila CA-12 (descansa en el dictamen `sdd-probe`
+    de SPEC-002 CA-2, sin comprobación nueva) y re-comprobación real de `sdd-probe` antes de
+    cada "después" en F-SPEC-008-14.
+  - Dictamen CA-11 (iii): el error típico sin cifra ("por debajo del umbral de 10 pts"); la
+    cifra, en privado.
+  - Salvedad del `summary.md`: `analysis.py` dice "**no aplica** (no se midió AV/AR)" en la
+    completitud de (D)/(C) cuando la ejecución no tiene filas de ese nivel. TDD:
+    `test_ca11_completeness_does_not_apply_to_a_level_that_was_not_measured`. Golden de Vigo
+    intacto.
+  - Iteración 3 (tras el RED de la iteración 2): se quitaron de este handoff los recuentos de
+    menciones del "antes" de AR que citaba entre comillas (ADR-004 §2); la sección
+    "Veredicto" ya estaba reescrita por el verificador.
+  Spec a `en-revision`. Sin commit (lo junta el orquestador con `7df08fe`).
+- **2026-09-29 (f) (sdd-implementador, tras la ejecución de CA-12)**: CA-12 registrado en la
+  matriz (mi mitad): 45/45 `ok`, 1,60 €, modelos = configuración, medición completa para (C):
+  sí, petición idéntica a la del baseline oficial. Revisión de "Ártica" suelta: todas se refieren a
+  la clínica; ninguna es adjetivo. Cifras y umbral absoluto de (C) en
+  `$PUSHLLM_PRIVADO\piloto-artica\ca12-ar-antes-evidencia.md` (ADR-004). CA-9 marcado como
+  sustituido en parte por CA-11. Spec a `en-revision`.
+  Falta:
+  - verificación de CA-7, CA-9, CA-10, CA-11 y CA-12 y repetición de CA-8
+    (sdd-verificador);
+  - F-SPEC-008-14 a SPEC-012 (arquitecto); la primera acción del piloto ya puede ir tras la
+    verificación (CA-7, CA-10, CA-11 y CA-12 hechos).
+- **2026-09-29 (e) (sdd-implementador, tras la re-aprobación de la enmienda (d) y ADR-009)**:
+  spec en `en-progreso`. Hecho:
+  - decisiones del humano (c) CA-10, (d) opción A y (e) recorte, anotadas; F-SPEC-008-12
+    cerrado;
+  - dictamen CA-11 con tabla condición → cambio;
+  - `AR` a 3 runs; `go.growth` y `go.defense`;
+  - veredictos (C) y (D) por separado en `analysis.py`, con TDD;
+  - README; CA-5 recalculado;
+  - instrucciones de CA-12 comprobadas offline.
+  Tests con `PUSHLLM_PRIVADO` en el entorno: `pytest probe/tests` → 238 en verde;
+  `pytest docs/piloto-artica/tools/tests` → 143 en verde; `py -m ruff check probe` limpio;
+  `valida.mjs` OK. Sin commit.
+  Falta:
+  - CA-12 ([Humano], tras la comprobación de `sdd-probe`); después, el agente anota CA-12
+    (solo veredictos en el repo; cifras en privado);
+  - verificación de CA-7, CA-9, CA-10, CA-11 y CA-12 y repetición de CA-8
+    (sdd-verificador);
+  - F-SPEC-008-14 a SPEC-012 (arquitecto).
+- **2026-09-29 (d) (sdd-implementador, tras la ejecución de CA-7)**: CA-7 registrado en la
+  matriz (mi mitad), registro de la congelación relleno, fixture
+  `probe/tests/fixtures/pilot-set-frozen.tsv` con su test, F-SPEC-013-5 cerrado y revisión de
+  "Ártica" suelta hecha (todas son la clínica). Cifras en
+  `$PUSHLLM_PRIVADO\piloto-artica\ca7-baseline-evidencia.md` (ADR-004). Sin commit.
+  Falta: decisión del humano sobre el Aviso de techo (F-SPEC-008-12) antes de la primera
+  acción; fecha de congelación al ledger de SPEC-007 CA-8 (orquestador); verificación de
+  CA-7, CA-9, CA-10 y repetición de CA-8 (sdd-verificador).
+- **2026-09-29 (c) (sdd-implementador, tras la re-aprobación de la enmienda (b))**: spec en
+  `en-progreso`. F-SPEC-008-9 hecho.
+  - Dictamen CA-9 fechado antes del baseline.
+  - CA-10 (aviso de techo) con TDD.
+  - `AV` a 3 runs.
+  - Líneas del Go en `summary.md`.
+  - CA-5 del mes del cierre y del baseline.
+  - README.
+  - Dependencias, instrucciones CA-7 (humo de seguimiento F-SPEC-013-5 → baseline oficial)
+    y registro de congelación preparado.
+  Falta: CA-7 ([Humano]: pasos 1–5); después, el agente rellena CA-7, el registro de
+  congelación, el fixture del set congelado y, si sale el aviso, la decisión del humano
+  (CA-10). Revisar F-SPEC-008-11 antes del paso 3.
 - **2026-09-29 (b) (sdd-arquitecto)**: la spec vuelve a `borrador` por la enmienda "el probe
   es el instrumento del Go": CA-7 pasa a baseline oficial (depende de SPEC-013 `hecho` y de
   CA-9, ya no de la pasada manual), CA-9 (dictamen del Go con el probe) y CA-10 (techo)

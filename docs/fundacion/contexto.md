@@ -27,9 +27,13 @@ León**. **Vigo y Pontevedra quedan aparcados** (sin trabajo activo; no se aband
   entorno ni mostrar valores (ADR-006, ADR-007).
   - Lotes por configuración (ADR-003 §3–§4): `probe_config.json` es el lote por defecto
     **Vigo/Pontevedra** (aparcado, intacto; 44 prompts es/gl); `batches/viveiro.json` es el
-    lote del **piloto de Clínica Ártica** (ubicación Viveiro; niveles `AV` núcleo, `AR` área
-    de influencia, `AG` Galicia, informados por separado y Go solo con `AV`, ADR-005 §4;
-    marcas por pertenencia al lote; salida `$PUSHLLM_PRIVADO/piloto-artica/probe/`).
+    lote del **piloto de Clínica Ártica** (ubicación Viveiro; niveles `AV` núcleo 3 runs,
+    `AR` área de influencia 3 runs, `AG` Galicia 1 run, informados por separado; Go con tres
+    condiciones tras ADR-009: (C) crecer en AR, (D) defender AV, (A) ≥1 paciente atribuido,
+    veredictos (C) y (D) en `summary.md` ("no aplica" en la completitud de un nivel no medido);
+    (A) sale de la atribución (SPEC-010) y el veredicto conjunto lo define SPEC-012; baseline
+    oficial y medición "antes" de AR ya medidos en 2026-09-29; ADR-005 §4, ADR-009; marcas por
+    pertenencia al lote; salida `$PUSHLLM_PRIVADO/piloto-artica/probe/`).
   - Modelos (dictamen sdd-probe vigente, 2026-09-29, ledger de SPEC-002): Claude
     `claude-sonnet-5-5` con effort `medium` y `max_tokens` 16000; OpenAI `gpt-5.6-luna` con
     effort `low`; Gemini `gemini-3.6-flash` con el default de la API.
