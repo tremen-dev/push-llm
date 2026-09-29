@@ -235,7 +235,7 @@ def test_ca10_no_jargon_or_personal_data(path):
     ("Escribe a nadie@example.com", "email"),
     ("Llama al 600 123 456", "teléfono"),
     ("Salís en el 80 % de las respuestas", "cifra"),
-    ("Os nombró en 12 de 15 preguntas", "cifra"),
+    ("Os nombró en 7 de 10 preguntas", "cifra"),
     ("Habla con la Dra. Pérez", "persona"),
     ("Saldréis en toda Galicia", "Galicia"),
 ])
