@@ -408,6 +408,18 @@ def _pct(x):
     return "—" if x is None else f"{x * 100:.1f} %"
 
 
+def _cell(text) -> str:
+    """Free text inside a markdown table cell: a '|' would split the row."""
+    return str(text).replace("|", r"\|")
+
+
+def _place(p) -> str:
+    """A median place: '2' rather than '2.0'; a true half stays ('2.5')."""
+    if p is None:
+        return "—"
+    return str(int(p)) if float(p).is_integer() else f"{p:g}"
+
+
 def _span(s):
     return "—" if not s else (str(s[0]) if s[0] == s[1] else f"{s[0]} a {s[1]}")
 
@@ -471,8 +483,8 @@ def _render_patient(res: dict) -> list[str]:
             "Leer cada captura: qué dice el asistente de la clínica (dirección, servicios, "
             "precios) y si es correcto frente a la web y la foto técnica.", "",
             "| Pregunta | App | Captura | Observaciones |", "|---|---|---|---|"]
-    out += [f"| {r['id_pregunta']} | {r['app']} | {r['fichero_captura']} | {r['observaciones']} |"
-            for r in res["brand_rows"]]
+    out += [f"| {r['id_pregunta']} | {r['app']} | {_cell(r['fichero_captura'])} | "
+            f"{_cell(r['observaciones'])} |" for r in res["brand_rows"]]
     out += ["", "## Observaciones (no cuentan: Claude, cuentas de pago)", ""]
     out += [f"- {lv} {a} ({plan}): {o['mentions']} de {o['valid']}"
             for o in res["observations"] for lv, a, plan in [o["key"]]] or ["- —"]
@@ -508,7 +520,7 @@ def _render_av(cmp: dict) -> list[str]:
             agree = "—" if x["agree"] is None else _yes(x["agree"])
             out.append(f"| {x['qid']} | {x['app_status'] or 'no válida'} | "
                        f"{x['app_pos'] or '—'} | {runs} | {x['probe_status'] or '—'} | "
-                       f"{'—' if x['probe_pos'] is None else x['probe_pos']} | {agree} |")
+                       f"{_place(x['probe_pos'])} | {agree} |")
         gap = "—" if c["sov_gap"] is None else f"{c['sov_gap'] * 100:+.1f} pts"
         out += ["", f"- Acuerdo: {c['agree']} de {c['comparable']} casillas comparables "
                 f"({_pct(c['agreement'])}; mínimo {MIN_AGREEMENT:.0%} y {MIN_COMPARABLE} "
