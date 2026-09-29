@@ -192,6 +192,11 @@ Comprobado en clinicaartica.es el **2026-09-29** (HTTP 200; título y H1 de cada
   preguntan por los párpados superiores. No hizo falta sustituir el tratamiento.
 
 ## Instrucciones para el humano — pasada 1 (CA-5)
+> **OBSOLETO desde la enmienda 2026-09-29 (b) (sdd-arquitecto).** No hagas esta pasada de
+> 76 consultas. La spec ha vuelto a `borrador`: tras la re-aprobación, el implementador
+> reescribe estas instrucciones para la pasada "antes" de calibración (49 consultas, solo
+> `AV` + `AM`), según F-SPEC-007-8. Se conserva el texto como historial.
+
 Tiempo: 95–140 min de consultas (76, una sola pasada con los tres niveles) + 25–30 min para
 pasar capturas y rellenar el CSV. Se puede repartir en 2 días seguidos, cortando solo entre
 bloques (y anotándolo).
@@ -288,6 +293,9 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
   (P-3), el criterio Go de +15 pts de SoV ponderado exige que la subida se vea en **cada
   una de las dos** pasadas "después" (no solo en su media). SPEC-012 debe recogerlo antes
   de la primera acción; no se ha editado SPEC-012.
+  **Recogido el 2026-09-29 (b) (sdd-arquitecto)** con el nuevo instrumento: las dos
+  mediciones "después" son del **probe**, en semanas distintas (SPEC-012 CA-3 (2) y CA-7);
+  forma, separación y ruido los fija el dictamen de SPEC-008 CA-9.
 - **F-SPEC-007-6**: **hecho el 2026-09-29 por sdd-implementador** tras la re-aprobación
   humana (commits 355ae66, e29044a y el de este ledger). Lista original:
 - ~~F-SPEC-007-6~~ (→ sdd-implementador, **tras la re-aprobación humana** de la enmienda
@@ -327,8 +335,58 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
   niveles de ADR-005: SPEC-012 mide los tres en las pasadas "después", informa `AR`/`AG`
   aparte y deja el Go solo en `AV` (junto con F-SPEC-007-5); SPEC-011 diagnostica fuentes y
   preguntas sin página por nivel, priorizando el núcleo.
+  **2026-09-29 (b)**: SPEC-012 recogido (niveles con el probe, CA-3 y CA-7). SPEC-011:
+  CA-1 ya toma las fuentes del baseline del probe; **sigue pendiente** el diagnóstico por
+  nivel en su revisión completa.
+- **F-SPEC-007-8** (→ sdd-implementador, **tras la re-aprobación humana** de la enmienda
+  2026-09-29 (b); sdd-arquitecto). La manual pasa a calibración. **No tocar nada de esta
+  lista antes de la re-aprobación.** Después, en este orden:
+  1. **Dictamen**: pedir a `sdd-metricas` la segunda ampliación (k)–(n) de CA-2 y añadirla
+     a "Dictamen sdd-metricas (CA-2)" y a la tabla condición → cambio, con fecha anterior a
+     la pasada "antes". Marcar en la tabla qué filas antiguas quedan sin objeto (sobre todo
+     b, f, g, j y "b/d en niveles").
+  2. **Set** `docs/piloto-artica/prompts-baseline.md`: sin tocar ninguna pregunta. Cambiar
+     la entradilla (la manual mide solo `AV` + `AM`; el probe mide `AV`, `AR` y `AG`) y
+     "Estado del set" (congelación como tarde al inicio del baseline oficial del probe, o
+     fecha fijada por el humano; CA-8).
+  3. **Protocolo** `protocolo-captura.md`: 49 consultas (AV en ChatGPT, Gemini y Google;
+     AM en ChatGPT y Gemini), orden AV → AM; `pasada` = `antes` / `despues`; quitar bloques
+     `AR`/`AG` y "Pasada 2 y siguientes" (sustituir por la calibración "después" de SPEC-012
+     con las mismas condiciones); ventana respecto a la ejecución del probe (CA-2 k); tiempo
+     60–90 min + 20–25 min; ≤ 2 páginas.
+  4. **Plantilla** `plantilla-captura.csv`: sin cambios salvo que el dictamen pida una
+     columna (p. ej. la ejecución del probe emparejada).
+  5. **Procedimiento** `procedimiento-recuento.md`: una sola pasada (sin unión p1+p2 ni
+     estabilidad entre pasadas manuales); §7 de niveles fuera de la manual; sección nueva de
+     **comparación app frente a probe** (casilla `AV` × ChatGPT/Gemini, resumen de runs,
+     acuerdo y veredicto de CA-2 k–l) reproducible a mano desde el CSV y el `results.csv`;
+     AI Overviews según CA-2 (m); el techo ya no se calcula aquí (SPEC-008 CA-10).
+  6. **Herramienta** `tools/count_baseline.py`: recuento de una pasada; función de
+     comparación con el `results.csv` del probe; render de `calibracion-antes.md`; quitar o
+     dejar sin uso `count_level` y la estabilidad p1/p2 para la manual.
+  7. **Comprobador** `tools/baseline_docs.py`: la cobertura de CA-1 no cambia; ajustar lo
+     que compruebe el protocolo.
+  8. **Tests** (`tools/tests/`): `test_baseline_protocol_template.py` (49 consultas, sin
+     bloques `AR`/`AG`, valores `antes`/`despues`; retirar `test_protocol_three_levels_block_order`
+     o adaptarlo); `test_baseline_count.py` (comparación app/probe con fixture ficticia de
+     CSV manual + `results.csv`; veredicto con el umbral del dictamen; AIO aparte; los tests
+     de estabilidad p1/p2 y de niveles en la manual se retiran o adaptan);
+     `test_baseline_prompts.py` sin cambios salvo la entradilla.
+  9. **Privado** (`$PUSHLLM_PRIVADO/piloto-artica/baseline/`): sustituir
+     `captura-p1-prerrellenada.csv` y `captura-p2-prerrellenada.csv` por
+     `captura-antes-prerrellenada.csv` (49 filas, en el orden del protocolo) y regenerar
+     `preguntas-en-orden.txt` (solo `AV` y `AM`).
+  10. **Este ledger**: matriz de CA-3, CA-5, CA-6 (n-a: retirado), CA-7 y CA-8; reescribir
+      las "Instrucciones para el humano" para la pasada "antes" (incluido el paso de
+      congelación y la ejecución del probe emparejada).
+  No se toca `probe/` desde aquí: lo del probe va en F-SPEC-008-9.
 
 ## Cómo retomar (handoff)
+- **2026-09-29 (b) (sdd-arquitecto)**: la spec vuelve a `borrador` por la enmienda "la
+  manual pasa a calibración" (decisión del humano; EPIC-002 criterios 1 y 4). Ninguna
+  pasada se había hecho. **No empezar la pasada 1** (las instrucciones de arriba están
+  obsoletas). Tras la re-aprobación: F-SPEC-007-8. P-5 (Mondoñedo) ya solo afecta al probe
+  y debe cerrarse antes de la congelación (CA-8).
 - **2026-09-29 (sdd-implementador, tras la re-aprobación)**: F-SPEC-007-6 hecho. Spec en
   `en-progreso`. Set de tres niveles publicado (24 de medición + 2 `AM`), dictamen ampliado
   (g)–(j), protocolo, procedimiento y herramienta por nivel, CSV prerrellenados de 76 filas y

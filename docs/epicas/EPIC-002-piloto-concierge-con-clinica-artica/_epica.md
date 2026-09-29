@@ -48,9 +48,19 @@ Premisas del humano (2026-09-28):
 
 ## Criterios de éxito
 1. **Baseline "antes" registrado** antes de cualquier acción, con fecha y
-   evidencia: respuestas de ChatGPT, Gemini y Google (AI Overviews) a un set
-   de preguntas de paciente de estética en Viveiro / A Mariña. Sin baseline
-   previo no hay aprendizaje posible.
+   evidencia. Sin baseline previo no hay aprendizaje posible.
+   **Instrumentos** (decisión del humano, 2026-09-29):
+   - **Probe (API)**: es el instrumento de **medición y del criterio Go**. Mide
+     los tres niveles (AV, AR y AG). Es automático, repetible y legal.
+   - **Pasada manual de calibración**: muestra corta que compara lo que dice
+     el probe con lo que ve el paciente en la app. Solo el **núcleo AV (15
+     preguntas) en ChatGPT, Gemini y Google** (45 consultas, ~1 h), una vez
+     **antes** y otra **después**. Sirve para tres cosas: (a) comprobar que las
+     cifras del probe se parecen a las de la app antes de enseñárselas a la
+     clínica; (b) medir **Google AI Overviews**, que el probe no cubre; (c)
+     conseguir capturas reales para la reunión. Si app y probe coinciden de
+     forma razonable, la manual queda como comprobación trimestral. Si no
+     coinciden, se ajusta antes de prometer nada.
 2. **Piloto pagado**: la clínica acepta y paga una propuesta anclada en D-7
    (hipótesis a validar: que la acepte a ese precio).
 3. **Atribución instalada el día uno** del piloto, antes de la primera acción
@@ -62,8 +72,8 @@ Premisas del humano (2026-09-28):
    paciente atribuido** al canal IA.
    **Alcance geográfico en tres niveles** (decidido por el humano el
    2026-09-29), cada uno medido como indicador **separado**:
-   - **Núcleo** (Viveiro y A Mariña): es el criterio Go (+15 pts, estable en
-     las dos pasadas "después").
+   - **Núcleo** (Viveiro y A Mariña): es el criterio Go (+15 pts de SoV
+     ponderado **medido con el probe**, estable en dos mediciones "después").
    - **Área de influencia** (Ferrolterra, norte de Lugo, occidente de
      Asturias): objetivo "de no aparecer a aparecer con cierta regularidad".
      No es criterio Go.

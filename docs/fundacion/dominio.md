@@ -12,14 +12,16 @@
 | Prompt | Pregunta real de paciente: especialidad, ciudad, intent (discovery, price, comparison, urgent, trust, specific), idioma (es, gl) | Entidad |
 | Prompt catalogue | Conjunto curado de prompts por especialidad × ciudad × idioma | |
 | Provider | Asistente sondeado: chatgpt, gemini, claude, perplexity, google_ai_overviews; con modelo, peso y runs por prompt | "Asistente" en UI |
-| Probe / ProbeRun | Lote programado de prompts a proveedores / una respuesta concreta con menciones, URLs citadas y coste | |
+| Probe / ProbeRun | Lote programado de prompts a proveedores / una respuesta concreta con menciones, URLs citadas, URLs consultadas y coste | Columnas `cited_urls` y `searched_urls` de `results.csv` (SPEC-013) |
+| URLs citadas (`cited_urls`) | URLs que el proveedor enlaza a un fragmento del texto de la respuesta. Claude: `url` de las citas de los bloques `text`; ChatGPT (OpenAI): anotaciones `url_citation`; Gemini: chunks cuyo índice aparece en algún `grounding_supports` | Nunca incluye URLs solo consultadas. Son las únicas que cuentan para Source, Source citation weight, Coverage y RN-08 |
+| URLs consultadas (`searched_urls`) | URLs que el proveedor declara haber recuperado con la búsqueda para esa respuesta. Claude: `url` de cada `web_search_result` de primer nivel, en todos los turnos; ChatGPT (OpenAI): `url` de `web_search_call.action.sources` (sin feeds `oai-*`); Gemini: todos los `grounding_chunks` con `web` | Sin peso de citación: una URL solo consultada suma 0. Toda citada está también en consultadas, salvo una cita de OpenAI fuera de `sources`. No comparable en valor absoluto entre proveedores; Gemini guarda redirecciones `vertexaisearch` (F-SPEC-001-2). En `results.csv` anteriores a SPEC-013 (sin la columna) no existe y `cited_urls` de Gemini significaba "todos los chunks": se reclasifican al leerlos (SPEC-013, dictamen de CA-7) |
 | Mention | La clínica (o un alias ≥ 4 caracteres) aparece nombrada en una respuesta; matching sin acentos ni mayúsculas (RN-01). Excepción RN-11: una sigla corta inequívoca de la marca (columna `exact_aliases` del catálogo, hoy solo `IVI`) también cuenta, con coincidencia sensible a mayúsculas y por palabra completa sobre el texto original | Ver ADR-002 |
 | Position | Orden (base 1) de la clínica entre las clínicas nombradas en una respuesta | |
 | Share of voice (SoV) | Respuestas que mencionan la clínica ÷ total de respuestas de su set de prompts, por proveedor y semana | |
 | Weighted SoV | Σ SoV_proveedor × peso_proveedor, normalizado a los proveedores sondeados. Métrica principal | |
 | Usage share / weight | Fracción de uso de cada asistente (Similarweb, Comscore, GfK); configuración mensual | |
 | Source | Dominio/página citada por los proveedores; tipo: directory, clinic_site, press, review_aggregator, other | |
-| Source citation weight | Σ pesos de proveedor de las respuestas que citan la fuente | |
+| Source citation weight | Σ pesos de proveedor de las respuestas que citan la fuente | Solo URLs citadas (`cited_urls`); igual para el orden de RN-08. Las consultadas no suman |
 | PresenceCheck | Clínica × fuente: present / incomplete / absent | |
 | Coverage of cited sources | Fracción del top-10 de fuentes donde la clínica está present | |
 | Gap | Fuente citada donde la clínica falta o está incompleta; intent sin página de la clínica; bloqueo técnico (robots, schema, NAP) | |

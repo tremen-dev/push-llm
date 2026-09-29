@@ -38,7 +38,8 @@ def test_claude_pause_turn_accumulates_usage_and_text():
         claude_resp("Parte 2.", urls=["https://c.es"]),
     ])
     r = call("claude", client)
-    assert r.status == "ok" and r.text == "Parte 1.\nParte 2."
+    # SPEC-013 CA-3 (c): text spans split by a pause_turn are joined by a blank line
+    assert r.status == "ok" and r.text == "Parte 1.\n\nParte 2."
     assert (r.input_tokens, r.output_tokens, r.web_searches) == (2000, 400, 4)
     assert r.cited_urls == ["https://a.es", "https://c.es"]
     assert len(client.calls) == 2
@@ -51,6 +52,7 @@ def test_openai_ok():
     assert (r.input_tokens, r.output_tokens, r.web_searches) == (800, 150, 3)
     assert r.cited_urls == ["https://n.es"]
     kw = client.calls[0]
+    assert kw["include"] == ["web_search_call.action.sources"]  # SPEC-013 CA-3 (h)
     assert kw["model"] == CFG["providers"]["openai"]["model"]
     assert kw["tools"][0]["type"] == CFG["providers"]["openai"]["web_search_tool"]
     assert kw["tools"][0]["user_location"]["city"] == "Vigo"
@@ -62,7 +64,8 @@ def test_gemini_ok_sums_thoughts_and_tool_tokens():
     r = call("gemini", client)
     assert r.status == "ok" and r.model == "gemini-served-1"
     assert (r.input_tokens, r.output_tokens, r.web_searches) == (520, 150, 2)
-    assert r.cited_urls == ["https://v.es"]
+    # SPEC-013 CA-3 (e, f): no grounding_supports -> nothing cited; the chunk was searched
+    assert r.cited_urls == [] and r.searched_urls == ["https://v.es"]
     kw = client.calls[0]
     assert kw["model"] == CFG["providers"]["gemini"]["model"]
     assert kw["config"]["tools"] == [{"google_search": {}}]

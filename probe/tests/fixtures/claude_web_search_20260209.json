@@ -1,0 +1,187 @@
+{
+  "_comment": "SPEC-013 CA-3: same structure as the CA-2 raw response (9 top-level blocks, dynamic filtering), sanitized: synthetic text, reserved domains, markers.",
+  "id": "msg_FIXTURE",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-served-1",
+  "container": {
+    "id": "container_FIXTURE",
+    "expires_at": "2026-01-01T00:00:00Z",
+    "skills": null
+  },
+  "diagnostics": null,
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 30000,
+    "output_tokens": 1200,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "server_tool_use": {
+      "web_search_requests": 1,
+      "web_fetch_requests": 0
+    }
+  },
+  "content": [
+    {
+      "id": "srvtoolu_FIXTURE_CODE_1",
+      "caller": null,
+      "input": {
+        "code": "CODE_MARKER_1"
+      },
+      "name": "code_execution",
+      "type": "server_tool_use"
+    },
+    {
+      "id": "srvtoolu_FIXTURE_SEARCH_1",
+      "caller": {
+        "tool_id": "srvtoolu_FIXTURE_CODE_1",
+        "type": "code_execution_20260120"
+      },
+      "input": {
+        "query": "QUERY_MARKER"
+      },
+      "name": "web_search",
+      "type": "server_tool_use"
+    },
+    {
+      "caller": {
+        "tool_id": "srvtoolu_FIXTURE_CODE_1",
+        "type": "code_execution_20260120"
+      },
+      "content": [
+        {
+          "encrypted_content": "ENCRYPTED_CONTENT_1",
+          "page_age": null,
+          "title": "Resultado sintético 1",
+          "type": "web_search_result",
+          "url": "https://clinica-ficticia.example.org/"
+        },
+        {
+          "encrypted_content": "ENCRYPTED_CONTENT_2",
+          "page_age": null,
+          "title": "Resultado sintético 2",
+          "type": "web_search_result",
+          "url": "https://directorio.example.com/vigo/dentistas"
+        },
+        {
+          "encrypted_content": "ENCRYPTED_CONTENT_3",
+          "page_age": null,
+          "title": "Resultado sintético 3",
+          "type": "web_search_result",
+          "url": "https://opiniones.example.net/clinica-ficticia"
+        },
+        {
+          "encrypted_content": "ENCRYPTED_CONTENT_4",
+          "page_age": null,
+          "title": "Resultado sintético 4",
+          "type": "web_search_result",
+          "url": "https://clinica-ficticia.example.org/"
+        },
+        {
+          "encrypted_content": "ENCRYPTED_CONTENT_5",
+          "page_age": null,
+          "title": "Resultado sintético 5",
+          "type": "web_search_result",
+          "url": "https://noticias.example.org/salud-dental"
+        },
+        {
+          "encrypted_content": "ENCRYPTED_CONTENT_6",
+          "page_age": null,
+          "title": "Resultado sintético 6",
+          "type": "web_search_result",
+          "url": "https://mapa.example.com/lugar/123"
+        },
+        {
+          "encrypted_content": "ENCRYPTED_CONTENT_7",
+          "page_age": null,
+          "title": "Resultado sintético 7",
+          "type": "web_search_result",
+          "url": "https://otra-clinica.example.com/"
+        },
+        {
+          "encrypted_content": "ENCRYPTED_CONTENT_8",
+          "page_age": null,
+          "title": "Resultado sintético 8",
+          "type": "web_search_result",
+          "url": "https://guia.example.net/dentistas-galicia"
+        },
+        {
+          "encrypted_content": "ENCRYPTED_CONTENT_9",
+          "page_age": null,
+          "title": "Resultado sintético 9",
+          "type": "web_search_result",
+          "url": "https://foro.example.org/hilo/42"
+        },
+        {
+          "encrypted_content": "ENCRYPTED_CONTENT_10",
+          "page_age": null,
+          "title": "Resultado sintético 10",
+          "type": "web_search_result",
+          "url": "https://colegio.example.org/buscador"
+        }
+      ],
+      "tool_use_id": "srvtoolu_FIXTURE_SEARCH_1",
+      "type": "web_search_tool_result"
+    },
+    {
+      "content": {
+        "content": [],
+        "encrypted_stdout": "ENCRYPTED_STDOUT_1",
+        "return_code": 1,
+        "stderr": "STDERR_MARKER",
+        "type": "encrypted_code_execution_result"
+      },
+      "tool_use_id": "srvtoolu_FIXTURE_CODE_1",
+      "type": "code_execution_tool_result"
+    },
+    {
+      "id": "srvtoolu_FIXTURE_CODE_2",
+      "caller": null,
+      "input": {
+        "code": "CODE_MARKER_2"
+      },
+      "name": "code_execution",
+      "type": "server_tool_use"
+    },
+    {
+      "content": {
+        "content": [],
+        "return_code": 0,
+        "stderr": "",
+        "stdout": "STDOUT_MARKER_2",
+        "type": "code_execution_result",
+        "abort_reason": null
+      },
+      "tool_use_id": "srvtoolu_FIXTURE_CODE_2",
+      "type": "code_execution_tool_result"
+    },
+    {
+      "id": "srvtoolu_FIXTURE_CODE_3",
+      "caller": null,
+      "input": {
+        "code": "CODE_MARKER_3"
+      },
+      "name": "code_execution",
+      "type": "server_tool_use"
+    },
+    {
+      "content": {
+        "content": [],
+        "return_code": 0,
+        "stderr": "",
+        "stdout": "STDOUT_MARKER_3",
+        "type": "code_execution_result",
+        "abort_reason": null
+      },
+      "tool_use_id": "srvtoolu_FIXTURE_CODE_3",
+      "type": "code_execution_tool_result"
+    },
+    {
+      "citations": null,
+      "text": "Para una consulta dental en Vigo, una opción es Clínica Ficticia Example, con horario de mañana y tarde.\n\nOtra alternativa es Otra Clínica Example, en el centro.\n\nConviene revisar opiniones recientes antes de pedir cita.",
+      "type": "text"
+    }
+  ]
+}

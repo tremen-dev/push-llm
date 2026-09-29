@@ -1,8 +1,9 @@
 """Probe which Vigo/Pontevedra clinics the main assistants recommend.
 
 Runs every prompt in prompts.csv N times against each configured provider,
-stores the raw answer plus usage/cost metadata per row in results.csv, and
-writes summary.md with the offline analysis (see analysis.py).
+stores the raw answer plus usage/cost metadata per row in results.csv, appends the full
+raw SDK responses of every call to raw_responses.jsonl (private data, ADR-001; no headers
+or keys) and writes summary.md with the offline analysis (see analysis.py).
 
 Model ids, runs per provider, prices and weights: probe_config.json
 (override the model with CLAUDE_MODEL / OPENAI_MODEL / GEMINI_MODEL).
@@ -25,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import os
 import re
 import sys
@@ -44,7 +46,10 @@ DOTENV_PATH = REPO_ROOT / DOTENV_NAME
 _DOTENV_LINE = re.compile(r"^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$")
 COLUMNS = ["timestamp_utc", "prompt_id", "specialty", "city", "provider", "run", "model",
            "status", "input_tokens", "output_tokens", "web_searches", "cost_eur",
-           "brands_mentioned", "directories_mentioned", "cited_urls", "answer"]
+           "brands_mentioned", "directories_mentioned", "cited_urls", "answer",
+           "searched_urls"]  # SPEC-013 CA-3 (k): consulted URLs, last so old readers keep working
+NEW_COLUMN = "searched_urls"
+RAW_NAME = "raw_responses.jsonl"  # SPEC-013 CA-1: private raw responses, next to results.csv
 
 
 def parse_dotenv(text: str) -> dict[str, str]:
@@ -134,6 +139,19 @@ def _blank(v):
     return "" if v is None else v
 
 
+def results_header(path: Path) -> list[str]:
+    with open(path, newline="", encoding="utf-8") as f:
+        return next(csv.reader(f), [])
+
+
+def raw_line(row: dict, r) -> str:
+    """One JSON line of raw_responses.jsonl for the call that produced `row`."""
+    rec = {"timestamp_utc": row["timestamp_utc"], "prompt_id": row["prompt_id"],
+           "provider": row["provider"], "run": row["run"], "model": row["model"],
+           "status": r.status, "error": r.error, "request": r.request, "responses": r.responses}
+    return json.dumps(providers.scrub(rec), ensure_ascii=False, separators=(",", ":")) + "\n"
+
+
 def write_summary(out: Path, cfg: dict, brands) -> None:
     res = analysis.analyze(analysis.read_results(out / "results.csv"), brands, cfg)
     (out / "summary.md").write_text(analysis.render_summary(res, cfg), encoding="utf-8")
@@ -198,12 +216,17 @@ def main(argv=None, env=None, ask=None, dotenv=None):
     if results.exists():
         if not args.resume:
             sys.exit(f"{results} exists: use --resume to continue it or --out for a new directory")
+        if NEW_COLUMN not in results_header(results):
+            sys.exit(f"refusing --resume: {results} predates SPEC-013 (no {NEW_COLUMN} column, "
+                     "and its Gemini cited_urls meant every grounding chunk, not the cited "
+                     "ones). Use --out with a new directory, or --analyze to recount it.")
         done = {(r["prompt_id"], r["provider"], r["run"]) for r in analysis.read_results(results)
                 if r.get("status") == "ok"}
     out.mkdir(parents=True, exist_ok=True)
     new_file = not results.exists()
 
-    with open(results, "a", newline="", encoding="utf-8") as fh:
+    with open(results, "a", newline="", encoding="utf-8") as fh, \
+            open(out / RAW_NAME, "a", encoding="utf-8", newline="\n") as raw:
         w = csv.DictWriter(fh, fieldnames=COLUMNS)
         if new_file:
             w.writeheader()
@@ -219,7 +242,7 @@ def main(argv=None, env=None, ask=None, dotenv=None):
                     clinics = [b["brand"] for b in hits if b["type"] != "directory"]
                     dirs = [b["brand"] for b in hits if b["type"] == "directory"]
                     answer = r.text if r.status != "error" else f"[error] {r.error}"
-                    w.writerow({
+                    row = {
                         "timestamp_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                         "prompt_id": p["id"], "specialty": p["specialty"], "city": p["city"],
                         "provider": name, "run": run, "model": r.model or model, "status": r.status,
@@ -228,8 +251,12 @@ def main(argv=None, env=None, ask=None, dotenv=None):
                         "cost_eur": f"{providers.cost_eur(r, name, cfg):.6f}",
                         "brands_mentioned": ";".join(clinics), "directories_mentioned": ";".join(dirs),
                         "cited_urls": ";".join(r.cited_urls), "answer": answer,
-                    })
+                        "searched_urls": ";".join(r.searched_urls),
+                    }
+                    w.writerow(row)
                     fh.flush()
+                    raw.write(raw_line(row, r))
+                    raw.flush()
                     print(f"{p['id']} {name} r{run} [{r.status}]: {clinics or '-'} | dirs {dirs or '-'}")
                     if args.sleep:
                         time.sleep(args.sleep)

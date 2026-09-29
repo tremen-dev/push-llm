@@ -2,7 +2,7 @@
 id: SPEC-007
 tipo: spec
 epica: EPIC-002
-estado: en-progreso
+estado: aprobada
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-28, por: sdd-arquitecto}
@@ -12,8 +12,28 @@ historial:
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
   - {estado: en-progreso, fecha: 2026-09-29, por: sdd-implementador}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
 ---
 # SPEC-007 — Baseline antes manual de Clínica Ártica desde el móvil
+
+> **Enmienda 2026-09-29 (b) (sdd-arquitecto) — la medición manual pasa a ser calibración.**
+> Decisión del humano (Alberto Fojo, 2026-09-29), recogida por sdd-producto en EPIC-002,
+> criterios 1 y 4: el **probe (API) es el instrumento de medición y del criterio Go** en
+> los tres niveles (`AV`, `AR`, `AG`), con su baseline oficial en SPEC-008 CA-7. La medición
+> manual desde el móvil se reduce a una **calibración**: núcleo `AV` (15 preguntas) en
+> ChatGPT, Gemini y Google, más las dos `AM` en ChatGPT y Gemini (49 consultas), **una
+> pasada "antes"** (aquí) y **una "después"** (SPEC-012). Sirve para (a) comprobar que las
+> cifras del probe se parecen a lo que ve el paciente en la app, (b) medir Google AI
+> Overviews, que el probe no cubre, y (c) sacar capturas reales para la reunión.
+> Cambian: Problema, CA-2 (ampliación (k)–(n)), CA-3, CA-5, CA-6 (retirado: desaparece la
+> pasada 2), CA-7 (recuento y comparación app frente a probe), CA-8 (congelación del set por
+> el baseline del probe; el aviso de techo pasa a SPEC-008 CA-10), CA-9, CA-10, entidades,
+> Fuera de alcance y notas. CA-1, CA-4 y CA-11 no cambian. El título se mantiene para no
+> romper rutas y referencias. La spec vuelve a `borrador` (estaba `en-progreso`, sin
+> ninguna pasada hecha) y necesita **nueva aprobación humana**. Lo que el implementador debe
+> rehacer está en el ledger (F-SPEC-007-8).
 
 > **Nota 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008). No cambia ningún CA ni
 > requiere re-aprobación.** Las citas a ADR-003 y ADR-005 de esta spec siguen valiendo en lo
@@ -22,41 +42,40 @@ historial:
 > encuadre como "excepción a D-2" y sus prohibiciones de prospección y de "Asturias no es
 > mercado"; el lote de Vigo queda aparcado, intacto, como configuración por defecto.
 
-> Spec **documental y de medición manual**. No hay código. El agente redacta el set de
-> preguntas, el protocolo, la plantilla y el recuento; el humano pregunta en las apps
-> del móvil y captura. Ejecutable **ya, sin claves de API**. Material del repo en
-> `docs/piloto-artica/`; datos, capturas y recuentos en
-> `$PUSHLLM_PRIVADO/piloto-artica/baseline/` (ADR-001, ADR-004).
+> Spec **documental y de medición manual**. No hay código de producto. El agente redacta
+> el set de preguntas, el protocolo, la plantilla y el recuento; el humano pregunta en las
+> apps del móvil y captura. Material del repo en `docs/piloto-artica/`; datos, capturas y
+> recuentos en `$PUSHLLM_PRIVADO/piloto-artica/baseline/` (ADR-001, ADR-004).
 
-> **Enmienda 2026-09-29 (sdd-arquitecto) — set en tres niveles geográficos.** Por decisión
-> del humano (Alberto Fojo, 2026-09-29; EPIC-002 criterio 4; ADR-005), el set se amplía con
-> dos niveles medidos como indicadores **separados** que no son criterio Go: área de
-> influencia (`AR`) y Galicia (`AG`). El núcleo (`AV01`–`AV15`, sin cambios) sigue siendo
-> el único que cuenta para el Go. Cambian CA-1, CA-2, CA-5, CA-6, CA-7, CA-8, CA-10, las
-> entidades, Fuera de alcance y las notas. La spec vuelve a `borrador` (estaba
-> `en-progreso`, con la pasada 1 sin empezar y el set sin congelar) y necesita **nueva
-> aprobación humana**. Lo que el implementador debe rehacer está en el ledger
-> (F-SPEC-007-6).
+> Enmienda anterior del 2026-09-29 (a) — set en tres niveles (ADR-005): el set tiene núcleo
+> `AV`, área de influencia `AR` y Galicia `AG`; ya está publicado (CA-1). Tras la enmienda
+> (b), `AR` y `AG` solo los mide el probe.
 
 ## Problema
-Criterio de éxito 1 de EPIC-002: sin un "antes" fechado no hay forma de saber si una
-acción movió una respuesta, y el criterio Go del piloto (+15 pts de SoV ponderado, RN-03)
-no tiene punto de partida. El probe (EPIC-001) sigue bloqueado por las claves (SPEC-002) y
-no cubre Google AI Overviews; además hoy está fijado a Vigo (ADR-003). Lo único que se
-puede medir hoy es lo que ve un paciente en su móvil. Esa medición manual tiene que ser
-**repetible con el mismo protocolo** a las 4–12 semanas, o el "después" no será comparable.
+Criterios de éxito 1 y 4 de EPIC-002. El criterio Go (+15 pts de SoV ponderado, RN-03) se
+mide con el probe (SPEC-008 CA-7 y CA-9; SPEC-012 CA-7). Pero el probe pregunta por API, no
+en la app que usa el paciente, y no cubre Google AI Overviews (RN-04, D-6). Antes de
+enseñar cifras del probe a la clínica o de prometerle algo, hay que comprobar con una
+muestra corta que **lo que ve el paciente en la app se parece a lo que mide el probe**, y
+medir a mano lo único que el probe no ve (AI Overviews). La misma pasada da las capturas
+reales para abrir la reunión (SPEC-009). La calibración tiene que repetirse con el mismo
+protocolo en el "después" (SPEC-012), o no será comparable. Hacerlo así ahorra tiempo al
+humano (49 consultas por pasada en vez de 76, y dos pasadas en vez de cuatro) y deja el
+criterio Go en un instrumento automático, repetible y legal; automatizar las apps de
+consumo no lo es.
 
 ## Usuarios / roles afectados
 - Humano (fundador): hace las preguntas en ChatGPT, Gemini y Google desde el móvil y
   captura. [Humano]
-- Agente (sdd-implementador): redacta set, protocolo, plantilla, foto técnica y recuento.
-  [Agente]
+- Agente (sdd-implementador): redacta set, protocolo, plantilla, foto técnica, recuento y
+  comparación con el probe. [Agente]
 - Consultadas: `sdd-metricas` (dictamen obligatorio, CA-2); `sdd-visibilidad-local`
   opcional para el set y la foto técnica.
 - sdd-verificador: comprueba cada CA contra ficheros del repo y del espacio privado.
   [Verificador]
-- Consumidores: SPEC-008 (mismos ids de prompt), SPEC-009 (hoja de hallazgo), SPEC-011
-  (fuentes citadas y foto técnica), SPEC-012 (repetición del protocolo al cierre).
+- Consumidores: SPEC-008 (mismos ids de prompt; su baseline congela el set), SPEC-009 (hoja
+  de hallazgo), SPEC-011 (fuentes citadas y foto técnica), SPEC-012 (calibración
+  "después" con el mismo protocolo).
 
 ## Criterios de aceptación
 - **CA-1 (set de preguntas de paciente) [Agente]**: Dado que la clínica trabaja estética
@@ -132,6 +151,39 @@ puede medir hoy es lo que ve un paciente en su móvil. Esa medición manual tien
   anteriores. El dictamen lo emite `sdd-metricas`; este CA no lo prejuzga. *Evidencia*:
   sección de ampliación con fecha anterior a la pasada 1 y filas nuevas (g)–(j) en la
   tabla condición → cambio.
+  **Ampliación para la calibración (enmienda 2026-09-29 (b))**: antes de la pasada
+  "antes" (CA-5) consta en el ledger una **segunda ampliación fechada** del dictamen de
+  `sdd-metricas` que fija:
+  (k) **qué se compara y con qué**: la unidad es la casilla pregunta `AV` × asistente
+  presente en los dos instrumentos (ChatGPT y Gemini; Claude no está en la manual), y en
+  cada casilla "sale / no sale" Clínica Ártica y su posición (RN-06); contra qué ejecución
+  del probe se compara la pasada (la de `AV` más cercana en fechas, con una **ventana
+  máxima** en días entre las dos) y cómo se resume una casilla del probe con varios runs
+  (p. ej. "sale" si sale en la mayoría de runs, o la proporción); y cómo se tratan las
+  diferencias conocidas entre instrumentos (la manual se hace desde Vilaboa y el probe
+  envía la ubicación Viveiro; modelo de la app gratuita frente al modelo por defecto de la
+  API, D-5/RN-10);
+  (l) una definición **operativa y verificable** de "**coinciden de forma razonable**":
+  umbral de acuerdo (p. ej. porcentaje mínimo de casillas con el mismo "sale / no sale" y/o
+  diferencia máxima de SoV bruto por asistente entre app y probe; tolerancia de posición),
+  su ruido esperable con 15 casillas por asistente, y qué se hace si no coinciden (qué se
+  revisa: configuración del probe, protocolo manual o lectura; y que ninguna cifra del probe
+  se enseña a la clínica ni se promete nada hasta resolverlo);
+  (m) cómo se trata **Google AI Overviews**, que no tiene equivalente en el probe: canal
+  aparte (RN-04), fuera del acuerdo y del criterio Go; qué cifras se dan con 15 búsquedas
+  `AV` y una pasada ("x de n" o porcentaje), incluido cuándo no aparece resumen; y cómo se
+  lee el antes/después de ese canal en SPEC-012;
+  (n) qué queda del dictamen anterior: se declara, punto por punto, si (a)–(j) siguen
+  aplicando a la manual, se sustituyen o quedan sin objeto — en particular (b) (una pasada
+  "antes" y una "después" en lugar de dos y dos), (c) (si el SoV ponderado manual se sigue
+  calculando y, si es así, con qué rótulo: dato de calibración, nunca cifra del Go), (e)
+  (sigue: el Go es probe contra probe; ninguna cifra manual se resta de una del probe),
+  (f) (el ruido del Go se re-evalúa para el probe en SPEC-008 CA-9) y (g)–(j) (los niveles
+  `AR`/`AG` salen de la manual y sus indicadores se trasladan al probe en SPEC-008 CA-9).
+  Cada condición nueva se mapea a un cambio en protocolo, plantilla, procedimiento o
+  herramienta. El dictamen lo emite `sdd-metricas`; este CA no lo prejuzga. *Evidencia*:
+  sección de la segunda ampliación con fecha anterior a la pasada "antes" y filas (k)–(n)
+  en la tabla condición → cambio.
 - **CA-3 (protocolo de captura para leer) [Agente]**: Dado un humano que mide desde el
   móvil, cuando se publique `docs/piloto-artica/protocolo-captura.md` (≤ 2 páginas,
   imprimible, instrucciones literales paso a paso), entonces fija, para cada app (ChatGPT,
@@ -146,62 +198,71 @@ puede medir hoy es lo que ve un paciente en su móvil. Esa medición manual tien
   pregunta, ubicación del dispositivo activada sí/no, idioma. Incluye además tres reglas
   **anti-contaminación de la atribución**: no pulsar enlaces a la web de la clínica desde
   las respuestas; no buscar el nombre de la clínica en Google (las preguntas `AM` solo en
-  ChatGPT y Gemini); y un registro de desviaciones (qué se hizo distinto y por qué). Las
-  condiciones (cuenta, plan, modo, dispositivo, municipio) son **las mismas en todas las
-  pasadas, incluidas las de SPEC-012**; si alguna no puede repetirse, se anota como
-  desviación. *Evidencia*: checklist de campos y reglas contra el fichero.
+  ChatGPT y Gemini); y un registro de desviaciones (qué se hizo distinto y por qué).
+  **Calibración (enmienda 2026-09-29 (b))**: el protocolo mide **solo** el núcleo `AV`
+  (15 preguntas) en ChatGPT, Gemini y Google, más las `AM` en ChatGPT y Gemini (49
+  consultas); en cada app, primero el bloque `AV` y después, en ChatGPT y Gemini, las `AM`;
+  hay **una pasada "antes"** (valor de `pasada`: `antes`) y **una "después"** (`despues`,
+  SPEC-012); cada pasada se hace dentro de la ventana del dictamen (CA-2 k) respecto a la
+  ejecución del probe con la que se compara; y da el tiempo estimado. `AR` y `AG` no se
+  preguntan a mano. Las condiciones (cuenta, plan, modo, dispositivo, municipio) son **las
+  mismas en las dos pasadas**; si alguna no puede repetirse, se anota como desviación.
+  *Evidencia*: checklist de campos y reglas contra el fichero; búsqueda de `AR`/`AG` en el
+  orden de preguntas del protocolo, sin coincidencias.
 - **CA-4 (plantilla de registro) [Agente]**: Dado ADR-004, cuando se publique
   `docs/piloto-artica/plantilla-captura.csv`, entonces tiene cabecera y **ninguna fila de
   datos**, con los campos de CA-3 más: clínicas nombradas en orden de aparición, Clínica
   Ártica nombrada sí/no, posición (RN-06), dominios citados, enlace compartido, nombre del
   fichero de captura y observaciones. *Evidencia*: el fichero tiene exactamente una línea;
   cruce de columnas con CA-3.
-- **CA-5 (pasada 1) [Humano]**: Dado CA-1 a CA-4 y el dictamen de CA-2, cuando el humano
-  haga la pasada 1, entonces en `$PUSHLLM_PRIVADO/piloto-artica/baseline/AAAA-MM-DD-p1/`
-  hay el CSV rellenado con una fila por pregunta `AV`, `AR` y `AG` × app (ChatGPT, Gemini,
-  Google) más las `AM` en ChatGPT y Gemini, y una captura por fila (con el set propuesto:
-  24 × 3 + 2 × 2 = 76 filas); ≥ 95 % de las filas tienen todos los campos obligatorios, y
-  las que no, lo explican en el registro de desviaciones. Es **una sola pasada** con el set
-  completo de los tres niveles (no una pasada por nivel). Dentro de cada app se pregunta
-  primero el bloque `AV`; el orden de los bloques `AR`, `AG` y `AM` lo fija el protocolo y
-  es el mismo en todas las pasadas. La pasada puede repartirse en como máximo 2 días
-  seguidos; si se reparte, el corte cae entre bloques (nunca dentro de un bloque app ×
-  nivel), se anota en desviaciones y la pasada 2 se reparte igual. *Evidencia*: el verificador
-  cuenta filas, capturas y campos vacíos en el espacio privado; el ledger recoge fecha,
-  número de filas y desviaciones (sin cifras de SoV).
-- **CA-6 (pasada 2) [Humano]**: Dado la variabilidad de las respuestas, cuando se haga la
-  pasada 2, entonces se hace con las mismas condiciones y **el mismo set de los tres
-  niveles, en el mismo orden** que la 1, en la separación que fije
-  el dictamen de CA-2 (propuesta: entre 2 y 10 días después), y **antes de la primera
-  acción** del piloto. *Evidencia*: fechas de las pasadas frente a la fecha de la primera
-  acción del registro de SPEC-012; condiciones iguales o desviación anotada.
-- **CA-7 (recuento "antes") [Agente]**: Dado las pasadas 1 y 2, cuando se haga el
-  recuento según el dictamen de CA-2, entonces existe
-  `$PUSHLLM_PRIVADO/piloto-artica/baseline/recuento-antes.md` con, por app: respuestas
-  válidas, SoV bruto de Clínica Ártica, posición media y clínicas que aparecen en su lugar;
-  el SoV ponderado ChatGPT+Gemini; Google AI Overviews aparte (con cuántas veces hubo
-  resumen de IA); los dominios más citados; y el resultado de las preguntas `AM` (datos que
-  el asistente da de la clínica y si son correctos: dirección, servicios, precios). El
-  procedimiento de recuento está escrito de forma que otro lo reproduzca a mano o con una
-  hoja de cálculo desde el CSV. Todo lo anterior se refiere al **núcleo** (`AV`). Además
-  (enmienda 2026-09-29), el recuento tiene **una sección por nivel** (`AR`, `AG`) con los
-  indicadores y definiciones de la ampliación del dictamen (CA-2 g–j), las clínicas que
-  aparecen en su lugar y los dominios citados de ese nivel; ninguna cifra de `AR`/`AG` entra
-  en el SoV bruto o ponderado del núcleo ni en su estabilidad. *Evidencia*: el verificador
-  recalcula desde el CSV privado y coincide, por nivel; el ponderado del núcleo es el mismo
-  si se borran del CSV todas las filas `AR` y `AG`.
-- **CA-8 (margen para el criterio Go) [Agente avisa; Humano decide]**: Dado que la clínica
-  podría ya aparecer mucho en las preguntas de Viveiro, cuando el recuento de CA-7 deje al
-  SoV ponderado a menos de 15 pts de su techo (≥ 85 %) en el set completo, entonces antes de
-  la primera acción el humano decide y deja registrado en el ledger si se mantiene el
-  criterio, se mide sobre un subconjunto (p. ej. preguntas de Lugo o capilar) o se cambia
-  el umbral; nunca después de ver el efecto. En todo caso, el set `AV` queda **congelado**
-  con fecha antes de la primera acción; las preguntas que se añadan después se informan
-  aparte y no cuentan para el criterio Go. El aviso de techo se calcula solo con `AV`. Las
-  secciones `AR` y `AG` se congelan en la misma fecha que `AV` (inicio de la pasada 1) y con
-  la misma regla (una pregunta nueva lleva id nuevo y se informa aparte); nunca pasan a
-  contar para el criterio Go. *Evidencia*: fecha de congelación y, si aplica,
-  decisión fechada en el ledger, ambas anteriores a la primera acción.
+- **CA-5 (pasada "antes" de calibración) [Humano]**: Dado CA-1 a CA-4, el set congelado
+  (CA-8) y la segunda ampliación del dictamen (CA-2 k–n), cuando el humano haga la pasada
+  "antes", entonces en `$PUSHLLM_PRIVADO/piloto-artica/baseline/AAAA-MM-DD-antes/` hay el
+  CSV rellenado con una fila por pregunta `AV` × app (ChatGPT, Gemini, Google) más las `AM`
+  en ChatGPT y Gemini (15 × 3 + 2 × 2 = **49 filas**) y una captura por fila; ≥ 95 % de las
+  filas tienen todos los campos obligatorios, y las que no, lo explican en el registro de
+  desviaciones. Es **una sola pasada**; puede repartirse en como máximo 2 días seguidos, con
+  el corte entre bloques de app (nunca dentro de uno) y anotado en desviaciones. Se hace
+  **antes de la primera acción** del piloto y dentro de la ventana de CA-2 (k) respecto a
+  una ejecución `AV` del probe (el baseline oficial de SPEC-008 CA-7 u otra que el dictamen
+  admita). *Evidencia*: el verificador cuenta filas, capturas y campos vacíos en el espacio
+  privado; el ledger recoge fecha, número de filas, desviaciones y la ejecución del probe
+  emparejada (fecha y carpeta), sin cifras de SoV.
+- **CA-6 (pasada 2) — retirado (enmienda 2026-09-29 (b))**: la segunda pasada "antes"
+  desaparece por decisión del humano. La estabilidad del criterio Go se mide con el probe
+  (SPEC-008 CA-9, SPEC-012 CA-7); la calibración "después" la fija SPEC-012 CA-3. Se
+  conserva el número para no renumerar los CA del ledger.
+- **CA-7 (informe de calibración "antes") [Agente]**: Dado la pasada "antes" (CA-5) y la
+  ejecución del probe emparejada, cuando se haga el recuento según el dictamen de CA-2,
+  entonces existe `$PUSHLLM_PRIVADO/piloto-artica/baseline/calibracion-antes.md` con:
+  (1) **lo que ve el paciente**, por app: respuestas válidas, SoV bruto de Clínica Ártica
+  en `AV`, posición media y clínicas que aparecen en su lugar; Google AI Overviews aparte
+  según CA-2 (m), con cuántas veces hubo resumen de IA; los dominios más citados; y el
+  resultado de las `AM` (datos que el asistente da de la clínica y si son correctos:
+  dirección, servicios, precios); (2) **la comparación app frente a probe**: una tabla por
+  casilla `AV` × asistente (ChatGPT, Gemini) con "sale / no sale" y posición en la app y en
+  el probe (resumen de runs según CA-2 k), el grado de acuerdo y el veredicto
+  "**coinciden de forma razonable: sí / no**" según CA-2 (l), con la fecha y la carpeta de
+  la ejecución del probe usada. Si el veredicto es "no", antes de enviar la propuesta de
+  SPEC-009 y antes de la primera acción consta en el ledger la causa que se ha podido
+  identificar y la decisión del humano (qué se ajusta, o seguir con la salvedad escrita);
+  hasta entonces no se enseña a la clínica ninguna cifra del probe. Ninguna cifra de este
+  informe entra en el criterio Go (CA-2 e). El procedimiento está escrito de forma que otro
+  lo reproduzca a mano o con una hoja de cálculo desde el CSV manual y el `results.csv` del
+  probe. *Evidencia*: el verificador recalcula desde los datos privados y coincide; si el
+  veredicto es "no", decisión fechada en el ledger anterior a la propuesta y a la primera
+  acción.
+- **CA-8 (congelación del set) [Agente registra; Humano fija]**: Dado que el set es común a
+  los dos instrumentos, cuando empiece la primera ejecución del baseline oficial del probe
+  (SPEC-008 CA-7) — o antes, si el humano fija una fecha en el ledger —, entonces el set
+  completo (`AV`, `AR`, `AG`) queda **congelado** con esa fecha: no cambia ni una coma; una
+  pregunta que se añada después lleva id nuevo, se informa aparte y no cuenta para el
+  criterio Go; `AR` y `AG` nunca pasan a contar para el Go. La pasada "antes" (CA-5) no
+  empieza sin fecha de congelación: si el baseline del probe aún no se ha lanzado, el humano
+  fija la congelación en el ledger antes de empezarla. El **aviso de techo** (SoV ponderado
+  del núcleo ≥ 85 %) ya no se calcula con la medición manual: pasa a SPEC-008 CA-10, con el
+  baseline del probe. *Evidencia*: fecha de congelación en el ledger, anterior o igual al
+  inicio de la pasada "antes" y del baseline del probe, y anterior a la primera acción.
 - **CA-9 (foto técnica "antes") [Agente]**: Dado la palanca 4 y la palanca 1
   (`04-mechanics-of-llm-visibility.md` §2), cuando se tome la foto antes de la primera
   acción, entonces en `$PUSHLLM_PRIVADO/piloto-artica/baseline/foto-tecnica-AAAA-MM-DD/`
@@ -209,114 +270,79 @@ puede medir hoy es lo que ve un paciente en su móvil. Esa medición manual tien
   por línea de tratamiento; el `sitemap` si existe; y una tabla de presencia
   (present / incomplete / absent, con URL) de Clínica Ártica en Google Business Profile,
   Doctoralia, Multiestetica, Top Doctors y Páxinas Galegas, y en los dominios citados en la
-  pasada 1. *Evidencia*: el verificador abre los ficheros y comprueba fechas y URLs.
+  pasada "antes" y, si ya existe, en el baseline oficial del probe (SPEC-008 CA-7).
+  *Evidencia*: el verificador abre los ficheros y comprueba fechas y URLs.
 - **CA-10 (hoja de hallazgo para la reunión) [Agente]**: Dado que la reunión de SPEC-009
-  abre con el dato, cuando esté hecha la pasada 1, entonces existe
+  abre con el dato, cuando esté hecha la pasada "antes", entonces existe
   `$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md` (una página, castellano,
-  para enseñar en el móvil o en papel) con: 3 respuestas reales representativas (captura o
-  cita literal, con app y fecha); quién aparece cuando no aparece la clínica; qué páginas
-  citan los asistentes; qué dice un asistente de la clínica cuando se le pregunta por ella
-  (`AM`); y una frase honesta de límites ("es una foto de un día; las respuestas varían;
-  esto no es una promesa"). Sin "LLM", "SoV", "share of voice", "AEO", "GEO",
-  "visibilidad en IA" ni "posicionamiento garantizado" (mismo criterio que SPEC-004
-  CA-12). Las 3 respuestas representativas salen del núcleo (`AV`); si la hoja menciona
-  `AR` o `AG`, lo hace como dato "fuera de la comarca", sin objetivo ni promesa, y no
-  presenta el nivel Galicia como algo que se vaya a conseguir (ADR-005 §6).
+  para enseñar en el móvil o en papel) con: 3 respuestas reales representativas del núcleo
+  `AV` (captura o cita literal, con app y fecha); quién aparece cuando no aparece la
+  clínica; qué páginas citan los asistentes; qué dice un asistente de la clínica cuando se
+  le pregunta por ella (`AM`); y una frase honesta de límites ("es una foto de un día; las
+  respuestas varían; esto no es una promesa"). Sin "LLM", "SoV", "share of voice", "AEO",
+  "GEO", "visibilidad en IA" ni "posicionamiento garantizado" (mismo criterio que SPEC-004
+  CA-12). La hoja no usa cifras del probe salvo que CA-7 diga que coinciden de forma
+  razonable, y no presenta el nivel Galicia como algo que se vaya a conseguir (ADR-005 §6).
   *Evidencia*: checklist; búsqueda de los términos prohibidos, sin coincidencias.
 - **CA-11 (nada en bruto en el repo) [Verificador]**: Dado ADR-001 y ADR-004, cuando se
-  cierre la spec, entonces `git ls-files` no lista capturas, CSV con datos, recuentos ni la
-  hoja de hallazgo, y `docs/piloto-artica/` no contiene cifras junto a nombres de clínicas
-  de `brands.csv` ni emails, teléfonos o nombres de persona. *Evidencia*: salida de
-  `git ls-files` y de la búsqueda por patrón en el ledger.
+  cierre la spec, entonces `git ls-files` no lista capturas, CSV con datos, recuentos, el
+  informe de calibración ni la hoja de hallazgo, y `docs/piloto-artica/` no contiene cifras
+  junto a nombres de clínicas de `brands.csv` ni emails, teléfonos o nombres de persona.
+  *Evidencia*: salida de `git ls-files` y de la búsqueda por patrón en el ledger.
 
 ## Entidades y reglas afectadas
 - Dominio: Prompt, Prompt catalogue, Provider, Mention, Position, Share of voice, Weighted
   SoV, Source, PresenceCheck.
 - RN-01 (con la precisión de alias de CA-2), RN-02, RN-03, RN-04 (AI Overviews aparte),
-  RN-06, RN-09.
-- D-3 (la foto "antes" existe antes de actuar), D-5/RN-10 (se mide en la app de consumo:
-  aquí literalmente), D-6.
+  RN-06, RN-09, RN-10 (el probe usa el modelo por defecto: es la diferencia que la
+  calibración mide).
+- D-3 (la foto "antes" existe antes de actuar), D-5 (el probe es el instrumento del
+  producto; la manual lo contrasta con la app de consumo), D-6.
 - ADR-001, ADR-003 (lote de Viveiro separado de Vigo), ADR-004, ADR-005 (tres niveles;
-  Go solo con el núcleo; niveles nunca mezclados).
+  Go solo con el núcleo; niveles nunca mezclados, en ningún instrumento).
+- SPEC-008 CA-7, CA-9 y CA-10 (baseline oficial, dictamen del Go con el probe, techo).
 
 ## Fuera de alcance
-- Medición con el probe (SPEC-008) y la ejecución completa del probe de EPIC-001
-  (SPEC-002).
-- Claude y Perplexity en la medición manual: opcionales; si se incluyen, deben repetirse en
-  todas las pasadas posteriores o no se usan en el ponderado.
+- La medición con el probe y el criterio Go: baseline oficial en SPEC-008 CA-7; forma,
+  estabilidad y ruido en SPEC-008 CA-9; techo en SPEC-008 CA-10; veredicto en SPEC-012 CA-7.
+- `AR` y `AG` en la medición manual: los mide el probe. Consecuencia aceptada: Google AI
+  Overviews **no se mide** en `AR` ni en `AG` (el probe no lo cubre).
+- La pasada 2 "antes" (retirada, CA-6) y cualquier pasada manual extra antes de la
+  primera acción.
+- Usar cifras manuales en el criterio Go, solas o combinadas con las del probe (CA-2 e;
+  ADR-005 §4).
+- Claude y Perplexity en la medición manual: opcionales y solo observación; no entran en
+  la comparación con el probe ni en ninguna cifra.
 - Diagnóstico de gaps y plan de acciones (SPEC-011): aquí solo la foto.
 - Enseñar nada a la clínica (SPEC-009).
-- Usar `AR` o `AG` para el criterio Go, ni solas ni mezcladas con `AV` (ADR-005 §4).
-- Tratamientos del nivel Galicia distintos de trasplante capilar DHI y blefaroplastia;
-  preguntas de Galicia que nombren una ciudad concreta (serían otro nivel).
-- Preguntas de otras comunidades distintas del occidente de Asturias; cualquier uso de las
-  respuestas `AR`/`AG` como lista de objetivos o estudio del mercado de Vigo (ADR-005 §5).
-- Pasadas separadas por nivel: los tres niveles van en la misma pasada.
+- La calibración "después" y la comprobación trimestral posterior al piloto (SPEC-012).
 
 ## Notas para el gate humano
-- **Qué puede hacer el humano esta semana, sin claves**: en cuanto el agente publique
-  CA-1, CA-3 y CA-4 y conste el dictamen de CA-2 (horas de trabajo de agente), hacer la
-  pasada 1 desde el móvil (~~unas 40–50 consultas, 60–90 min~~; tras la enmienda del
-  2026-09-29, unas 76 consultas y 95–140 min, ver abajo) y, entre 2 y 10
-  días después, la pasada 2. La pasada 1 debería ir **antes de la reunión** de SPEC-009.
-- **Decisiones a mirar con lupa**: (1) comparar solo manual con manual y probe con probe
-  (CA-2 e): si las claves llegan después de la primera acción, el criterio Go se mide solo
-  a mano. (2) CA-8: si la clínica ya aparece casi siempre en Viveiro, el +15 es inalcanzable
-  y hay que decidir el criterio **antes** de actuar. (3) Reglas anti-contaminación: en un
-  mercado pequeño, clics y búsquedas de marca propios pueden verse en la atribución.
-- **Pregunta abierta**: desde qué municipio y con qué cuenta medirá el humano. Si no está
-  en A Mariña, el resumen de IA de Google puede variar por ubicación; por eso todas las
-  preguntas nombran un lugar. Si el humano paga ChatGPT Plus, el modelo no es el de la
-  mayoría de pacientes (D-5): preferible una cuenta gratuita o sin sesión, y anotarlo.
-- **Propuesta orientativa de set** (el implementador la cierra contra CA-1; no es parte
-  del contrato):
-  AV01 ¿Cuál es la mejor clínica de medicina estética en Viveiro? · AV02 Recomiéndame una
-  clínica de medicina estética en A Mariña lucense. · AV03 Mejores clínicas de medicina
-  estética en Lugo. · AV04 ¿Dónde ponerme bótox en Viveiro con un médico de confianza? ·
-  AV05 ¿Cuánto cuesta el ácido hialurónico en labios en Viveiro y dónde me lo hago? · AV06
-  ¿Dónde hacerme un trasplante capilar en la provincia de Lugo? · AV07 ¿Cuánto cuesta un
-  injerto capilar DHI en Galicia y qué clínica me recomiendas cerca de Viveiro? · AV08
-  Tratamiento para grasa localizada o flacidez en Viveiro, ¿qué clínica? · AV09 ¿Qué
-  clínica estética de la zona de Viveiro tiene médicos y buenas opiniones? · AV10 ¿Merece
-  la pena ir a Lugo o a A Coruña para medicina estética o hay buenas clínicas en A Mariña? ·
-  AV11 Quitar un lunar o una verruga de la cara en Viveiro, ¿dónde me lo hacen? · AV12
-  Tratamiento de manchas en la cara con láser en Burela o Foz. · AV13 Cal é a mellor clínica
-  de medicina estética en Viveiro? · AV14 Onde me podo facer un transplante capilar preto
-  de Viveiro? · AM01 ¿Qué sabes de Clínica Ártica de Viveiro? ¿Es de fiar?
-- No aprobar SPEC-008 no bloquea esta spec; son independientes.
-
-### Enmienda 2026-09-29 — tres niveles (para el gate)
-- **Tiempo de cada pasada**: de 49 a **76 consultas** con el set propuesto (24 de medición
-  × 3 apps + 2 `AM` × 2). Estimación: **95–140 min** de consultas + 25–30 min de CSV y
-  capturas; se puede repartir en 2 días seguidos (corte entre bloques). Las dos pasadas
-  "antes" y las dos "después" de SPEC-012 tienen ya este tamaño.
-- **Ids**: se mantiene `AV01`–`AV15` como núcleo sin tocar (SPEC-008 CA-1, los tests y los
-  CSV ya los usan, y el Go se define sobre ellos); `AR` (área de influencia, "regional") y
-  `AG` (Galicia) siguen el patrón `A` + letra + 2 dígitos del piloto, de modo que el nivel
-  se lee en el propio id y el recuento no puede mezclarlos por accidente. `AI` se descartó
-  (se confunde con "IA/AI").
-- **Decisiones a mirar con lupa**: (1) el núcleo es el set vigente tal cual, aunque
-  `AV03`, `AV09`–`AV12` nombran también Lugo, A Coruña o Galicia: se respeta la decisión
-  del humano de que el núcleo es "el set actual"; si prefiere un núcleo solo Viveiro/
-  A Mariña, este es el último momento (el set no está congelado). (2) "Norte de Lugo fuera
-  de A Mariña" = Terra Chá (Vilalba) en la propuesta; A Mariña ya es el norte de Lugo.
-  (3) Ribadeo es A Mariña (Lugo), no Asturias: sigue siendo núcleo; el occidente de
-  Asturias se mide con Navia, Tapia de Casariego, Vegadeo o Castropol. (4) Los tratamientos
-  `AG` exigen que la clínica los ofrezca según su web (URL y fecha en el ledger).
-- **Propuesta orientativa de `AR` y `AG`** (el implementador la cierra contra CA-1; no es
-  parte del contrato):
-  AR01 Vivo en Ortigueira. ¿Qué clínica de medicina estética con médicos me recomiendas por
-  la zona? · AR02 Onde me podo poñer bótox cun médico de confianza preto de Ferrol? ·
-  AR03 Vivo en Vilalba. ¿Dónde me hago un tratamiento de ácido hialurónico en el norte de
-  Lugo? · AR04 Vivo en Tapia de Casariego (Asturias). ¿Qué clínica de medicina estética me
-  recomiendas cerca, aunque tenga que desplazarme un poco? · AR05 ¿Cuánto cuesta un injerto
-  capilar DHI cerca de Navia o Vegadeo y qué clínica me recomiendas?
-  AG01 ¿Cuál es la mejor clínica de Galicia para hacerme un injerto capilar con técnica
-  DHI? · AG02 ¿Cuánto cuesta un trasplante capilar en Galicia y dónde me recomiendas
-  hacerlo? · AG03 ¿Dónde me recomiendas operarme los párpados (blefaroplastia) en Galicia?
-  · AG04 Cal é a mellor clínica de Galicia para facer unha blefaroplastia?
-- **Contexto de competencia** (búsqueda pública del orquestador, 2026-09-29; no forma parte
-  del set): en Galicia el capilar lo disputan cadenas y clínicas con sedes en Vigo,
-  Santiago, A Coruña, Pontevedra, Ourense y Vilagarcía; la blefaroplastia, cirujanos de
-  A Coruña y Vigo y una cadena en Lugo; los directorios se organizan por ciudad. Por eso el
-  objetivo de `AG` es "aparecer alguna vez" y no se promete.
+- **Enmienda 2026-09-29 (b) — qué cambia para ti**: una pasada "antes" de **49 consultas**
+  (15 `AV` × ChatGPT, Gemini y Google + 2 `AM` × ChatGPT y Gemini): unos **60–90 min** de
+  consultas más 20–25 min de CSV y capturas; y otra igual al cierre (SPEC-012). Antes eran
+  76 consultas × 4 pasadas.
+- **AM01 y AM02 se mantienen** en la manual: son 4 consultas, el probe no las hace
+  (SPEC-008 CA-1) y dan a la reunión lo que dice cada asistente de la clínica (CA-10) y al
+  diagnóstico los datos erróneos (NAP, servicios). En el "después" muestran si esos datos
+  se corrigieron.
+- **Decisiones a mirar con lupa**:
+  1. **Orden**: el set se congela, como tarde, con el primer baseline del probe (CA-8). La
+     pasada "antes" necesita el set congelado y una ejecución `AV` del probe dentro de la
+     ventana del dictamen (CA-2 k). Si quieres hacer la pasada antes de que exista el
+     baseline oficial (que espera a SPEC-013), fija tú la congelación en el ledger y lanza
+     una ejecución `AV` del probe cercana en fechas, si el dictamen lo admite.
+  2. **Google AI Overviews en `AR`/`AG` deja de medirse.** Es la consecuencia directa de
+     quitar esos niveles de la manual. Si te importa para el capilar en Galicia, habría que
+     añadir 4–9 búsquedas de Google a la manual (sin tocar el Go).
+  3. **Ubicación distinta por instrumento**: la manual se hace desde Vilaboa (P-4) y el
+     probe envía la ubicación Viveiro. Todas las preguntas nombran el lugar, pero es una
+     diferencia que la calibración absorberá; el dictamen (CA-2 k) dice cómo se trata.
+  4. **Si app y probe no coinciden** (CA-7): no se enseña ninguna cifra del probe ni se
+     envía la propuesta hasta decidir qué se ajusta. Eso puede retrasar la propuesta.
+- **Lo que no cambia**: el set publicado (CA-1), la plantilla (CA-4), las reglas de
+  mención (P-1, P-2), la ubicación de medición desde Vilaboa (P-4) y la frontera de datos
+  (CA-11).
+- **Preguntas abiertas heredadas**: P-5 (Mondoñedo) y P-6 (Sarria/A Fonsagrada frente a
+  ADR-005 §1) siguen abiertas en el ledger; con esta enmienda, P-5 ya solo afecta al probe
+  y hay que resolverla antes de la congelación (CA-8).
