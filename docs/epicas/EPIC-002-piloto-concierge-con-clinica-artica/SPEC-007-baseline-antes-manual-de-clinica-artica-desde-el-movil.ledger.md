@@ -15,19 +15,19 @@ epica: EPIC-002
 <!-- Un CA está ✅ solo cuando Implementado + Test + Verif. aplicables están en verde. Una salvedad se marca ⚠️, nunca ✅. -->
 | CA | Implementado (fichero) | Test (fichero/caso) | Verif. | Estado |
 |---|---|---|---|---|
-| CA-1 | `docs/piloto-artica/prompts-baseline.md` (15 `AV` + 2 `AM`); comprobador `docs/piloto-artica/tools/baseline_docs.py` (`parse_prompts_doc`, `coverage`) | `docs/piloto-artica/tools/tests/test_baseline_prompts.py` (recuento de cada condición, ids, sin "Ártica"/"Artica"/candidatas de SPEC-008 en `AV`, sin preguntas sin lugar, línea de cobertura = tabla) | | ❌ |
-| CA-2 | Dictamen `sdd-metricas` 2026-09-29 y tabla condición → cambio, en este ledger (sección "Dictamen sdd-metricas (CA-2)"); fecha anterior a la pasada 1 | Checklist (a)–(f) en la sección del dictamen; cada condición mapeada a fichero y test | | ❌ |
-| CA-3 | `docs/piloto-artica/protocolo-captura.md` | `docs/piloto-artica/tools/tests/test_baseline_protocol_template.py` (≤ 1100 palabras; cada campo obligatorio; apps, sesión limpia, cuenta/plan, modelo, texto literal, una por conversación, orden, captura, enlace, mismas condiciones incl. SPEC-012, tres reglas anti-contaminación) | | ❌ |
+| CA-1 | `docs/piloto-artica/prompts-baseline.md`: núcleo `AV01`–`AV15` (sin cambios), `AR01`–`AR05`, `AG01`–`AG04`, `AM01`–`AM02`; comprobador `docs/piloto-artica/tools/baseline_docs.py` (`parse_prompts_doc`, `coverage`, `coverage_regional`, `render_coverage_galicia`); copia congelada `tools/tests/av-2026-09-29.tsv`; tratamientos `AG` con URL y fecha en "Tratamientos del nivel AG" | `docs/piloto-artica/tools/tests/test_baseline_prompts.py` (condiciones por nivel, ids únicos y por prefijo, `AV` idénticas a la versión publicada, sin textos repetidos, ≤ 24, sin "Ártica"/"Artica"/candidatas de SPEC-008 en `AV`, `AR` ni `AG`, sin preguntas sin lugar, líneas de cobertura = tablas, Mondoñedo es A Mariña) | | ❌ |
+| CA-2 | Dictamen `sdd-metricas` 2026-09-29 (a)–(f) y **ampliación por niveles (g)–(j) del 2026-09-29**, con tabla condición → cambio, en este ledger; ambas antes de la pasada 1 | Checklist (a)–(j) en la sección del dictamen; cada condición mapeada a fichero y test | | ❌ |
+| CA-3 | `docs/piloto-artica/protocolo-captura.md` (una sola pasada con los tres niveles, bloques AV → AR → AG → AM, corte entre bloques, 76 consultas) | `docs/piloto-artica/tools/tests/test_baseline_protocol_template.py` (≤ 1100 palabras; campos obligatorios; apps, sesión limpia, cuenta/plan, modelo, texto literal, una por conversación, orden, captura, enlace, mismas condiciones incl. SPEC-012, reglas anti-contaminación, Vilaboa, `test_protocol_three_levels_block_order`, `test_protocol_block_order_av_first`) | | ❌ |
 | CA-4 | `docs/piloto-artica/plantilla-captura.csv` (solo cabecera) | `test_baseline_protocol_template.py::test_template_is_header_only`, `::test_template_crosses_protocol_fields_and_ca4_extras`, `::test_protocol_documents_every_template_column` | | ❌ |
-| CA-5 | [Humano] pendiente. Preparado: `$PUSHLLM_PRIVADO/piloto-artica/baseline/captura-p1-prerrellenada.csv` (49 filas en orden) y `preguntas-en-orden.txt` | — (lo cuenta el verificador en privado) | | ❌ |
-| CA-6 | [Humano] pendiente. Preparado: `captura-p2-prerrellenada.csv` | — | | ❌ |
-| CA-7 | Procedimiento `docs/piloto-artica/procedimiento-recuento.md` y `docs/piloto-artica/tools/count_baseline.py`. **Falta** el `recuento-antes.md` privado (necesita las pasadas 1 y 2) | `docs/piloto-artica/tools/tests/test_baseline_count.py` (SoV bruto por app y por pasada, ponderado normalizado, posición media, clínicas en su lugar con alias canónicos, Google aparte con y sin resumen, dominios, estabilidad, observaciones y `AM` aparte, filas duplicadas/vacías fallan) — fixture ficticia | | ❌ |
-| CA-8 | Regla de congelación en `prompts-baseline.md` ("Estado del set"). **Falta** la fecha de congelación (= inicio de la pasada 1) y, si aplica, la decisión humana tras el recuento | — | | ❌ |
+| CA-5 | [Humano] pendiente. Preparado: `$PUSHLLM_PRIVADO/piloto-artica/baseline/captura-p1-prerrellenada.csv` (76 filas, en el orden del protocolo) y `preguntas-en-orden.txt` (por app y bloque) | — (lo cuenta el verificador en privado) | | ❌ |
+| CA-6 | [Humano] pendiente. Preparado: `captura-p2-prerrellenada.csv` (76 filas, mismo orden) | — | | ❌ |
+| CA-7 | Procedimiento `docs/piloto-artica/procedimiento-recuento.md` (§1–6 núcleo, §7 niveles) y `docs/piloto-artica/tools/count_baseline.py` (`count`, `count_level`). **Falta** el `recuento-antes.md` privado (necesita las pasadas 1 y 2) | `docs/piloto-artica/tools/tests/test_baseline_count.py` (núcleo: SoV bruto por app y pasada, ponderado, posición, en su lugar, Google, dominios, estabilidad, observaciones; niveles: `test_core_unchanged_when_level_rows_removed`, recuentos por app y pasada, puestos, indicadores `AR`/`AG`, cadenas como una marca, render sin porcentajes) — fixture ficticia | | ❌ |
+| CA-8 | Regla de congelación de los tres niveles en `prompts-baseline.md` ("Estado del set"); aviso de techo solo con `AV` (el ponderado de `count_baseline.py` usa solo `AV`). **Falta** la fecha de congelación (= inicio de la pasada 1) y, si aplica, la decisión humana | `test_core_unchanged_when_level_rows_removed` | | ❌ |
 | CA-9 | `$PUSHLLM_PRIVADO/piloto-artica/baseline/foto-tecnica-2026-09-29/` (`foto-tecnica.md`, `raw/robots.txt`, `raw/sitemap_index.xml` + 8 sitemaps, HTML y JSON-LD de portada, contacto y una página por línea, `raw/SHA256SUMS.txt`). **Falta**: Google Business Profile (lo mira el humano) y los dominios citados en la pasada 1 | Comprobación manual del verificador (fechas y URLs en `foto-tecnica.md`) | | ❌ |
-| CA-10 | **Pendiente** de la pasada 1. Comprobador de términos prohibidos listo: `python docs/piloto-artica/tools/baseline_docs.py "$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md"` | `docs/piloto-artica/tools/tests/test_baseline_frontier.py::test_forbidden_meeting_terms` | | ❌ |
+| CA-10 | **Pendiente** de la pasada 1 (respuestas representativas solo del núcleo; `AR`/`AG`, si salen, como dato "fuera de la comarca" sin objetivo). Comprobador de términos prohibidos listo: `python docs/piloto-artica/tools/baseline_docs.py "$PUSHLLM_PRIVADO/piloto-artica/baseline/hallazgo-reunion.md"` | `docs/piloto-artica/tools/tests/test_baseline_frontier.py::test_forbidden_meeting_terms` | | ❌ |
 | CA-11 | [Verificador]. Apoyo: `baseline_docs.py` sin argumentos revisa `docs/piloto-artica/` (emails, teléfonos, cifras junto a marcas) | `test_baseline_frontier.py::test_repo_docs_pass_the_frontier` y `::test_frontier_detects_email_phone_and_figure_next_to_brand` | | ❌ |
 
-Tests: `python -m pytest -q docs/piloto-artica/tools/tests` (105 en verde el 2026-09-29) y
+Tests: `python -m pytest -q docs/piloto-artica/tools/tests` (143 en verde el 2026-09-29, tras la enmienda) y
 `python -m pytest -q probe/tests` (106, sin cambios).
 
 ## Dictamen sdd-metricas (CA-2)
@@ -124,6 +124,40 @@ la diferencia entre la pasada 1 y la 2 (ruido medido). El humano decidió el 202
 que el criterio Go exige estabilidad: la subida debe verse en las dos pasadas "después"
 (follow-up F-SPEC-007-5 para SPEC-012).
 
+### Ampliación por niveles (g)–(j) — 2026-09-29, antes de la pasada 1
+- **Emisor**: sdd-implementador aplicando `.ai-context/skills/sdd-metricas.md`. **Fuentes**:
+  las del dictamen anterior más ADR-005 (§4 indicadores separados, §6 no se promete) y la
+  enmienda de SPEC-007 (CA-1, CA-2, CA-7, CA-8). Ningún punto cambia una regla de negocio:
+  `AR`/`AG` no son SoV (RN-02/RN-03 siguen aplicándose solo al núcleo, que es el set de la
+  clínica para el Go).
+- **(g) Indicadores de `AR` y `AG` — correcto con condiciones.** Por nivel, app (ChatGPT,
+  Gemini, Google con resumen de IA) y pasada: **"x de n"** respuestas válidas con la
+  clínica; en Google, además, cuántas búsquedas tuvieron resumen. Sin ponderado.
+  Definiciones operativas, iguales en el "después" de SPEC-012 (periodo = las dos pasadas
+  "antes" o las dos "después"):
+  - `AR` "aparece con cierta regularidad" ⇔ al menos **2 casillas** pregunta × app en las
+    que la clínica aparece en **las dos** pasadas del periodo.
+  - `AG` "aparece alguna vez" ⇔ al menos **1** respuesta válida del periodo, en cualquier
+    app, con la clínica.
+  Las dos se deciden con sí/no desde el CSV y se reproducen a mano.
+- **(h) Separación del núcleo — correcto.** El ponderado del criterio Go, la estabilidad de
+  P-3 y el aviso de techo de CA-8 usan **solo** `AV`. Ninguna cifra `AR`/`AG` se suma,
+  promedia ni pondera con el núcleo (ADR-005 §4). Verificable: el ponderado del núcleo es el
+  mismo si se borran las filas `AR` y `AG`.
+- **(i) Clínicas de fuera de la comarca y posición — correcto con condiciones.** Una cadena
+  con varias sedes cuenta como **una marca** (nombre canónico en `alias-canonicos.csv`); la
+  sede, si la respuesta la dice, va a `observaciones`. Motivo: RN-01 casa por nombre y las
+  respuestas no siempre dan la sede. La posición (RN-06) se informa en `AR`/`AG` como
+  **lista de puestos**, sin media (con tan pocas respuestas, la media engaña).
+- **(j) Ruido — correcto.** Con 4–5 preguntas por nivel y 2 pasadas hay 8–10 respuestas por
+  app: una sola respuesta mueve 10–12 puntos y el margen del 95 % supera ± 30 puntos. Solo
+  **recuentos** ("x de n"), nunca porcentajes.
+- **(a), (b), (d), (e) en los niveles**: (a) alias y reglas de mención, iguales; (b) los
+  niveles van en las mismas dos pasadas y con la misma separación, sin pasadas propias;
+  (d) Google con resumen de IA se cuenta dentro de cada nivel como una app más, sin
+  ponderar; si no hay resumen, la búsqueda es válida y sin clínica; (e) mismo instrumento
+  también en los niveles. (c) y (f) siguen siendo solo del núcleo.
+
 ### Tabla condición → cambio
 | Condición | Cambio | Dónde |
 |---|---|---|
@@ -140,13 +174,32 @@ que el criterio Go exige estabilidad: la subida debe verse en las dos pasadas "d
 | d AI Overviews aparte | Columna `resumen_ia`; dos cifras | `plantilla-captura.csv`; `procedimiento-recuento.md` §4; tests `test_google_*` |
 | e mismo instrumento | Condiciones iguales en todas las pasadas; set congelado | `protocolo-captura.md` "Antes de empezar" 2; `prompts-baseline.md` "Estado del set" |
 | f ruido | Estabilidad por pregunta y SoV por pasada en el recuento | `procedimiento-recuento.md` §2 y §6; tests `test_sov_per_pass`, `test_stability_per_question` |
+| g indicadores `AR`/`AG` | "x de n" por nivel × app × pasada; regularidad (≥ 2 casillas estables) y alguna vez (≥ 1) | `procedimiento-recuento.md` §7; `count_baseline.py` (`count_level`, `AR_MIN_STABLE_CELLS`); tests `test_level_counts_per_app_and_pass`, `test_regularity_*`, `test_galicia_indicator_is_at_least_once` |
+| h núcleo aparte | Go, estabilidad y techo solo con `AV` | `procedimiento-recuento.md` §1; `count_baseline.py` (el núcleo filtra `AV`); test `test_core_unchanged_when_level_rows_removed` |
+| i cadenas y posición | Cadena = una marca en `alias-canonicos.csv`; puestos en lista | `procedimiento-recuento.md` §7; tests `test_chains_are_one_brand_in_levels`, `test_level_positions_are_listed_not_averaged` |
+| j solo recuentos | Secciones de nivel sin porcentajes | `count_baseline.py` (`render`); test `test_render_levels_as_counts_without_percentages` |
+| b/d en niveles | Una sola pasada con los tres niveles; Google dentro de cada nivel | `protocolo-captura.md` ("Antes de empezar" 4, "Cómo preguntar" 1); test `test_protocol_three_levels_block_order` |
+
+### Tratamientos del nivel AG (CA-1)
+Comprobado en clinicaartica.es el **2026-09-29** (HTTP 200; título y H1 de cada página):
+- Trasplante capilar DHI:
+  https://clinicaartica.es/tratamientos-capilares/microinjerto-capilar-con-tecnica-dhi/
+  ("Microinjerto capilar con técnica DHI") y
+  https://clinicaartica.es/tratamientos-capilares/trasplante-capilar/ ("Trasplante capilar").
+- Blefaroplastia:
+  https://clinicaartica.es/unidad-de-cirugia-estetica-facial/blefaroplastia-superior-rejuvenecimiento-mirada/
+  ("Blefaroplastia superior"). La clínica ofrece la **superior**: por eso `AG03`/`AG04`
+  preguntan por los párpados superiores. No hizo falta sustituir el tratamiento.
 
 ## Instrucciones para el humano — pasada 1 (CA-5)
-Tiempo: 60–90 min de consultas (49) + 15–20 min para pasar capturas y rellenar el CSV.
+Tiempo: 95–140 min de consultas (76, una sola pasada con los tres niveles) + 25–30 min para
+pasar capturas y rellenar el CSV. Se puede repartir en 2 días seguidos, cortando solo entre
+bloques (y anotándolo).
 Mejor **antes de la reunión** de SPEC-009. Todas las pasadas desde Vilaboa (P-4 revisada).
 1. Imprime `docs/piloto-artica/protocolo-captura.md` y ábrete
    `$PUSHLLM_PRIVADO/piloto-artica/baseline/preguntas-en-orden.txt` (preguntas listas para
-   copiar, en orden: 17 en ChatGPT, 17 en Gemini, 15 en Google).
+   copiar, en orden y por bloques: 26 en ChatGPT y 26 en Gemini (AV, AR, AG, AM), 24 en
+   Google (AV, AR, AG)).
 2. Prepara las cuentas **gratuitas**: ChatGPT con memoria desactivada; Gemini con la
    actividad desactivada. No uses las de pago (si quieres mirarlas, solo como observación y
    anotado).
@@ -174,6 +227,19 @@ Mejor **antes de la reunión** de SPEC-009. Todas las pasadas desde Vilaboa (P-4
    `captura-p2-prerrellenada.csv`, en `AAAA-MM-DD-p2/`, y **antes de la primera acción**.
 
 ## Preguntas abiertas
+- **P-5** (2026-09-29, enmienda; → humano): **Mondoñedo no cabe** sin romper CA-1. Es
+  A Mariña Central, así que no puede ir en `AR` ("ninguna nombra un municipio de A Mariña");
+  `AG` no admite ciudades; y meterlo en el núcleo exigiría una `AV16`, que cambia el núcleo
+  "tal cual" decidido por el humano y, con 5 `AR` y 4 `AG`, pasaría de 24 preguntas. Opción,
+  si el humano la quiere: `AV16` con Mondoñedo y quitar una `AR` o una `AG` (total 24),
+  antes de la pasada 1. Hoy queda fuera.
+- **P-6** (2026-09-29, enmienda; → arquitecto/humano): ADR-005 §1 enumera el área de
+  influencia como Ferrolterra, norte de Lugo fuera de A Mariña y occidente de Asturias.
+  **Sarria y A Fonsagrada** (interior de Lugo, al sur y al este) no están en esa lista,
+  aunque sí dentro de "Lugo" de ADR-003 §1. `AR04` las incluye por decisión del humano y el
+  set lo describe tal cual ("interior de Lugo"). Si se quiere que ADR-005 lo recoja
+  literalmente, lo decide el arquitecto (no he editado el ADR).
+
 Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
 - **P-1** ("ártica" como adjetivo): **cuenta** (RN-01 literal) y se marca
   `#artica-adjetivo` para revisarla a mano. Sin cambio de regla. Reflejado en
@@ -222,7 +288,9 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
   (P-3), el criterio Go de +15 pts de SoV ponderado exige que la subida se vea en **cada
   una de las dos** pasadas "después" (no solo en su media). SPEC-012 debe recogerlo antes
   de la primera acción; no se ha editado SPEC-012.
-- **F-SPEC-007-6** (→ sdd-implementador, **tras la re-aprobación humana** de la enmienda
+- **F-SPEC-007-6**: **hecho el 2026-09-29 por sdd-implementador** tras la re-aprobación
+  humana (commits 355ae66, e29044a y el de este ledger). Lista original:
+- ~~F-SPEC-007-6~~ (→ sdd-implementador, **tras la re-aprobación humana** de la enmienda
   del 2026-09-29; sdd-arquitecto). La spec volvió a `borrador` por el set en tres niveles
   (ADR-005). **No tocar nada de esta lista antes de la re-aprobación.** Después, en este
   orden:
@@ -261,6 +329,11 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
   preguntas sin página por nivel, priorizando el núcleo.
 
 ## Cómo retomar (handoff)
+- **2026-09-29 (sdd-implementador, tras la re-aprobación)**: F-SPEC-007-6 hecho. Spec en
+  `en-progreso`. Set de tres niveles publicado (24 de medición + 2 `AM`), dictamen ampliado
+  (g)–(j), protocolo, procedimiento y herramienta por nivel, CSV prerrellenados de 76 filas y
+  `preguntas-en-orden.txt` por bloques en privado. Siguiente: pasada 1 del humano. Abiertas:
+  P-5 (Mondoñedo) y P-6 (Sarria/A Fonsagrada frente a la lista de ADR-005).
 - **2026-09-29 (sdd-arquitecto)**: la spec está en `borrador` por la enmienda de tres
   niveles (ADR-005). La pasada 1 **no** debe empezar hasta la re-aprobación humana y
   F-SPEC-007-6 hecho. Lo de abajo describe el estado previo a la enmienda.
