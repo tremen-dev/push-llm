@@ -2,7 +2,7 @@
 id: SPEC-002
 tipo: spec
 epica: EPIC-001
-estado: aprobada
+estado: en-progreso
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-23, por: sdd-arquitecto}
@@ -13,6 +13,7 @@ historial:
   - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
+  - {estado: en-progreso, fecha: 2026-09-29, por: sdd-implementador}
 ---
 # SPEC-002 — Ejecución del probe baseline y veredicto de la hipótesis
 
