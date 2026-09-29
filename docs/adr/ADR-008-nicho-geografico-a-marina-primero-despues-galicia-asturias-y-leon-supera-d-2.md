@@ -1,9 +1,11 @@
 ---
 id: ADR-008
 tipo: adr
-estado: borrador
+estado: aprobada
 historial:
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
+aprobada-por: Alberto Fojo
 ---
 # ADR-008: Nicho geográfico: A Mariña primero, después Galicia, Asturias y León; supera D-2
 

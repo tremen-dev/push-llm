@@ -36,7 +36,7 @@ Actualizado: 2026-09-29
 | ADR-005 | aprobada | catalogo-del-piloto-de-clinica-artica-en-tres-niveles-geograficos | 2026-09-29 (Alberto Fojo) |
 | ADR-006 | aprobada | claves-de-api-en-un-env-local-ignorado-por-git | 2026-09-29 (Alberto Fojo) |
 | ADR-007 | aprobada | plantilla-env-example-versionada-como-unica-excepcion-a-la-regla-de-adr-006 | 2026-09-29 (Alberto Fojo) |
-| ADR-008 | borrador | nicho-geografico-a-marina-primero-despues-galicia-asturias-y-leon-supera-d-2 | 2026-09-29 (sdd-arquitecto) |
+| ADR-008 | aprobada | nicho-geografico-a-marina-primero-despues-galicia-asturias-y-leon-supera-d-2 | 2026-09-29 (Alberto Fojo) |
 
 ## Resumen
 
