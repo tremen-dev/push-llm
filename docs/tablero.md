@@ -8,7 +8,7 @@ Actualizado: 2026-09-29
 | Spec | Estado | Último cambio |
 |---|---|---|
 | SPEC-001 — ajustes-del-probe-para-el-baseline | hecho | 2026-09-23 (sdd-verificador) |
-| SPEC-002 — ejecucion-del-probe-baseline-y-veredicto-de-la-hipotesis | aprobada | 2026-09-29 (Alberto Fojo) |
+| SPEC-002 — ejecucion-del-probe-baseline-y-veredicto-de-la-hipotesis | en-revision | 2026-09-29 (sdd-implementador) |
 | SPEC-003 — extracto-de-hallazgos-por-clinica | bloqueada | 2026-09-29 (sdd-arquitecto) |
 | SPEC-004 — kit-de-contacto-y-entrevista-para-un-fundador-no-comercial | bloqueada | 2026-09-29 (sdd-arquitecto) |
 | SPEC-005 — registro-y-evaluacion-de-las-entrevistas | bloqueada | 2026-09-29 (sdd-arquitecto) |
@@ -24,6 +24,12 @@ Actualizado: 2026-09-29
 | SPEC-010 — instalacion-de-la-atribucion-del-piloto | borrador | 2026-09-28 (sdd-arquitecto) |
 | SPEC-011 — diagnostico-por-palancas-y-plan-de-acciones-de-clinica-artica | borrador | 2026-09-28 (sdd-arquitecto) |
 | SPEC-012 — ejecucion-medicion-semanal-y-cierre-del-piloto | borrador | 2026-09-28 (sdd-arquitecto) |
+
+## EPIC-FIX (borrador)
+
+| Spec | Estado | Último cambio |
+|---|---|---|
+| SPEC-013 — respuesta-cruda-del-proveedor-y-citas-de-claude-en-el-probe | borrador | 2026-09-29 (sdd-arquitecto) |
 
 ## ADRs
 
@@ -41,7 +47,8 @@ Actualizado: 2026-09-29
 ## Resumen
 
 - hecho: 2
-- aprobada: 2
+- en-revision: 1
 - bloqueada: 3
 - en-progreso: 2
-- borrador: 3
+- aprobada: 1
+- borrador: 4

@@ -275,6 +275,26 @@ del humo apunta a la raíz de la unidad; comprobar la variable antes. (5) depend
 set no está congelado (SPEC-007 CA-8): si el baseline del probe se lanza antes de la
 pasada 1 y el set cambia después, el baseline no sirve. Al cierre: CA-7 y repetir CA-8.
 
+**Re-verificación offline 2026-09-29 en la punta de la rama SPEC-002** (sdd-verificador;
+sin transición de estado: CA-7, baseline real, sigue pendiente). Cambios revisados desde
+`01cb09d`: modelos del dictamen vigente de SPEC-002 (Claude `claude-sonnet-5-5`), effort
+`medium` y `max_tokens` 16000 de Claude, cambio BCE 1,1378, carga del `.env` en
+`run_probe.py` (con `conftest.py` autouse) y la nota de la spec que remite a ADR-008 (no
+cambia CA). Sin cambios desde `01cb09d` en `prompts.csv`, `brands.csv`, `batches/`,
+fixtures ni en la sección `batch` de `probe_config.json`. Gates: `pytest probe/tests
+docs/piloto-artica/tools/tests` → 317 passed (`test_pilot_batch.py` 50 passed); `ruff
+check probe` limpio. CA-1…CA-6 se siguen cumpliendo como en la intermedia (mismas
+salvedades de CA-1, CA-2 y CA-6). CA-4: golden de Vigo regenerado por el verificador
+(`--analyze` con `env={}`, sin `.env`, sobre `tests/fixtures/vigo_results.csv`) →
+**idéntico** a `vigo_summary_before.md` (salvo CRLF). CA-5: el cambio de tipo (+0,3 %) y
+el effort `medium` no rompen el dictamen; humo de Viveiro medido c = 0,1142 € ≤ 0,19 €.
+**CA-8 ahora no se cumple en el árbol local**: `git status --ignored` muestra `probe/out/`
+con `piloto-artica/probe/{results.csv,summary.md}` sintéticos (2026-09-29 12:58, modelo
+`claude-sonnet-5`, F-SPEC-002-5); la suite actual no los regenera (mtime intacto tras
+`pytest`). `git ls-files` sigue sin salidas del lote. Borrar `probe/out/` antes del cierre.
+Humo de Viveiro (informativo para CA-7): 9/9 `ok`, modelos = dictamen, Claude 0 de 3
+`cited_urls` (F-SPEC-002-7, a arreglar antes del baseline en spec aparte).
+
 ## Evidencia visual
 <!-- Tabla CA → captura en _qa/SPEC-008/. Informe HTML opcional: _qa/SPEC-008/informe.html -->
 

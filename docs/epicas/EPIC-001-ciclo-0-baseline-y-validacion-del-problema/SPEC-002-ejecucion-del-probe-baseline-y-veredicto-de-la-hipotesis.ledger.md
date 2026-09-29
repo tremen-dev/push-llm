@@ -15,19 +15,46 @@ epica: EPIC-001
 <!-- Un CA está ✅ solo cuando Implementado + Test + Verif. aplicables están en verde. Una salvedad se marca ⚠️, nunca ✅. -->
 | CA | Implementado (fichero) | Test (fichero/caso) | Verif. | Estado |
 |---|---|---|---|---|
-| CA-1 | [Humano] (g) tipo de ubicación y respaldo de `PUSHLLM_PRIVADO` (P-1) por anotar. Soporte del agente (F-SPEC-002-1): `probe/run_probe.py` carga el `.env` de la raíz sin escribir valores; `probe/README.md`; `docs/ciclo-0/guia-claves-api.md`. Comprobaciones de git (a)–(g) ejecutadas por el agente el 2026-09-29, sin abrir `.env`: ver "Evidencia CA-1 y CA-10" | `probe/tests/test_dotenv.py`; `probe/tests/conftest.py` (ningún test lee el `.env` real) | | ❌ |
-| CA-2 | Dictamen sdd-probe (2026-09-29) en este ledger (Notas); `probe/probe_config.json` (Claude → `claude-sonnet-5-5`, fechas y fuentes, `dictamen_date` 2026-09-29, cambio BCE 1,1378 del 2026-09-28; OpenAI y Gemini sin cambio de modelo ni precio) | `probe/tests/test_config.py` — `vigente()` (dictamen fechado más reciente entre los ledgers de SPEC-002 y SPEC-001), `test_vigente_picks_most_recent_date_and_spec_002_on_tie`, `test_spec002_ca2_*` (vigente = SPEC-002, `dictamen_date`, effort, herencia del lote Viveiro), `test_ca1_config_matches_dictamen_literally` (ahora contra el vigente); `python -m pytest probe/tests` → 173 passed (2026-09-29, con F-SPEC-002-1) | | ❌ |
-| CA-3 | Humo Vigo ejecutado el 2026-09-29 (orquestador, a petición del humano) con el probe de esta rama; evidencia en "Evidencia CA-3 (humo)": 12/12 `ok` (4/4 por proveedor), modelos servidos = dictamen, coste medido 0,1050 € por pregunta × ejecución. **Pendiente**: aceptación del humo por el humano; salvedad F-SPEC-002-7 (Claude sin `cited_urls`) | Revisión a ojo de `D01` por proveedor (agente); recuento desde `$PUSHLLM_PRIVADO/probe-smoke/results.csv` | | ❌ |
-| CA-4 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
-| CA-5 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
-| CA-6 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
-| CA-7 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
-| CA-8 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
-| CA-9 | n-a — retirado por cambio de nicho (ADR-008) | n-a | | ❌ |
-| CA-10 | [Verificador]. Agente, 2026-09-29: `git ls-files` sin `results.csv`, `summary.md` ni humo (solo el fixture sintético `probe/tests/fixtures/vigo_results.csv`); los humos están en `$PUSHLLM_PRIVADO` (fuera del repo); `git status --ignored` muestra `probe/out/` con datos sintéticos de tests anteriores, no de esta ejecución (F-SPEC-002-5). Ver "Evidencia CA-1 y CA-10" | — (comprobación por comandos) | | ❌ |
+| CA-1 | [Humano] (g) tipo de ubicación y respaldo de `PUSHLLM_PRIVADO` (P-1) por anotar. Soporte del agente (F-SPEC-002-1): `probe/run_probe.py` carga el `.env` de la raíz sin escribir valores; `probe/README.md`; `docs/ciclo-0/guia-claves-api.md`. Comprobaciones de git (a)–(g) ejecutadas por el agente el 2026-09-29, sin abrir `.env`: ver "Evidencia CA-1 y CA-10" | `probe/tests/test_dotenv.py`; `probe/tests/conftest.py` (ningún test lee el `.env` real) | Cierre 2026-09-29 (re-ejecutado por el verificador, sin abrir `.env`): (a) `.gitignore:2:.env`; (b) 0 líneas; (c) `.env` no listado (porcelain vacío); (d) solo `.env.example`, sus 3 `*_API_KEY` vacías, `sk-`/`AIza` 0 en contenido y en `git log -p --all -- .env.example`; (e) patrones de clave en `git log -p --all` → 0 (literales: solo prosa); (f) `git grep` patrones → 0 (11 líneas literales, todas prosa); árbol de trabajo (rg sin `.env` ni `.venv`) → 0; (g) `rev-parse` → `fatal: not a git repository`, fuera del repo. Carga del `.env` revisada: `load_dotenv` no sobrescribe (`if name not in env`), solo imprime nombres; tests con fixtures `FIXTURE-…` sin forma de clave; `conftest.py` autouse redirige `DOTENV_PATH`. P-1 firmado por el humano (ver Veredicto) | ✅ |
+| CA-2 | Dictamen sdd-probe (2026-09-29) en este ledger (Notas); `probe/probe_config.json` (Claude → `claude-sonnet-5-5`, fechas y fuentes, `dictamen_date` 2026-09-29, cambio BCE 1,1378 del 2026-09-28; OpenAI y Gemini sin cambio de modelo ni precio) | `probe/tests/test_config.py` — `vigente()` (dictamen fechado más reciente entre los ledgers de SPEC-002 y SPEC-001), `test_vigente_picks_most_recent_date_and_spec_002_on_tie`, `test_spec002_ca2_*` (vigente = SPEC-002, `dictamen_date`, effort, herencia del lote Viveiro), `test_ca1_config_matches_dictamen_literally` (ahora contra el vigente); `python -m pytest probe/tests` → 173 passed (2026-09-29, con F-SPEC-002-1) | Cierre 2026-09-29: `probe_config.json` = tabla del dictamen vigente (Claude `claude-sonnet-5-5`/`web_search_20260209`/`medium`, `max_tokens` 16000; OpenAI `gpt-5.6-luna`/`low`; Gemini `gemini-3.6-flash`/—); `test_config.py::vigente()` elige el más reciente (SPEC-002, 2026-09-29) y `test_ca1_config_matches_dictamen_literally` compara modelo, herramienta y effort; modelos servidos en ambos humos = dictamen; `pytest probe/tests docs/piloto-artica/tools/tests` → 317 passed; `ruff check probe` limpio | ✅ |
+| CA-3 | Humo Vigo ejecutado el 2026-09-29 (orquestador, a petición del humano) con el probe de esta rama; evidencia en "Evidencia CA-3 (humo)": 12/12 `ok` (4/4 por proveedor), modelos servidos = dictamen, coste medido 0,1050 € por pregunta × ejecución. **Pendiente**: aceptación del humo por el humano; salvedad F-SPEC-002-7 (Claude sin `cited_urls`) | Revisión a ojo de `D01` por proveedor (agente); recuento desde `$PUSHLLM_PRIVADO/probe-smoke/results.csv` | Cierre 2026-09-29, recalculado desde `results.csv` privado: 12 filas, 4/4 `ok` por proveedor; modelos servidos = dictamen; Σ `cost_eur` 0,3019 / 0,0474 / 0,0705 = 0,4198 € → 0,1050 € por pregunta × ejecución (OpenAI 0,0118 €, el ledger dice 0,0119: redondeo); Claude salida máx. 1356 tokens, 4 respuestas terminan en frase completa; `D01` revisada: español y coherente. Humo aceptado por el humano con la salvedad F-SPEC-002-7 (Claude 0 de 4 `cited_urls`), trasladada a spec aparte | ⚠️ |
+| CA-4 | n-a — retirado por cambio de nicho (ADR-008) | n-a | n-a (ADR-008) | n-a |
+| CA-5 | n-a — retirado por cambio de nicho (ADR-008) | n-a | n-a (ADR-008) | n-a |
+| CA-6 | n-a — retirado por cambio de nicho (ADR-008) | n-a | n-a (ADR-008) | n-a |
+| CA-7 | n-a — retirado por cambio de nicho (ADR-008) | n-a | n-a (ADR-008) | n-a |
+| CA-8 | n-a — retirado por cambio de nicho (ADR-008) | n-a | n-a (ADR-008) | n-a |
+| CA-9 | n-a — retirado por cambio de nicho (ADR-008) | n-a | n-a (ADR-008) | n-a |
+| CA-10 | [Verificador]. Agente, 2026-09-29: `git ls-files` sin `results.csv`, `summary.md` ni humo (solo el fixture sintético `probe/tests/fixtures/vigo_results.csv`); los humos están en `$PUSHLLM_PRIVADO` (fuera del repo); `git status --ignored` muestra `probe/out/` con datos sintéticos de tests anteriores, no de esta ejecución (F-SPEC-002-5). Ver "Evidencia CA-1 y CA-10" | — (comprobación por comandos) | Cierre 2026-09-29: `git ls-files` sin `results.csv`/`summary.md`/humos (solo fixtures sintéticos de test); `git status --ignored` → `probe/out/` solo con `piloto-artica/probe/` sintético (2026-09-29 12:58, modelo `claude-sonnet-5`, previo a esta ejecución), no datos de esta ejecución; humos en `$PUSHLLM_PRIVADO` (fuera del repo) | ✅ |
 
 ## Veredicto del verificador
 <!-- GREEN/RED + fecha + resumen. Lo escribe SOLO sdd-verificador. -->
+
+**GREEN — 2026-09-29 (sdd-verificador, cierre).** Alcance reducido por ADR-008: CA-1, CA-2 y
+CA-10 ✅; CA-3 ⚠️ con salvedad aceptada por el humano; CA-4…CA-9 n-a (retirados por cambio
+de nicho, ADR-008). Gates re-ejecutados: `pytest probe/tests docs/piloto-artica/tools/tests`
+→ 317 passed; `ruff check probe` limpio; `valida.mjs` OK. Todo sin claves ni llamadas a
+proveedores; el `.env` no se abrió.
+
+Firmas humanas (fuente: humano Alberto Fojo vía orquestador, 2026-09-29):
+- (a) **CA-3: el humano acepta el humo.**
+- (b) **P-1**: espacio privado en una **carpeta sincronizada de OneDrive**; respaldo: **la
+  sincronización de OneDrive**. (Solo el tipo; la ruta no se anota.) Cierra CA-1 (g).
+- (c) **F-SPEC-002-7** (Claude no guarda `cited_urls`): **se arregla antes del baseline de
+  Ártica**, en una spec aparte que redacta sdd-arquitecto. No bloquea SPEC-002: salvedad
+  conocida y trasladada.
+
+Observaciones (no bloquean):
+- V-1: F-SPEC-002-7 afecta también al humo de Viveiro (Claude 0 de 3 `cited_urls`); la
+  spec aparte debe estar cerrada antes de SPEC-008 CA-7.
+- V-2: `probe/out/piloto-artica/probe/` (ignorado) contiene filas sintéticas antiguas
+  (F-SPEC-002-5); no son de esta ejecución, pero SPEC-008 CA-8 exige que no haya datos en
+  `probe/out/` al cerrarla: borrarlo antes.
+- V-3: `ruff check docs/piloto-artica/tools` da 2 F401 (imports sin usar en
+  `count_baseline.py` y `tests/test_baseline_count.py`), código de SPEC-007, no de esta spec.
+- V-4: el párrafo "Caduca" del dictamen sigue citando la completa (CA-4, retirada); la regla
+  en vigor es F-SPEC-002-6.
+- V-5: una carpeta sincronizada replica también borrados y corrupciones; la papelera y el
+  historial de versiones de OneDrive mitigan, pero no es una copia independiente.
 
 ## Evidencia visual
 <!-- Tabla CA → captura en _qa/SPEC-002/. Informe HTML opcional: _qa/SPEC-002/informe.html -->
@@ -254,6 +281,9 @@ Comandos ejecutados por sdd-implementador el 2026-09-29 desde la raíz del repo,
   los fragmentos sin `\n`), con test sobre una respuesta grabada; (ii) fijar
   `allowed_callers: ["direct"]` o volver a `web_search_20250305` (decisión de sdd-probe:
   cambia lo que se sondea). No se ha tocado código.
+  **Decisión humana 2026-09-29** (humano Alberto Fojo vía orquestador; registrada por
+  sdd-verificador): se arregla **antes del baseline de Ártica** en una spec aparte
+  (sdd-arquitecto). No bloquea SPEC-002: salvedad conocida y trasladada; CA-3 ⚠️.
 
 ## Cómo retomar (handoff)
 <!-- Estado real del trabajo para la siguiente sesión: qué está hecho, qué falta, dónde seguir. -->
