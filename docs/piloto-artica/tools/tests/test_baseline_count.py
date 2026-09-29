@@ -688,3 +688,40 @@ def test_cli_writes_two_tables_and_two_verdicts(tmp_path):
     assert "coinciden de forma razonable en av: sí" in md
     assert "sin discrepancia gruesa en ar: sí" in md
     assert "results-av.csv" in md and "results-ar.csv" in md
+
+
+# ------------------------------------------------------------------ real-data robustness (before pass)
+def test_render_escapes_pipes_in_brand_observations(rows):
+    """Observations are free text: a '|' must not break the markdown table of the AM rows."""
+    at(rows, "AM01", "chatgpt", observaciones="dirección correcta | horario sin verificar")
+    md = cb.render_calibration(cb.count(rows, ALIASES), None, None, ["antes.csv"])
+    line = next(ln for ln in md.splitlines() if ln.startswith("| AM01 | chatgpt"))
+    assert line.count("|") - line.count(r"\|") == 5
+    assert r"dirección correcta \| horario sin verificar" in line
+
+
+def test_probe_median_position_is_shown_without_a_trailing_zero():
+    """With two runs the median of (2, 2) is 2, not '2.0'; a true half stays (2.5)."""
+    rows, probe = scenario_av({"chatgpt": set(AV), "gemini": set()},
+                              {"chatgpt": set(AV), "gemini": set()}, runs=2)
+    for r in probe:
+        if r["prompt_id"] == "AV01" and r["provider"] == "openai":
+            r["brands_mentioned"] = f"Clínica Sur;{CLIENT}"
+        if r["prompt_id"] == "AV02" and r["provider"] == "openai":
+            r["brands_mentioned"] = (f"Clínica Sur;{CLIENT}" if r["run"] == "1"
+                                     else f"Clínica Sur;Clínica Este;{CLIENT}")
+    md = cb.render_calibration(cb.count(rows), cb.compare_av(rows, probe, CLIENT), None,
+                               ["antes.csv"])
+    av01 = next(ln for ln in md.splitlines() if ln.startswith("| AV01 |"))
+    av02 = next(ln for ln in md.splitlines() if ln.startswith("| AV02 |"))
+    assert "| 2 |" in av01 and "2.0" not in av01
+    assert "| 2.5 |" in av02
+
+
+def test_approximate_hours_keep_the_date_of_the_pass():
+    """A row whose hour was not written down carries a range ('2026-10-06 10:05/10:20'):
+    the window still uses its date."""
+    rows, probe = scenario_av(NONE, NONE)
+    for r in rows:
+        r["fecha_hora_local"] = "2026-10-06 10:05/10:20"
+    assert cb.compare_av(rows, probe, CLIENT)["manual_dates"][0].isoformat() == "2026-10-06"
