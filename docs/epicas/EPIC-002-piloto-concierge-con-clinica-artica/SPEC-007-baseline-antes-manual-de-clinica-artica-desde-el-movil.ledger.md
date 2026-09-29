@@ -222,8 +222,48 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
   (P-3), el criterio Go de +15 pts de SoV ponderado exige que la subida se vea en **cada
   una de las dos** pasadas "después" (no solo en su media). SPEC-012 debe recogerlo antes
   de la primera acción; no se ha editado SPEC-012.
+- **F-SPEC-007-6** (→ sdd-implementador, **tras la re-aprobación humana** de la enmienda
+  del 2026-09-29; sdd-arquitecto). La spec volvió a `borrador` por el set en tres niveles
+  (ADR-005). **No tocar nada de esta lista antes de la re-aprobación.** Después, en este
+  orden:
+  1. **Tratamientos `AG`**: citar en este ledger URL y fecha de la web de la clínica que
+     muestra trasplante capilar DHI y blefaroplastia (CA-1).
+  2. **Set** `docs/piloto-artica/prompts-baseline.md`: añadir secciones `AR` (4–5) y `AG`
+     (3–4) con su línea de cobertura; `AV01`–`AV15` y `AM` sin cambios; ampliar "Estado
+     del set" (congelación de los tres niveles, CA-8) y la entradilla (ya no es solo
+     Viveiro/A Mariña/Lugo).
+  3. **Dictamen**: pedir a `sdd-metricas` la ampliación (g)–(j) de CA-2 y añadirla a la
+     sección del dictamen y a la tabla condición → cambio, con fecha anterior a la pasada 1.
+  4. **Protocolo** `protocolo-captura.md`: orden de bloques por app (`AV` primero), una sola
+     pasada con los tres niveles, regla de corte entre bloques si se reparte en 2 días,
+     tiempo estimado; sigue ≤ 2 páginas (≤ 1100 palabras según su test).
+  5. **Plantilla** `plantilla-captura.csv`: solo si la ampliación del dictamen pide una
+     columna (p. ej. `nivel`); si el nivel se deriva del prefijo del id, no cambia.
+  6. **Procedimiento y herramienta de recuento** (`procedimiento-recuento.md`,
+     `tools/count_baseline.py`): sección por nivel; núcleo solo con `AV`; indicadores de
+     `AR`/`AG` según el dictamen ampliado.
+  7. **Comprobador** `tools/baseline_docs.py` (`parse_prompts_doc`, `coverage`): parsear las
+     tres secciones y contar condiciones por nivel.
+  8. **Tests** (`tools/tests/`): `test_baseline_prompts.py` (condiciones `AR`/`AG`, ids
+     únicos, `AV01`–`AV15` idénticas a la versión del 2026-09-29, sin marcas en `AR`/`AG`);
+     `test_baseline_protocol_template.py` (orden y corte de bloques);
+     `test_baseline_count.py` (recuento por nivel; el ponderado del núcleo no cambia al
+     quitar las filas `AR`/`AG`); `test_baseline_frontier.py` si cambia la frontera.
+  9. **Privado** (`$PUSHLLM_PRIVADO/piloto-artica/baseline/`): regenerar
+     `captura-p1-prerrellenada.csv` y `captura-p2-prerrellenada.csv` (76 filas con el set
+     propuesto, en el orden del protocolo) y `preguntas-en-orden.txt`.
+  10. **Este ledger**: actualizar la matriz de CA-1, CA-2, CA-5, CA-7 y CA-8 y las
+      "Instrucciones para el humano — pasada 1" (nº de consultas y tiempo: 76 y 95–140 min
+      con el set propuesto).
+- **F-SPEC-007-7** (→ sdd-arquitecto, SPEC-011 y SPEC-012, borradores): recoger los tres
+  niveles de ADR-005: SPEC-012 mide los tres en las pasadas "después", informa `AR`/`AG`
+  aparte y deja el Go solo en `AV` (junto con F-SPEC-007-5); SPEC-011 diagnostica fuentes y
+  preguntas sin página por nivel, priorizando el núcleo.
 
 ## Cómo retomar (handoff)
+- **2026-09-29 (sdd-arquitecto)**: la spec está en `borrador` por la enmienda de tres
+  niveles (ADR-005). La pasada 1 **no** debe empezar hasta la re-aprobación humana y
+  F-SPEC-007-6 hecho. Lo de abajo describe el estado previo a la enmienda.
 - Hecho (2026-09-29): CA-1, CA-3, CA-4 publicados; dictamen CA-2 en este ledger;
   procedimiento y herramienta de CA-7; foto técnica CA-9 salvo GBP y dominios de la
   pasada 1; CSV prerrellenados y preguntas en orden en privado.

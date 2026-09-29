@@ -2,11 +2,13 @@
 id: SPEC-008
 tipo: spec
 epica: EPIC-002
-estado: aprobada
+estado: borrador
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-28, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-28, por: Alberto Fojo}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
 ---
 # SPEC-008 — Catálogo de Viveiro y A Mariña en el probe
 
@@ -14,6 +16,11 @@ historial:
 > mismo encuadre que SPEC-001 y SPEC-006 respecto a D-4). La implementación y sus tests
 > son **offline** y pueden hacerse ya; solo la ejecución real (CA-7) necesita las claves
 > de SPEC-002.
+
+> **Enmienda 2026-09-29 (sdd-arquitecto) — tres niveles (ADR-005).** El set de SPEC-007
+> pasa a tener núcleo (`AV`), área de influencia (`AR`) y Galicia (`AG`). Cambian CA-1,
+> CA-2, CA-3, CA-4, CA-5, las entidades y Fuera de alcance. La spec vuelve a `borrador`
+> (estaba `aprobada`, sin empezar) y necesita **nueva aprobación humana**.
 
 ## Problema
 El piloto necesita medir su set de preguntas con el probe en cuanto haya claves, con
@@ -39,7 +46,10 @@ código; además el resultado del lote de Vigo no puede cambiar.
   tiene el mismo id y el mismo texto literal que en `docs/piloto-artica/prompts-baseline.md`,
   `specialty = aesthetic`, el intent de SPEC-007 y `city = Viveiro` (ubicación del
   paciente; el lugar concreto va en el texto). Las preguntas de marca `AM` **no** entran en
-  el probe. *Evidencia*: comparación automática id+texto entre ambos ficheros.
+  el probe. Lo mismo vale para las preguntas `AR` y `AG` congeladas (enmienda 2026-09-29):
+  mismo id, texto literal, intent y `city = Viveiro`; el nivel se lee en el prefijo del id,
+  sin columna nueva en `prompts.csv`. *Evidencia*: comparación automática id+texto entre
+  ambos ficheros, para los tres prefijos.
 - **CA-2 (marcas del piloto) [Agente; consulta sdd-metricas]**: Dado ADR-004 (el nombre de
   la clínica puede estar en el repo), cuando se actualice `probe/brands.csv`, entonces
   contiene Clínica Ártica (`aesthetic`, `Viveiro`, `independent`) con los alias que fije
@@ -47,7 +57,10 @@ código; además el resultado del lote de Vigo no puede cambiar.
   y los competidores **verificados**: solo entra una marca si en el ledger consta una
   fuente pública (URL) consultada en fecha que muestra que ofrece medicina estética o
   capilar hoy en la ciudad indicada. Las candidatas no verificadas quedan en el ledger como
-  pendientes, no en el CSV. Ningún alias nuevo colisiona con uno existente sin que el
+  pendientes, no en el CSV. Entran también, con la misma verificación, las competidoras
+  que aparezcan en las respuestas `AR` y `AG` de las pasadas manuales (SPEC-007) o que el
+  ledger justifique para esos niveles (Ferrolterra, occidente de Asturias y cadenas de
+  capilar o blefaroplastia de Galicia), con la ciudad de su sede o sedes. Ningún alias nuevo colisiona con uno existente sin que el
   ledger lo justifique; no se añade ninguna sigla a `exact_aliases` sin citar ADR-002 §6.
   *Evidencia*: tabla marca → fuente → fecha en el ledger; carga de `brands.csv` sin error;
   test de colisiones.
@@ -60,20 +73,35 @@ código; además el resultado del lote de Vigo no puede cambiar.
   directorios); y la salida por defecto es `$PUSHLLM_PRIVADO/piloto-artica/probe/`.
   *Evidencia*: tests offline que construyen las peticiones de cada proveedor con la
   configuración de Viveiro y comprueban ubicación, preguntas y marcas.
+  **Enmienda 2026-09-29**: (i) las marcas del lote se seleccionan por **pertenencia
+  declarada al lote** (lista o fichero de marcas del lote en su configuración, u otro
+  mecanismo equivalente propuesto en el ledger), no solo por su ciudad, porque habrá marcas
+  del piloto con sede en Vigo o Pontevedra (ADR-005 §5); (ii) el `summary.md` del lote
+  informa **por nivel** (prefijo `AV`, `AR`, `AG`) por separado y el SoV ponderado del
+  núcleo se calcula solo con `AV`; ninguna cifra agrega niveles (ADR-005 §4). *Evidencia
+  adicional*: test con un `results.csv` de prueba en el que borrar las filas `AR`/`AG` no
+  cambia el ponderado del núcleo; test de que una marca del piloto con ciudad Vigo participa
+  en el lote de Viveiro.
 - **CA-4 (el lote de Vigo no cambia) [Agente]**: Dado que el veredicto de EPIC-001 no puede
   moverse por este piloto, cuando se lance el probe sin configuración de lote (o con la de
   Vigo), entonces la ubicación sigue siendo Vigo, las ciudades locales Vigo y Pontevedra,
   no se ejecuta ninguna pregunta `AV` y `--analyze` sobre un `results.csv` de prueba del
   lote de Vigo produce un `summary.md` **idéntico** al de antes del cambio (las marcas de
   Viveiro/Lugo no alteran recuentos, líder ni sesgos). Todos los tests previos siguen en
-  verde. *Evidencia*: test de regresión con fixture; salida de `python -m pytest probe/tests`.
+  verde. En particular, las marcas del piloto con ciudad Vigo o Pontevedra (enmienda
+  2026-09-29) **no** participan en el lote de Vigo ni cambian su `summary.md`.
+  *Evidencia*: test de regresión con fixture que incluye una marca del piloto con ciudad
+  Vigo; salida de `python -m pytest probe/tests`.
 - **CA-5 (coste y cadencia dentro del presupuesto) [Agente; consulta sdd-probe]**: Dado el
   No-negociable "coste del probe ≤ 20 € por clínica y mes", cuando `sdd-probe` emita su
   dictamen (fecha, fuentes), entonces el ledger recoge: el coste estimado de una ejecución
   del lote (preguntas × runs × proveedores con los precios de `probe_config.json`); una
   cadencia y número de runs para la medición del piloto (SPEC-012) cuyo coste mensual sea
   ≤ 20 €; y si la ubicación Viveiro es aceptada por cada proveedor (Gemini: solo por el
-  texto, como hoy). *Evidencia*: dictamen y cálculo en el ledger.
+  texto, como hoy). El cálculo usa el set completo congelado (`AV`+`AR`+`AG`, hasta 24
+  preguntas con el set propuesto); si no cabe en ≤ 20 €/mes, el dictamen propone una
+  cadencia menor para `AR`/`AG` que para `AV`, nunca al revés (enmienda 2026-09-29).
+  *Evidencia*: dictamen y cálculo en el ledger.
 - **CA-6 (documentación) [Agente]**: Dado D-8, cuando se cierre la spec, entonces
   `probe/README.md` (en inglés) explica cómo lanzar el lote de Viveiro, dónde sale y que el
   lote de Vigo es el defecto. *Evidencia*: sección presente; comando de ejemplo coincide
@@ -93,13 +121,18 @@ código; además el resultado del lote de Vigo no puede cambiar.
 - Dominio: Prompt, Prompt catalogue, Clinic, Provider, Probe / ProbeRun, Mention.
 - RN-01, RN-11 (ADR-002), RN-02–RN-04, RN-10.
 - D-4, D-5, D-6; No-negociables de coste y de "catálogos y configuración, no código".
-- ADR-001, ADR-002, ADR-003, ADR-004. Depende de SPEC-007 CA-1/CA-8 (set congelado) y,
+- ADR-001, ADR-002, ADR-003, ADR-004, ADR-005 (niveles separados; marcas del piloto fuera
+  del lote de Vigo). Depende de SPEC-007 CA-1/CA-8 (set congelado) y,
   solo para CA-7, de SPEC-002 CA-1 (claves).
 
 ## Fuera de alcance
 - Google AI Overviews y Perplexity en el probe (siguen fuera; AI Overviews se mide a mano).
 - Ejecución semanal y su análisis (SPEC-012).
 - Cualquier código en `src/`.
+- Ubicación del usuario distinta por nivel (Ferrol, Asturias…): todo el lote usa Viveiro,
+  como la medición manual usa un único municipio; el lugar va en el texto.
+- Añadir al lote de Vigo o a la lista de objetivos de EPIC-001 marcas encontradas por el
+  nivel Galicia (ADR-005 §5).
 
 ## Notas para el gate humano
 - **Competidoras candidatas** (búsqueda pública del 2026-09-28, **no verificadas** salvo
@@ -121,5 +154,11 @@ código; además el resultado del lote de Vigo no puede cambiar.
     (Multiestetica y Doctoralia ya están).
 - **Alias delicados**: "Ártica" es palabra común (adjetivo) y "Luxury" es palabra inglesa
   común; por eso el alias lo fija `sdd-metricas`, no el implementador.
+- **Enmienda 2026-09-29 — a mirar**: (1) selección de marcas por pertenencia al lote y no
+  por ciudad: es el cambio de diseño que evita que las cadenas de Vigo del nivel Galicia
+  ensucien el lote de Vigo. (2) El lote entero sigue con ubicación Viveiro. (3) Competidoras
+  de contexto para `AG` (búsqueda del orquestador, 2026-09-29, **no verificadas**): capilar
+  — Clínica Novoa, Avance Capilar, Medical Hair, Hospital Capilar, Dr. Torres; párpados —
+  cirujanos de A Coruña y Vigo y Dorsia Lugo. Se verifican según CA-2 como las demás.
 - **Decisión a mirar**: la verificación de competidores vive en el ledger, no en una
   columna nueva de `brands.csv`, para no cambiar el formato del catálogo.

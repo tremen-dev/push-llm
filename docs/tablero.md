@@ -1,7 +1,7 @@
 <!-- GENERADO por tremen-sdd (scripts/tablero.mjs). NO EDITAR A MANO. -->
 # Tablero
 
-Actualizado: 2026-09-28
+Actualizado: 2026-09-29
 
 ## EPIC-001 — ciclo-0-baseline-y-validacion-del-problema (borrador)
 
@@ -18,9 +18,9 @@ Actualizado: 2026-09-28
 
 | Spec | Estado | Último cambio |
 |---|---|---|
-| SPEC-007 — baseline-antes-manual-de-clinica-artica-desde-el-movil | aprobada | 2026-09-28 (Alberto Fojo) |
-| SPEC-008 — catalogo-de-viveiro-y-a-marina-en-el-probe | aprobada | 2026-09-28 (Alberto Fojo) |
-| SPEC-009 — reunion-de-descubrimiento-y-propuesta-para-clinica-artica | aprobada | 2026-09-28 (Alberto Fojo) |
+| SPEC-007 — baseline-antes-manual-de-clinica-artica-desde-el-movil | borrador | 2026-09-29 (sdd-arquitecto) |
+| SPEC-008 — catalogo-de-viveiro-y-a-marina-en-el-probe | borrador | 2026-09-29 (sdd-arquitecto) |
+| SPEC-009 — reunion-de-descubrimiento-y-propuesta-para-clinica-artica | borrador | 2026-09-29 (sdd-arquitecto) |
 | SPEC-010 — instalacion-de-la-atribucion-del-piloto | borrador | 2026-09-28 (sdd-arquitecto) |
 | SPEC-011 — diagnostico-por-palancas-y-plan-de-acciones-de-clinica-artica | borrador | 2026-09-28 (sdd-arquitecto) |
 | SPEC-012 — ejecucion-medicion-semanal-y-cierre-del-piloto | borrador | 2026-09-28 (sdd-arquitecto) |
@@ -33,9 +33,10 @@ Actualizado: 2026-09-28
 | ADR-002 | aprobada | excepcion-a-rn-01-para-siglas-cortas-inequivocas | 2026-09-23 (Alberto Fojo) |
 | ADR-003 | aprobada | piloto-de-clinica-artica-en-viveiro-como-excepcion-acotada-a-d-2 | 2026-09-28 (Alberto Fojo) |
 | ADR-004 | aprobada | frontera-de-datos-de-adr-001-aplicada-al-piloto-de-clinica-artica | 2026-09-28 (Alberto Fojo) |
+| ADR-005 | borrador | catalogo-del-piloto-de-clinica-artica-en-tres-niveles-geograficos | 2026-09-29 (sdd-arquitecto) |
 
 ## Resumen
 
 - hecho: 2
-- aprobada: 4
-- borrador: 6
+- aprobada: 1
+- borrador: 9

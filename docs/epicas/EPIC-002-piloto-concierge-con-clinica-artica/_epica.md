@@ -49,6 +49,19 @@ Premisas del humano (2026-09-28):
 4. **Criterio Go del piloto (Ciclo 2)**, a unas 12 semanas del inicio de las
    acciones: **+15 puntos de SoV ponderado** sobre su set de prompts **y ≥ 1
    paciente atribuido** al canal IA.
+   **Alcance geográfico en tres niveles** (decidido por el humano el
+   2026-09-29), cada uno medido como indicador **separado**:
+   - **Núcleo** (Viveiro y A Mariña): es el criterio Go (+15 pts, estable en
+     las dos pasadas "después").
+   - **Área de influencia** (Ferrolterra, norte de Lugo, occidente de
+     Asturias): objetivo "de no aparecer a aparecer con cierta regularidad".
+     No es criterio Go.
+   - **Galicia**, solo para tratamientos por los que el paciente se desplaza
+     (trasplante capilar DHI, blefaroplastia): objetivo "aparecer alguna vez".
+     No es criterio Go y no se promete a la clínica. Ahí compiten cadenas con
+     varias sedes (Novoa, Avance Capilar, Medical Hair, Hospital Capilar,
+     Villoria…); dominar ese nivel es un objetivo de un año, no de un piloto
+     de 12 semanas.
 5. **Registro de acciones → efecto**: cada acción queda fechada y se anota
    semanalmente si movió alguna respuesta en algún asistente. Según
    `05-lean-plan.md`, este registro "es el producto futuro".
