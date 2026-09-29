@@ -324,7 +324,7 @@ Comprobado en clinicaartica.es el **2026-09-29** (HTTP 200; título y H1 de cada
 ## Instrucciones para el humano — pasada "antes" de calibración (CA-5)
 > **Obsoletas desde la enmienda 2026-09-29 (c) de SPEC-007 (sdd-arquitecto).** No empezar la
 > pasada con estas instrucciones: el reparto de las 49 consultas cambia (ChatGPT y Gemini:
-> `AV` → `AR` → `AM`; Google: solo `AR`) y hay dos ejecuciones del probe emparejadas. Tras la
+> `AR` → `AV` → `AM`; Google: solo `AR`) y hay dos ejecuciones del probe emparejadas. Tras la
 > re-aprobación, el implementador las reescribe (F-SPEC-007-11). Se conservan como historial.
 
 Vigentes desde el 2026-09-29 (enmienda (b), F-SPEC-007-8). 49 consultas: 60–90 min de
@@ -581,8 +581,8 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
      entradilla: la manual calibra `AV` y `AM` en ChatGPT y Gemini y `AR` en ChatGPT, Gemini
      y Google; `AG` solo lo mide el probe. `test_baseline_prompts.py` sigue comprobando `AV`
      y el set congelado sin cambios.
-  3. **Protocolo** `protocolo-captura.md`: orden por app y bloque de CA-3 (c) — ChatGPT `AV`
-     (15) → `AR` (5) → `AM` (2); Gemini igual; Google solo `AR` (5), nunca `AV`/`AM`/`AG`;
+  3. **Protocolo** `protocolo-captura.md`: orden por app y bloque de CA-3 (c) — ChatGPT `AR`
+     (5) → `AV` (15) → `AM` (2) (orden decidido en el gate); Gemini igual; Google solo `AR` (5), nunca `AV`/`AM`/`AG`;
      corte entre apps; las dos ventanas (CA-2 o, q) y las dos ejecuciones emparejadas; la
      limitación de ubicación reescrita para `AR` (preguntas formuladas desde Ferrolterra,
      Lugo o Asturias, hechas desde Vilaboa); qué capturar en Google para `AR`; ≤ 2 páginas;
@@ -622,7 +622,9 @@ Todas respondidas el 2026-09-29 — **decidido por el humano (Alberto Fojo)**:
 - **F-SPEC-007-12** (→ sdd-arquitecto, tras fusionar la PR #5): notas sin re-aprobación en
   **SPEC-009** (la frase "ya sois la clínica que la IA recomienda en A Mariña" se apoya en el
   veredicto `AV` de SPEC-007 CA-7 y la del objetivo en el veredicto `AR`; un "no" en un
-  nivel revisa solo su frase), **SPEC-012** CA-3 (3) (la calibración "después" es la de
+  nivel revisa solo su frase; un veredicto `AR` débil, "sin discrepancia gruesa", basta
+  para contar el objetivo sin garantía, como objetivo y no como dato: decisión del humano
+  en el gate del 2026-09-29), **SPEC-012** CA-3 (3) (la calibración "después" es la de
   SPEC-007 CA-3 (c): 49 consultas por nivel; AI Overviews solo en `AR`; dos veredictos en el
   cierre) y **SPEC-011** (ya no hay capturas de AI Overviews del núcleo; sí de `AR`). No se
   editan en esta rama para no chocar con la PR #5, que ya enmienda esas specs.

@@ -296,8 +296,10 @@ núcleo. Mismo esfuerzo: 49 consultas por pasada.
   **Calibración por nivel (enmienda 2026-09-29 (c); sustituye en lo que choque al párrafo
   anterior)**: el protocolo mide `AR01`–`AR05` en ChatGPT, Gemini y Google, `AV01`–`AV15` en
   ChatGPT y Gemini y `AM01`–`AM02` en ChatGPT y Gemini: **49 consultas**. **Orden fijo por
-  app y bloque**, igual en las dos pasadas: (1) **ChatGPT**: bloque `AV` (15), bloque `AR`
-  (5), bloque `AM` (2) = 22; (2) **Gemini**: `AV` (15), `AR` (5), `AM` (2) = 22; (3)
+  app y bloque**, igual en las dos pasadas (**`AR` primero**, decisión del humano en el gate
+  del 2026-09-29: lo que decide el Go se pregunta con la atención fresca): (1) **ChatGPT**:
+  bloque `AR` (5), bloque `AV` (15), bloque `AM` (2) = 22; (2) **Gemini**: `AR` (5), `AV`
+  (15), `AM` (2) = 22; (3)
   **Google**: solo `AR` (5). Dentro de cada bloque, en el orden del set. En Google **no** se
   pregunta ninguna `AV` ni `AM`; `AG` no se pregunta en ninguna app. Cada pasada se hace
   dentro de las ventanas del dictamen respecto a **las dos** ejecuciones del probe con que se
@@ -471,7 +473,8 @@ núcleo. Mismo esfuerzo: 49 consultas por pasada.
 
 ## Notas para el gate humano
 - **Enmienda 2026-09-29 (c) — qué cambia para ti**: las mismas **49 consultas**, en otro
-  reparto: ChatGPT 22 (15 `AV` + 5 `AR` + 2 `AM`), Gemini 22 (igual), Google 5 (solo `AR`).
+  reparto y en este orden: ChatGPT 22 (5 `AR` → 15 `AV` → 2 `AM`), Gemini 22 (igual), Google
+  5 (solo `AR`).
   Mismo tiempo. El informe da **dos veredictos separados** ("coinciden en `AV`" y
   "coinciden en `AR`"), nunca uno combinado.
 - **Decisiones a mirar con lupa (enmienda (c))**:
@@ -491,6 +494,11 @@ núcleo. Mismo esfuerzo: 49 consultas por pasada.
      se revisa la frase del objetivo, y tú decides si (C) sigue tal cual o con salvedad.
   5. **ADR-009 y la enmienda (d) de SPEC-009 aún no están en esta rama** (PR #5). Esta
      enmienda los cita; conviene fusionar la PR #5 antes que la #6.
+  6. **Decidido en el gate (humano, Alberto Fojo, 2026-09-29)**: (i) orden **`AR` primero**
+     en cada app (CA-3); (ii) si el veredicto de `AR` sale débil ("sin discrepancia
+     gruesa", CA-2 p), **basta para contar el objetivo en la propuesta de SPEC-009, sin
+     garantía**: el objetivo se cuenta como objetivo, no como dato; (iii) qué ejecución `AR`
+     del probe se empareja (CA-12 o filas `AR` de CA-7) lo decide el dictamen (CA-2 o).
 - **Enmienda 2026-09-29 (b) — qué cambia para ti**: una pasada "antes" de **49 consultas**
   (15 `AV` × ChatGPT, Gemini y Google + 2 `AM` × ChatGPT y Gemini): unos **60–90 min** de
   consultas más 20–25 min de CSV y capturas; y otra igual al cierre (SPEC-012). Antes eran
