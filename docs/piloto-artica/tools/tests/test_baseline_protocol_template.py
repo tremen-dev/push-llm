@@ -100,28 +100,50 @@ def test_protocol_no_longer_asks_for_viveiro_as_measurement_place(protocol):
 
 
 @pytest.mark.parametrize("snippet", [
-    # amendment 2026-09-29 (b): the manual pass is a calibration of the probe
+    # amendment 2026-09-29 (b), kept by (c): one calibration pass before, one after
     "49 consultas", "60–90 min", "20–25 min",
     "`antes`", "`despues`",
-    "primero el bloque av y después las am",        # chatgpt and gemini
-    "google solo el bloque av",
-    "baseline oficial del probe", "7 días",          # CA-2 (k5): pairing and window
     "el corte cae entre apps",                       # 2-day split rule (CA-5)
     "mismas en las dos pasadas",
+    # amendment (c): order by app and block, AR first (human decision at the gate)
+    "primero el bloque ar, después el av y por último las am (22 consultas)",
+    "lo mismo en gemini (22)",
+    "en google solo el bloque ar (5; nunca av, am ni ag)",
+    # two paired executions of the probe, each with its 7-day window (CA-2 o, q)
+    "baseline oficial del probe", "spec-008 ca-12", "las dos ejecuciones", "7 días",
+    # location limitation rewritten for AR
+    "ferrolterra", "asturias", "pesa más",
 ])
 def test_protocol_calibration_covers(protocol, snippet):
     assert snippet in _flat(protocol)
 
 
-def test_protocol_calibration_asks_no_ar_or_ag(protocol):
-    """CA-3 evidence: AR/AG do not appear in the question order of the protocol."""
-    order = protocol.split("## Cómo preguntar", 1)[1].split("\n## ", 1)[0]
-    assert not re.search(r"\bA[RG]\b|\bA[RG]\d\d\b", order)
+def _order_section(protocol: str) -> str:
+    return protocol.split("## Cómo preguntar", 1)[1].split("\n## ", 1)[0]
+
+
+def test_protocol_order_names_the_three_blocks_and_no_ag(protocol):
+    """CA-3 (c) evidence: AR, AV and AM in the question order; AG never asked by hand."""
+    order = _order_section(protocol)
+    for block in ("AR", "AV", "AM"):
+        assert re.search(rf"\b{block}\b", order), block
+    assert "nunca AV, AM ni AG" in order
+    assert len(re.findall(r"\bAG\b", order)) == 1
+
+
+def test_protocol_first_block_is_ar(protocol):
+    order = _flat(_order_section(protocol))
+    assert order.index("bloque ar") < order.index("el av") < order.index("las am")
+
+
+def test_protocol_field_lists_the_three_levels(protocol):
+    assert "`AR01`…`AR05`, `AV01`…`AV15`, `AM01`, `AM02`" in protocol
 
 
 def test_protocol_calibration_has_no_second_before_pass(protocol):
     flat = _flat(protocol)
     assert "pasada 2" not in flat and "`p1`" not in flat and "76 consultas" not in flat
+    assert "google solo el bloque av" not in flat and "(17 consultas)" not in flat
 
 
 # ------------------------------------------------------------ calibration order and prefill
@@ -135,14 +157,37 @@ def test_calibration_order_has_49_queries(order):
     assert len(order) == bd.CALIBRATION_QUERIES == 49
 
 
+AR = [f"AR{i:02d}" for i in range(1, 6)]
+AV = [f"AV{i:02d}" for i in range(1, 16)]
+
+
 def test_calibration_order_blocks(order):
+    """CA-3 (amendment (c)): ChatGPT AR -> AV -> AM (22), Gemini the same (22), Google AR
+    only (5); AR first in every app (human decision at the gate)."""
     ids = lambda app: [q["id"] for q in order if q["app"] == app]  # noqa: E731
-    av = [f"AV{i:02d}" for i in range(1, 16)]
-    assert ids("chatgpt") == av + ["AM01", "AM02"]
-    assert ids("gemini") == av + ["AM01", "AM02"]
-    assert ids("google") == av
-    assert [q["app"] for q in order][::17][:2] == ["chatgpt", "gemini"]
-    assert order[-1]["app"] == "google"
+    assert ids("chatgpt") == AR + AV + ["AM01", "AM02"]
+    assert ids("gemini") == AR + AV + ["AM01", "AM02"]
+    assert ids("google") == AR
+    assert [q["app"] for q in order] == ["chatgpt"] * 22 + ["gemini"] * 22 + ["google"] * 5
+
+
+def test_calibration_order_has_no_ag_and_no_google_av_or_am(order):
+    assert not [q for q in order if q["id"].startswith("AG")]
+    assert not [q for q in order if q["app"] == "google" and q["id"][:2] in {"AV", "AM"}]
+
+
+def test_calibration_order_uses_the_frozen_texts(order):
+    doc = bd.parse_prompts_doc((PILOT_DIR / "prompts-baseline.md").read_text(encoding="utf-8"))
+    texts = {q["id"]: q["text"] for q in doc["measurement"] + doc["regional"] + doc["brand"]}
+    assert all(q["text"] == texts[q["id"]] for q in order)
+
+
+def test_expected_layout_matches_the_order(order):
+    layout = {}
+    for q in order:
+        layout.setdefault((q["app"], q["id"][:2]), []).append(q["id"])
+    assert layout == {k: list(v) for k, v in bd.EXPECTED_LAYOUT.items()}
+    assert sum(len(v) for v in bd.EXPECTED_LAYOUT.values()) == 49
 
 
 def test_prefill_rows_follow_the_template(order):
@@ -153,6 +198,8 @@ def test_prefill_rows_follow_the_template(order):
     assert {r["resumen_ia"] for r in rows if r["app"] != "google"} == {"n-a"}
     assert {r["resumen_ia"] for r in rows if r["app"] == "google"} == {""}
     assert next(r for r in rows if r["id_pregunta"] == "AV14")["idioma"] == "gl"
+    assert next(r for r in rows if r["id_pregunta"] == "AR01")["idioma"] == "gl"
+    assert [r["id_pregunta"] for r in rows][:6] == AR + ["AV01"]
 
 
 def test_prefill_rejects_unknown_pass(order):
@@ -162,9 +209,14 @@ def test_prefill_rejects_unknown_pass(order):
 
 def test_questions_in_order_text(order):
     text = bd.questions_in_order(order)
-    assert text.count("\nAV01  ") == 3 and text.count("\nAM01  ") == 2
-    assert "AR01" not in text and "AG01" not in text
+    assert text.count("\nAR01  ") == 3 and text.count("\nAV01  ") == 2
+    assert text.count("\nAM01  ") == 2 and "AG01" not in text
     assert "49 consultas" in text
+    google = text.split("==== Google", 1)[1]
+    assert "AR05  " in google and "AV01" not in google and "AM01" not in google
+    chatgpt = text.split("==== ChatGPT", 1)[1].split("==== Gemini", 1)[0]
+    assert chatgpt.index("AR01") < chatgpt.index("AV01") < chatgpt.index("AM01")
+    assert "22 preguntas" in chatgpt
 
 
 def test_prefill_cli_writes_the_three_private_files(tmp_path):
@@ -174,4 +226,5 @@ def test_prefill_cli_writes_the_three_private_files(tmp_path):
         assert (tmp_path / name).exists(), name
     lines = (tmp_path / "captura-despues-prerrellenada.csv").read_text(
         encoding="utf-8-sig").splitlines()
-    assert len(lines) == 50 and ",despues,AV01,chatgpt," in lines[1]
+    assert len(lines) == 50 and ",despues,AR01,chatgpt," in lines[1]
+    assert lines[-1].split(",")[2:4] == ["AR05", "google"]
