@@ -1,9 +1,19 @@
 # Set de preguntas del baseline — piloto Clínica Ártica (SPEC-007 CA-1)
 
 > Preguntas de paciente para medir, desde el móvil, qué recomiendan ChatGPT, Gemini y el
-> resumen de IA de Google sobre medicina estética en Viveiro, A Mariña y Lugo.
+> resumen de IA de Google sobre medicina estética, en **tres niveles geográficos**
+> (ADR-005), cada uno medido e informado por separado:
+>
+> - **Núcleo `AV`** — Viveiro y A Mariña (más las preguntas del set que nombran también
+>   Lugo o Galicia junto a ellas). **Es el único nivel que cuenta para el criterio Go.**
+> - **Área de influencia `AR`** — pacientes de fuera de la comarca: Ferrolterra, norte de
+>   Lugo fuera de A Mariña (Vilalba), interior de Lugo (Sarria y A Fonsagrada, al sur y al
+>   este, no al norte) y occidente de Asturias. Indicador aparte.
+> - **Galicia `AG`** — solo tratamientos por los que el paciente se desplaza (trasplante
+>   capilar DHI y blefaroplastia), sin nombrar ciudad. Indicador aparte, sin objetivo.
+>
 > Se preguntan **con el texto literal**, una por conversación nueva y **en este orden**
-> (ver `protocolo-captura.md`). Los ids `AV` se reutilizan en el probe (SPEC-008 CA-1).
+> (ver `protocolo-captura.md`). Los ids se reutilizan en el probe (SPEC-008 CA-1).
 >
 > - **Línea**: `facial`, `corporal`, `capilar` (incluye trasplante DHI),
 >   `cirugia_facial` (cirugía menor facial) o `general` (medicina estética sin tratamiento
@@ -12,15 +22,16 @@
 >   urgent, trust, specific).
 > - **Ámbito**: lugar que nombra la pregunta. Ninguna depende de "cerca de mí": todas
 >   nombran un lugar, para que la ubicación del móvil pese lo menos posible.
-> - Ninguna pregunta `AV` nombra a la clínica ni a un competidor.
+> - Ninguna pregunta de medición nombra a la clínica ni a un competidor.
 
 ## Estado del set
 
-- Publicado: 2026-09-29.
-- **Congelación** (SPEC-007 CA-8): el set `AV` queda congelado en la fecha de inicio de la
-  pasada 1, que se anota en el ledger de SPEC-007. Desde ese momento no se cambia ni una
-  coma; una pregunta nueva lleva un id nuevo, se informa aparte y no cuenta para el
-  criterio Go.
+- Publicado: 2026-09-29 (`AV`, `AM`); niveles `AR` y `AG` añadidos el 2026-09-29 tras la
+  enmienda de SPEC-007 (ADR-005). `AV01`–`AV15` no cambian.
+- **Congelación** (SPEC-007 CA-8): los tres niveles (`AV`, `AR`, `AG`) quedan congelados en
+  la fecha de inicio de la pasada 1, que se anota en el ledger de SPEC-007. Desde ese
+  momento no se cambia ni una coma; una pregunta nueva lleva un id nuevo, se informa aparte
+  y no cuenta para el criterio Go. `AR` y `AG` nunca cuentan para el criterio Go.
 
 ## Preguntas de medición (cuentan para el SoV)
 
@@ -43,6 +54,35 @@
 | AV15 | Onde me podo facer un transplante capilar preto de Viveiro? | capilar | discovery | Viveiro | gl |
 
 Cobertura: 15 preguntas; líneas facial 3, corporal 2, capilar 4, cirugia_facial 1, general 5; intents discovery 5, price 3, comparison 2, trust 1, specific 4; 9 nombran Viveiro, 4 nombran A Mariña, Burela, Foz o Ribadeo, 4 nombran Lugo; 2 en gallego.
+
+## Área de influencia — AR (indicador aparte, no cuenta para el criterio Go)
+
+Pacientes de fuera de la comarca, preguntando desde su lugar y abiertos a desplazarse.
+Mondoñedo no está aquí: es A Mariña (núcleo), y el núcleo no se toca.
+
+| id | pregunta | línea | intent | ámbito | idioma |
+|---|---|---|---|---|---|
+| AR01 | Vivo en Ferrol. Que clínica de medicina estética con médicos me recomendas pola zona, aínda que teña que desprazarme un pouco? | general | discovery | Ferrol (Ferrolterra) | gl |
+| AR02 | Vivo entre Narón y Ortigueira. ¿Dónde me pongo bótox con un médico de confianza por la zona, aunque tenga que desplazarme un poco? | facial | specific | Narón; Ortigueira (Ferrolterra) | es |
+| AR03 | Vivo en Vilalba. ¿Qué clínica con médicos titulados y buenas opiniones me recomiendas para ponerme ácido hialurónico, aunque tenga que desplazarme? | facial | trust | Vilalba (Terra Chá, norte de Lugo) | es |
+| AR04 | Vivo entre Sarria y A Fonsagrada. ¿Cuánto cuesta un injerto capilar y qué clínica me recomiendas, aunque tenga que desplazarme? | capilar | price | Sarria; A Fonsagrada (interior de Lugo) | es |
+| AR05 | Vivo en Tapia de Casariego (Asturias). ¿Qué clínica de medicina estética me recomiendas cerca, aunque tenga que desplazarme un poco? | general | discovery | Tapia de Casariego (occidente de Asturias) | es |
+
+Cobertura AR: 5 preguntas; 2 nombran Ferrolterra, 1 el norte de Lugo fuera de A Mariña, 1 el interior de Lugo, 1 el occidente de Asturias; 0 nombran Viveiro o A Mariña; 5 desde el lugar del paciente con apertura a desplazarse; líneas capilar, facial, general; intents discovery, price, specific, trust; 1 en gallego.
+
+## Galicia — AG (indicador aparte, no cuenta para el criterio Go)
+
+Solo tratamientos que la clínica ofrece según su web (URL y fecha en el ledger) y por los
+que el paciente se desplaza. Sin ciudad ni comarca. No es un objetivo ni una promesa.
+
+| id | pregunta | línea | intent | ámbito | idioma |
+|---|---|---|---|---|---|
+| AG01 | ¿Cuál es la mejor clínica de Galicia para hacerme un injerto capilar con técnica DHI? | capilar | discovery | Galicia | es |
+| AG02 | ¿Cuánto cuesta un trasplante capilar con técnica DHI en Galicia y dónde me recomiendas hacerlo? | capilar | price | Galicia | es |
+| AG03 | ¿Dónde me recomiendas operarme los párpados superiores caídos (blefaroplastia) en Galicia? | cirugia_facial | discovery | Galicia | es |
+| AG04 | Cal é a mellor clínica de Galicia para operarme as pálpebras superiores caídas (blefaroplastia)? | cirugia_facial | discovery | Galicia | gl |
+
+Cobertura AG: 4 preguntas; líneas capilar 2, cirugia_facial 2; intents discovery 3, price 1; 1 en gallego; ninguna nombra ciudad ni comarca.
 
 ## Preguntas de marca (no cuentan para el SoV)
 

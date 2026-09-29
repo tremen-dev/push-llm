@@ -28,9 +28,31 @@ from matching import norm  # noqa: E402  (RN-01 normalisation, single definition
 LINES = ("facial", "corporal", "capilar", "cirugia_facial", "general")
 INTENTS = ("discovery", "price", "comparison", "urgent", "trust", "specific")
 MARIÑA_PLACES = ("mariña", "burela", "foz", "ribadeo")
-KNOWN_PLACES = ("viveiro", "lugo", "galicia", "coruña", "ferrol", "cervo", "xove",
-                "ourol", "o vicedo") + MARIÑA_PLACES
+# ADR-005 geography of the three levels (municipalities as they appear in patient questions).
+MARIÑA_MUNICIPALITIES = ("mariña", "viveiro", "o vicedo", "vicedo", "xove", "cervo",
+                         "burela", "foz", "alfoz", "barreiros", "ribadeo", "trabada",
+                         "lourenza", "mondoñedo", "o valadouro", "valadouro", "a pontenova",
+                         "pontenova", "ourol")
+FERROLTERRA = ("ferrol", "ferrolterra", "naron", "neda", "fene", "mugardos", "ares",
+               "cabanas", "pontedeume", "as pontes", "cedeira", "valdoviño",
+               "san sadurniño", "moeche", "as somozas", "ortigueira", "cariño", "mañon",
+               "cerdido", "monfero", "a capela")
+NORTH_LUGO_OUTSIDE_MARIÑA = ("vilalba", "terra cha", "abadin", "muras", "xermade",
+                             "guitiriz", "begonte", "cospeito", "castro de rei",
+                             "a pastoriza", "meira", "riotorto", "outeiro de rei")
+INTERIOR_LUGO = ("sarria", "a fonsagrada", "fonsagrada", "becerrea", "navia de suarna",
+                 "baleira", "monforte", "chantada", "o incio")
+WEST_ASTURIAS = ("asturias", "navia", "tapia de casariego", "vegadeo", "castropol",
+                 "el franco", "coaña", "luarca", "valdes", "boal", "taramundi",
+                 "san tirso de abres")
+CITIES_AND_COMARCAS = ("vigo", "santiago", "coruña", "pontevedra", "ourense", "lugo",
+                       "vilagarcia") + MARIÑA_MUNICIPALITIES + FERROLTERRA     + NORTH_LUGO_OUTSIDE_MARIÑA + INTERIOR_LUGO + WEST_ASTURIAS
+KNOWN_PLACES = ("lugo", "galicia", "coruña") + MARIÑA_MUNICIPALITIES + FERROLTERRA     + NORTH_LUGO_OUTSIDE_MARIÑA + INTERIOR_LUGO + WEST_ASTURIAS
+OPENNESS_RE = re.compile(r"\b(vivo en|vivo entre|cerca de|por la zona|pola zona|preto de|"
+                         r"aunque tenga que desplazarme|ainda que tena que desprazarme)\b")
 MEASUREMENT_HEADING = "Preguntas de medición (cuentan para el SoV)"
+REGIONAL_HEADING = "Área de influencia — AR (indicador aparte, no cuenta para el criterio Go)"
+GALICIA_HEADING = "Galicia — AG (indicador aparte, no cuenta para el criterio Go)"
 BRAND_HEADING = "Preguntas de marca (no cuentan para el SoV)"
 
 # CA-3: mandatory fields per row, in template order (plantilla-captura.csv).
@@ -69,16 +91,27 @@ def _section(md: str, heading: str) -> str:
     return m.group(1) if m else ""
 
 
+def _questions(md: str, heading: str) -> list[dict]:
+    return [{"id": c[0], "text": c[1], "line": c[2], "intent": c[3], "scope": c[4],
+             "language": c[5]}
+            for c in _table_rows(_section(md, heading)) if len(c) >= 6]
+
+
+def _has_heading(md: str, heading: str) -> str | None:
+    return heading if re.search(rf"^##\s+{re.escape(heading)}\s*$", md, re.M) else None
+
+
 def parse_prompts_doc(md: str) -> dict:
-    measurement = [
-        {"id": c[0], "text": c[1], "line": c[2], "intent": c[3], "scope": c[4], "language": c[5]}
-        for c in _table_rows(_section(md, MEASUREMENT_HEADING)) if len(c) >= 6
-    ]
+    measurement = _questions(md, MEASUREMENT_HEADING)
     brand = [{"id": c[0], "text": c[1], "language": c[2]}
              for c in _table_rows(_section(md, BRAND_HEADING)) if len(c) >= 3]
     brand_heading = BRAND_HEADING if re.search(
         rf"^##\s+{re.escape(BRAND_HEADING)}\s*$", md, re.M) else None
-    return {"measurement": measurement, "brand": brand, "brand_heading": brand_heading}
+    return {"measurement": measurement, "brand": brand, "brand_heading": brand_heading,
+            "regional": _questions(md, REGIONAL_HEADING),
+            "regional_heading": _has_heading(md, REGIONAL_HEADING),
+            "galicia": _questions(md, GALICIA_HEADING),
+            "galicia_heading": _has_heading(md, GALICIA_HEADING)}
 
 
 def _has_word(text: str, word: str) -> bool:
@@ -87,6 +120,44 @@ def _has_word(text: str, word: str) -> bool:
 
 def names_a_place(text: str) -> bool:
     return any(_has_word(text, p) for p in KNOWN_PLACES)
+
+
+def names_any(text: str, places) -> bool:
+    return any(_has_word(text, p) for p in places)
+
+
+def coverage_regional(questions: list[dict]) -> dict:
+    return {
+        "total": len(questions),
+        "ferrolterra": sum(names_any(q["text"], FERROLTERRA) for q in questions),
+        "north_lugo": sum(names_any(q["text"], NORTH_LUGO_OUTSIDE_MARIÑA) for q in questions),
+        "interior_lugo": sum(names_any(q["text"], INTERIOR_LUGO) for q in questions),
+        "west_asturias": sum(names_any(q["text"], WEST_ASTURIAS) for q in questions),
+        "mariña_or_viveiro": sum(names_any(q["text"], MARIÑA_MUNICIPALITIES) for q in questions),
+        "openness": sum(bool(OPENNESS_RE.search(norm(q["text"]))) for q in questions),
+        "lines": sorted({q["line"] for q in questions}),
+        "intents": sorted({q["intent"] for q in questions}),
+        "gl": sum(q["language"] == "gl" for q in questions),
+    }
+
+
+def render_coverage_regional(cov: dict) -> str:
+    return (f"Cobertura AR: {cov['total']} preguntas; {cov['ferrolterra']} nombran Ferrolterra, "
+            f"{cov['north_lugo']} el norte de Lugo fuera de A Mariña, {cov['interior_lugo']} el "
+            f"interior de Lugo, {cov['west_asturias']} el occidente de Asturias; "
+            f"{cov['mariña_or_viveiro']} nombran Viveiro o A Mariña; {cov['openness']} desde el "
+            f"lugar del paciente con apertura a desplazarse; líneas {', '.join(cov['lines'])}; "
+            f"intents {', '.join(cov['intents'])}; {cov['gl']} en gallego.")
+
+
+def render_coverage_galicia(questions: list[dict]) -> str:
+    lines = Counter(q["line"] for q in questions)
+    intents = Counter(q["intent"] for q in questions)
+    return (f"Cobertura AG: {len(questions)} preguntas; líneas "
+            + ", ".join(f"{k} {lines[k]}" for k in sorted(lines))
+            + "; intents " + ", ".join(f"{k} {intents[k]}" for k in sorted(intents))
+            + f"; {sum(q['language'] == 'gl' for q in questions)} en gallego; ninguna nombra "
+            "ciudad ni comarca.")
 
 
 def coverage(questions: list[dict]) -> dict:

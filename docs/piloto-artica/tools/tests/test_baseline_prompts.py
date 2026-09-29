@@ -82,3 +82,93 @@ def test_coverage_counts_places_on_text_not_scope():
            "scope": "x", "language": "es"}]
     cov = bd.coverage(qs)
     assert cov["mariña"] == 1 and cov["lugo"] == 1 and cov["viveiro"] == 0
+
+
+# ------------------------------------------------ amendment 2026-09-29: three levels (ADR-005)
+FROZEN_AV = PILOT_DIR / "tools" / "tests" / "av-2026-09-29.tsv"
+OPENNESS_RE = r"\b(vivo en|vivo entre|cerca de|por la zona|pola zona|preto de|aunque tenga que desplazarme|ainda que tena que desprazarme)\b"
+
+
+def test_core_av_identical_to_published_version(doc):
+    frozen = [tuple(line.rstrip("\n").split("\t", 1))
+              for line in FROZEN_AV.read_text(encoding="utf-8").splitlines()
+              if line and not line.startswith("#")]
+    assert [(q["id"], q["text"]) for q in doc["measurement"]] == frozen
+
+
+def test_three_measurement_sections_with_total_limit(doc):
+    assert doc["regional_heading"] == bd.REGIONAL_HEADING
+    assert doc["galicia_heading"] == bd.GALICIA_HEADING
+    total = len(doc["measurement"]) + len(doc["regional"]) + len(doc["galicia"])
+    assert total <= 24
+
+
+def test_ids_unique_and_prefixed_by_level(doc):
+    ids = [q["id"] for sec in ("measurement", "regional", "galicia", "brand") for q in doc[sec]]
+    assert len(ids) == len(set(ids))
+    assert [q["id"] for q in doc["regional"]] == [f"AR{i:02d}" for i in range(1, len(doc["regional"]) + 1)]
+    assert [q["id"] for q in doc["galicia"]] == [f"AG{i:02d}" for i in range(1, len(doc["galicia"]) + 1)]
+
+
+def test_no_repeated_question_text(doc):
+    texts = [bd.norm(q["text"]) for sec in ("measurement", "regional", "galicia", "brand")
+             for q in doc[sec]]
+    assert len(texts) == len(set(texts))
+
+
+def test_regional_level_conditions(doc):
+    ar = doc["regional"]
+    assert 4 <= len(ar) <= 5
+    cov = bd.coverage_regional(ar)
+    assert cov["ferrolterra"] >= 1
+    assert cov["north_lugo"] >= 1
+    assert cov["west_asturias"] >= 1
+    assert cov["mariña_or_viveiro"] == 0
+    assert cov["openness"] >= 3
+    assert len({q["line"] for q in ar}) >= 2
+    assert len({q["intent"] for q in ar}) >= 2
+    assert cov["gl"] >= 1
+    for q in ar:
+        assert q["line"] in bd.LINES and q["intent"] in bd.INTENTS and q["language"] in {"es", "gl"}
+        if bd.names_any(q["text"], bd.WEST_ASTURIAS):
+            assert q["language"] == "es", q
+
+
+def test_regional_openness_regex_matches_definition(doc):
+    n = sum(bool(re.search(OPENNESS_RE, bd.norm(q["text"]))) for q in doc["regional"])
+    assert n == bd.coverage_regional(doc["regional"])["openness"]
+
+
+def test_galicia_level_conditions(doc):
+    ag = doc["galicia"]
+    assert 3 <= len(ag) <= 4
+    assert {q["line"] for q in ag} == {"capilar", "cirugia_facial"}
+    assert any(q["intent"] in {"price", "comparison"} for q in ag)
+    assert any(q["language"] == "gl" for q in ag)
+    for q in ag:
+        assert q["scope"] == "Galicia", q
+        assert bd.names_any(q["text"], ["galicia"]), q
+        assert not bd.names_any(q["text"], bd.CITIES_AND_COMARCAS), q
+
+
+def test_level_coverage_lines_match_tables(doc):
+    flat = PROMPTS_MD.read_text(encoding="utf-8").replace("\n", " ")
+    assert bd.render_coverage_regional(bd.coverage_regional(doc["regional"])) in flat
+    assert bd.render_coverage_galicia(doc["galicia"]) in flat
+
+
+@pytest.mark.parametrize("name", FORBIDDEN_IN_AV)
+def test_no_clinic_or_competitor_in_regional_and_galicia(doc, name):
+    for q in doc["regional"] + doc["galicia"]:
+        assert not re.search(rf"\b{re.escape(bd.norm(name))}\b", bd.norm(q["text"])), q
+
+
+def test_every_level_question_names_a_place(doc):
+    for q in doc["regional"] + doc["galicia"]:
+        t = bd.norm(q["text"])
+        assert not re.search(r"\b(cerca de mi|preto de min|mi zona|aqui cerca)\b", t), q
+        assert bd.names_a_place(q["text"]), q
+
+
+def test_mondonedo_is_a_mariña_so_never_regional():
+    assert bd.names_any("Vivo en Mondoñedo", bd.MARIÑA_MUNICIPALITIES)
