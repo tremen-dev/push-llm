@@ -1,9 +1,11 @@
 ---
 id: ADR-007
 tipo: adr
-estado: borrador
+estado: aprobada
 historial:
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
+aprobada-por: Alberto Fojo
 ---
 # ADR-007: Plantilla .env.example versionada como única excepción a la regla de ADR-006
 
