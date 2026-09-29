@@ -202,15 +202,16 @@ Contraste: con el típico, las 132 preguntas × ejecución del lote Vigo (396 ll
 **Orden**: el humo puede lanzarse ya; el **baseline va después de la pasada 1 manual de
 SPEC-007** (su inicio congela el set, SPEC-007 CA-8) y **antes de la primera acción del
 piloto** (SPEC-012). `PUSHLLM_PRIVADO` ya es variable de usuario: no se fija aquí. Sin
-activar el venv: se llama a `.\.venv\Scripts\python` directamente. En PowerShell, desde
-`probe/` (venv instalado según `probe/README.md`, "Install"):
+activar el venv: se llama a `.\.venv\Scripts\python` directamente. **Claves** (ADR-006,
+ADR-007; F-SPEC-002-2, actualizado el 2026-09-29): en el `.env` de la raíz del repo (copia
+de `.env.example` con los valores rellenos); el probe lo carga solo, sin
+`Read-Host` ni fragmentos de PowerShell, nunca pisa una variable ya definida en la sesión
+y nunca escribe los valores. En PowerShell, desde la raíz del repo (el `cd probe` entra en
+`probe\`; venv instalado según `probe/README.md`, "Install"):
 
 ```powershell
 cd probe
 if (-not $env:PUSHLLM_PRIVADO) { throw "PUSHLLM_PRIVADO no está definida" }
-$env:ANTHROPIC_API_KEY = Read-Host "Anthropic key"
-$env:OPENAI_API_KEY    = Read-Host "OpenAI key"
-$env:GEMINI_API_KEY    = Read-Host "Gemini key"
 
 # 0) Comprobación offline (sin claves ni red): todo en verde
 .\.venv\Scripts\python -m pytest -q tests
