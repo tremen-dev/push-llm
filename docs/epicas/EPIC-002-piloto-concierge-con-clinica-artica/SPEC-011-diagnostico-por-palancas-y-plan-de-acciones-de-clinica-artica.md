@@ -9,14 +9,20 @@ historial:
 ---
 # SPEC-011 — Diagnóstico por palancas y plan de acciones de Clínica Ártica
 
-> **Nota 2026-09-29 (c) (sdd-arquitecto): URLs consultadas de Claude (SPEC-013, B1).** Claude
-> consulta URLs pero no las cita. El probe las guarda en una columna nueva,
-> `searched_urls`, y `cited_urls` sigue siendo solo "citadas". Decisión del humano: en el
-> análisis de fuentes, Claude cuenta como **"consultadas", no como "citadas"**. Propuesta
-> pendiente del dictamen de sdd-metricas (SPEC-013 CA-7): el peso de citación de CA-1
-> (§4, RN-04) y el orden de RN-08 se calculan solo con `cited_urls`, y las consultadas
-> de Claude aparecen como indicador aparte por fuente, sin peso en el ranking.
-> `searched_urls` está vacía en OpenAI y Gemini ("no medido"). CA-1 se ajustará en la
+> **Nota 2026-09-29 (c) (sdd-arquitecto): URLs consultadas y citadas (SPEC-013).** El probe
+> guarda, en los tres proveedores, `searched_urls` (consultadas) y `cited_urls` (solo
+> citadas).
+> - Claude hoy consulta pero no cita.
+> - En Gemini, `cited_urls` pasa a ser solo los chunks referenciados por
+>   `grounding_supports`. En los `results.csv` anteriores a SPEC-013 eran todos los chunks.
+> - Las URLs de Gemini siguen siendo redirecciones `vertexaisearch` (F-SPEC-001-2).
+>
+> Decisión del humano: en el análisis de fuentes se distingue "consultadas" de "citadas",
+> igual para todos los proveedores. Propuesta pendiente del dictamen de sdd-metricas
+> (SPEC-013 CA-7): el peso de citación de CA-1 (§4, RN-04) y el orden de RN-08 se calculan
+> solo con `cited_urls`, y un indicador "consultada por" por fuente, con los tres
+> proveedores, aparece aparte, sin peso en el ranking. Esto último es propuesta para esta
+> spec y sdd-producto; no se crea ninguna métrica en SPEC-013. CA-1 se ajustará en la
 > revisión completa de esta spec, con el dictamen. Sigue en `borrador`.
 
 > **Nota 2026-09-29 (b) (sdd-arquitecto) — nuevo instrumento.** El probe es ya el

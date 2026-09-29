@@ -13,6 +13,26 @@ historial:
 ---
 # SPEC-013 — Respuesta cruda del proveedor y citas de Claude en el probe
 
+> **Enmienda 2026-09-29 (c) (sdd-arquitecto): `searched_urls` en los tres proveedores.**
+> En el gate de la enmienda (b), el humano (Alberto Fojo, 2026-09-29) no la aprobó y pidió
+> que `searched_urls` se rellene también en OpenAI y Gemini, "para ser honestos con el
+> cliente": datos comparables entre asistentes y un informe que explique igual para todos
+> la diferencia entre "consultadas" y "citadas". Cambian:
+> - **CA-3**: Claude se queda como en (b). Gemini pasa a tener `searched_urls` = todos los
+>   `grounding_chunks` y `cited_urls` = solo los chunks referenciados por
+>   `grounding_supports`. Esto **corrige el significado de `cited_urls` en Gemini**, que hoy
+>   guarda todos los chunks. OpenAI obtiene `searched_urls` de
+>   `web_search_call.action.sources` pidiéndolo con `include`.
+> - **CA-4**: cambian las expectativas de los tests de Gemini y de OpenAI.
+> - **CA-5**: la petición de OpenAI cambia, así que el dictamen de sdd-probe pasa a ser
+>   obligatorio.
+> - **CA-6**: una llamada por proveedor, con tope de 0,40 €.
+> - **CA-7**: el dictamen de sdd-metricas se amplía a los tres proveedores.
+> - También cambian Entidades, Fuera de alcance y Notas. F-SPEC-013-1 y F-SPEC-013-2 se
+>   resuelven dentro de esta spec.
+>
+> Sigue en `borrador` a la espera de aprobación humana.
+
 > **Enmienda 2026-09-29 (b) (sdd-arquitecto): caso B, opción B1.** CA-2 se ejecutó
 > (evidencia en § "Evidencia de CA-2") y el resultado es el **caso B**: Claude consulta
 > URLs pero no las cita. El humano (Alberto Fojo, 2026-09-29) eligió **B1**: una columna
@@ -113,8 +133,9 @@ Respuesta cruda en privado: `$PUSHLLM_PRIVADO/diagnostico/spec-013/raw_responses
 - **[Orquestador]**: lanza la(s) llamada(s) real(es) de CA-2 y CA-6 con el `.env`, que lee
   el propio probe (ADR-006 §5); lee la respuesta cruda del espacio privado para el
   diagnóstico.
-- **[Agente]** sdd-implementador: CA-1, CA-3, CA-4 (TDD, sin llamadas reales).
-- **[Agente]** sdd-probe: dictamen de CA-5 (advisory; solo si cambia el modo).
+- **[Agente]** sdd-implementador: CA-1, CA-3, CA-4 (TDD, sin llamadas reales), en los
+  adaptadores de Claude, OpenAI y Gemini.
+- **[Agente]** sdd-probe: dictamen de CA-5 (advisory; obligatorio por el `include` de OpenAI).
 - **[Agente]** sdd-metricas: dictamen de CA-7 (advisory).
 - **[Agente]** sdd-verificador: gate.
 - **Ningún agente lee, abre ni imprime `.env`** (ADR-006 §5), tampoco para diagnosticar.
@@ -123,8 +144,9 @@ Respuesta cruda en privado: `$PUSHLLM_PRIVADO/diagnostico/spec-013/raw_responses
   SPEC-011 (fuentes citadas; con B1, también las consultadas de Claude, CA-7).
 
 ## Criterios de aceptación
-Orden de ejecución: CA-1 → CA-2 → CA-3 → CA-4/CA-5 → CA-6. CA-7 puede ir en paralelo
-con CA-3 y tiene que estar antes del gate del verificador.
+Orden de ejecución: CA-1 → CA-2 → CA-3 → CA-4/CA-5 → CA-6. Los dictámenes de CA-5
+(sdd-probe) y CA-7 (sdd-metricas) pueden pedirse en paralelo con CA-3. CA-5 tiene que estar
+antes de CA-6 y CA-7 antes del gate del verificador.
 
 - **CA-1 — Respuesta cruda guardada en privado [Agente].**
   Dado un run del probe con cualquiera de los tres proveedores (incluido `--resume`),
@@ -171,149 +193,270 @@ con CA-3 y tiene que estar antes del gate del verificador.
   Si la llamada devuelve `status=error`, se anota el error y se repite **una** vez como
   máximo; el total de CA-2 no pasa de 2 llamadas.
 
-- **CA-3 — Arreglo del adaptador de Claude, opción B1, con TDD sobre un fixture derivado
-  [Agente].**
-  Dado el diagnóstico de CA-2 (caso B) y la decisión B1 del humano, cuando
-  sdd-implementador crea `probe/tests/fixtures/claude_web_search_20260209.json` con **la
-  misma estructura** que la respuesta grabada (los 9 bloques de primer nivel en el orden de
-  § "Evidencia de CA-2", con los mismos `type` y `caller`; 10 `web_search_result` con las
-  mismas claves; 3 `code_execution_tool_result` con los mismos tipos de contenido; 1 bloque
-  `text` sin `citations`; `stop_reason=end_turn`), pero **sanitizado** (texto sintético de
-  una clínica ficticia; URLs de ejemplo en dominios reservados, `example.org`, `example.com`
-  y parecidos, con al menos una URL repetida para probar la deduplicación; `encrypted_*` e
-  `id` sustituidos por marcadores; ninguna cadena copiada de la respuesta real; ADR-001), y
-  escribe primero los tests que fallan con el código actual, entonces, tras el arreglo:
-  (a) **`cited_urls` sigue significando "URLs citadas"**: para el fixture queda **vacía**;
-  el adaptador sigue leyendo el `url` de las citas de los bloques `text` cuando las hay
-  (el test existente `test_claude_ok_collects_usage_urls_and_served_model` sigue en verde
-  sin cambiar su expectativa), y **nunca** mete en `cited_urls` URLs de resultados de
-  búsqueda;
-  (b) **URLs consultadas**: `ProviderResult` tiene un campo nuevo `searched_urls` (lista).
-  En Claude contiene el `url` de cada `web_search_result` de **todo** bloque
-  `web_search_tool_result` de primer nivel de `content`, con `caller` o sin él (llamada
-  directa o `code_execution_*`), de **todos** los turnos (incluidas las continuaciones de
-  `pause_turn`), sin duplicados y en orden de aparición. Para el fixture es exactamente la
-  lista de URLs de ejemplo esperada, escrita a mano en el test. Un
-  `web_search_tool_result` cuyo `content` no es una lista (error de la herramienta, p. ej.
-  `web_search_tool_result_error`) no aporta URLs ni rompe la llamada (test propio). Con
-  `status=error`, `searched_urls` queda vacía;
-  (c) **texto completo, sin fragmentar**: los bloques `text` consecutivos se concatenan
-  **sin separador** (como indica la doc de *Citations*); solo se inserta `"\n\n"` entre
-  tramos de texto separados por un bloque que no es `text` (búsqueda, resultado, código),
-  y lo mismo al continuar tras `pause_turn`; nunca al principio ni al final. Para el
-  fixture, `r.text` es igual, carácter a carácter, al texto sintético esperado escrito a
-  mano en el test. Un segundo test, con varios bloques `text` partidos a mitad de frase y
-  un bloque de búsqueda en medio (forma de la doc de *Citations*), fija la regla de unión.
-  El test existente `test_claude_pause_turn_accumulates_usage_and_text` se actualiza a la
-  nueva regla (cambio de expectativa explícito, citado en el ledger);
-  (d) **columna `searched_urls` en `results.csv`**: `run_probe.COLUMNS` termina en
-  `…, "cited_urls", "answer", "searched_urls"` (la columna nueva va **al final**, después de
-  `answer`, para no mover ninguna columna existente), con las URLs unidas por `;`, como
-  `cited_urls`. Contenido por proveedor:
-  - **Claude**: la lista de (b).
-  - **OpenAI**: **vacía**. La API Responses solo devuelve las fuentes consultadas de un
-    `web_search_call` si se pide expresamente
-    (`include=["web_search_call.action.sources"]`), y eso cambia los parámetros de la
-    llamada, cosa que esta spec no hace (CA-5). Rellenarla queda como follow-up
-    (F-SPEC-013 en el ledger, con dictamen de sdd-probe).
-  - **Gemini**: **vacía**. `grounding_metadata.grounding_chunks` ya alimenta `cited_urls`,
-    y esta spec no cambia lo que significa (Fuera de alcance). La API no da otra lista
-    separada de páginas consultadas.
-  - Vacía en OpenAI y Gemini significa "no medido", no "ninguna". Lo dice el README.
-  Tests (clientes falsos, sin red): una fila de Claude con el fixture tiene `searched_urls`
-  poblado y `cited_urls` vacío; las filas de OpenAI y Gemini con sus fakes actuales tienen
-  `searched_urls` vacío;
-  (e) **compatibilidad con `results.csv` antiguos** (sin la columna):
-  - `--analyze` sobre un `results.csv` antiguo funciona y da el mismo `summary.md` que
-    antes. `analysis.py` no lee `searched_urls` ni `cited_urls` y **no cambia** (lo prueba
-    el golden de Vigo de CA-4). Además, el mismo `results.csv` con la columna nueva
-    añadida da un `summary.md` idéntico byte a byte (test);
-  - `--resume` sobre un `results.csv` antiguo **no reescribe la cabecera ni las filas
-    existentes**. Las filas nuevas se escriben con las columnas de la cabecera que ya tiene
-    el fichero, así que en ese fichero no se escribe `searched_urls`. En stderr sale un
-    aviso: `results.csv` sin `searched_urls` (anterior a SPEC-013), no se añade la columna
-    al reanudar, y las URLs consultadas están en `raw_responses.jsonl`. Test: las filas
-    antiguas quedan idénticas byte a byte, cada fila nueva tiene tantos campos como la
-    cabecera, y el aviso aparece;
-  - `--resume` sobre un `results.csv` que ya tiene la columna escribe `searched_urls`
-    normalmente;
-  (f) re-procesar **offline** la respuesta cruda real de CA-2 (en el espacio privado, sin
-  llamar al proveedor, con un cliente falso que devuelve la respuesta grabada) con el
-  adaptador nuevo da `cited_urls` vacío, `searched_urls` con tantas URLs únicas como
-  `url` distintos haya entre los 10 resultados, y un texto sin cortes a mitad de frase. El
-  ledger anota solo los recuentos y la comprobación, no las URLs ni el texto;
-  (g) `probe/README.md` documenta `searched_urls` (qué contiene por proveedor, que vacía
-  en OpenAI/Gemini significa "no medido", la diferencia con `cited_urls` y el
-  comportamiento con `--resume` sobre ficheros antiguos) y deja de decir que las columnas
-  de `results.csv` no cambian.
-  No se cambia la configuración del tool (CA-5).
+- **CA-3 — URLs consultadas y citadas en los tres adaptadores, con TDD [Agente].**
+  Dado el diagnóstico de CA-2 (caso B), la decisión B1 del humano y su ampliación a los
+  tres proveedores (enmienda (c)), cuando sdd-implementador escribe primero los tests que
+  fallan con el código actual y después hace el arreglo, entonces:
+
+  **Significado común (los tres proveedores).** `ProviderResult` tiene un campo nuevo
+  `searched_urls` (lista):
+  - `searched_urls` son las **URLs consultadas**: las páginas que el proveedor declara
+    haber recuperado con la búsqueda para esa respuesta.
+  - `cited_urls` son las **URLs citadas**: las que el proveedor enlaza a un fragmento del
+    texto de la respuesta.
+  - Las dos listas van sin duplicados y en orden de aparición. Con `status=error` quedan
+    vacías.
+  - `cited_urls` nunca se rellena con URLs solo consultadas. Cuando el proveedor da las
+    dos cosas, toda URL citada aparece también en `searched_urls`, y hay un test de
+    inclusión por proveedor. La excepción es una cita de OpenAI a una URL que no está en
+    `sources`: se conserva en `cited_urls` y no se añade a `searched_urls`; un test fija
+    este caso.
+
+  **Claude** (sin cambios respecto a la enmienda (b)). Sobre
+  `probe/tests/fixtures/claude_web_search_20260209.json`, que tiene **la misma estructura**
+  que la respuesta grabada en CA-2 pero **sanitizada**:
+  - misma estructura: los 9 bloques de primer nivel en el orden de § "Evidencia de CA-2",
+    con los mismos `type` y `caller`; 10 `web_search_result` con las mismas claves; 3
+    `code_execution_tool_result` con los mismos tipos de contenido; 1 bloque `text` sin
+    `citations`; `stop_reason=end_turn`;
+  - sanitizado: texto sintético de una clínica ficticia; URLs en dominios reservados
+    (`example.org`, `example.com`…), con al menos una repetida; `encrypted_*` e `id`
+    sustituidos por marcadores; ninguna cadena copiada de la respuesta real (ADR-001).
+
+  Casos de Claude:
+  (a) `cited_urls` sale del `url` de las citas de los bloques `text`. Para el fixture queda
+  **vacía**. El test existente `test_claude_ok_collects_usage_urls_and_served_model` sigue
+  en verde sin cambiar su expectativa.
+  (b) `searched_urls` contiene el `url` de cada `web_search_result` de todo bloque
+  `web_search_tool_result` de primer nivel de `content`:
+  - con `caller` o sin él;
+  - en todos los turnos, incluidas las continuaciones de `pause_turn`.
+  Para el fixture es exactamente la lista esperada, escrita a mano en el test. Un
+  `web_search_tool_result` cuyo `content` no es una lista (error de la herramienta) no
+  aporta URLs ni rompe la llamada.
+  (c) **Texto completo, sin fragmentar.**
+  - Los bloques `text` consecutivos se concatenan **sin separador**, como indica la doc de
+    *Citations*.
+  - Solo se inserta `"\n\n"` entre tramos de texto separados por un bloque que no es
+    `text`, y lo mismo al continuar tras `pause_turn`. Nunca al principio ni al final.
+  - Para el fixture, `r.text` es igual, carácter a carácter, al texto esperado.
+  - Un segundo test, con bloques `text` partidos a mitad de frase y una búsqueda en medio,
+    fija la regla.
+  - `test_claude_pause_turn_accumulates_usage_and_text` se actualiza a la nueva regla.
+  (d) Re-procesar **offline** la respuesta cruda real de CA-2 (en privado, con un cliente
+  falso que devuelve la respuesta grabada) da:
+  - `cited_urls` vacío;
+  - `searched_urls` con tantas URLs como `url` distintos haya entre los 10 resultados;
+  - un texto sin cortes a mitad de frase.
+  El ledger anota solo los recuentos.
+
+  **Gemini: la petición no cambia.** Lo que dice la documentación oficial (*Grounding with
+  Google Search*, ai.google.dev/gemini-api/docs/generate-content/google-search,
+  actualizada el 2026-09-02, consultada el 2026-09-29):
+  - `groundingChunks`: "Array of objects containing the web sources (`uri` and `title`)";
+  - `groundingSupports`: "Array of chunks to connect model response `text` to the sources
+    in `groundingChunks`. Each chunk links a text `segment` (defined by `startIndex` and
+    `endIndex`) to one or more `groundingChunkIndices`";
+  - las URIs web son del tipo `https://vertexaisearch.cloud.google.com/…`;
+  - las citas en línea del ejemplo oficial se construyen desde `groundingSupports`.
+
+  Casos de Gemini:
+  (e) `searched_urls` = el `web.uri` de **todos** los `grounding_chunks` con `web`, en su
+  orden.
+  (f) `cited_urls` = el `web.uri` de los chunks cuyo índice aparece en
+  `groundingChunkIndices` de al menos un `grounding_supports`, en el orden de
+  `grounding_chunks`.
+  - Si no hay `grounding_supports`, `cited_urls` queda vacía y `searched_urls` no.
+  - Un índice fuera de rango se ignora (test).
+  - **Esto corrige lo que significa hoy `cited_urls` en Gemini**, que guarda todos los
+    chunks: medía "consultadas" y lo llamaba "citadas".
+  - Los fakes de Gemini (`probe/tests/fakes.py`) aprenden a llevar `grounding_supports`.
+  - Hay tests con chunks citados y no citados, sin supports, y con un índice repetido en
+    varios supports.
+  (g) Las URIs se **guardan tal cual**, como redirecciones `vertexaisearch`; no se
+  resuelven. Motivos:
+  1. Resolverlas exige una petición HTTP extra por URL, fuera de la llamada al proveedor.
+     El probe dejaría de hacer una sola llamada por fila, sumaría latencia y fallos de red,
+     y visitaría las webs de terceros, incluida la de competidores.
+  2. La doc no documenta que esas redirecciones duren. Resolverlas ahora o más tarde da el
+     mismo resultado mientras funcionen, y la respuesta cruda (CA-1) conserva `uri` y
+     `title` para resolverlas después.
+  3. El dominio real para el análisis de fuentes lo necesita SPEC-011. Resolverlo sigue
+     siendo F-SPEC-001-2 (destino SPEC-003 o SPEC-011), fuera de esta spec.
+  El README lo dice: en Gemini, las dos columnas llevan redirecciones y **no se pueden
+  comparar por dominio con Claude ni OpenAI hasta que se resuelvan**. Sí se pueden comparar
+  los recuentos (cuántas consultadas y cuántas citadas).
+
+  **OpenAI: la petición cambia; exige el dictamen de CA-5.** Lo que dice la documentación
+  oficial (*Web search*, developers.openai.com/api/docs/guides/tools-web-search, consultada
+  el 2026-09-29):
+  - "To view all URLs retrieved during a web search, use the `sources` field", pidiéndolo
+    con `include=["web_search_call.action.sources"]`;
+  - "Unlike inline citations, which show only the most relevant references, sources
+    returns the complete list of URLs the model consulted when forming its response";
+  - "The number of sources is often greater than the number of citations";
+  - los `sources` pueden incluir feeds propios de OpenAI (`oai-sports`, `oai-weather`,
+    `oai-finance`).
+
+  Casos de OpenAI:
+  (h) `responses.create` recibe además `include=["web_search_call.action.sources"]`, y
+  `request` en `raw_responses.jsonl` lo refleja. **Es el único parámetro nuevo**; lo prueba
+  un test sobre los `kwargs` del cliente falso (CA-5).
+  (i) `searched_urls` = el `url` de cada entrada de `action.sources` de cada item
+  `web_search_call`, en orden, sin duplicados.
+  - Las entradas sin `url` (los feeds `oai-*`) no entran en la columna; quedan en la
+    respuesta cruda.
+  - Si `action` no trae `sources`, no aporta nada y no falla.
+  (j) `cited_urls` sigue saliendo de las anotaciones `url_citation`. El test existente
+  `test_openai_ok` sigue en verde en lo que ya comprobaba y añade la aserción del `include`.
+
+  **Columna y compatibilidad (los tres):**
+  (k) `run_probe.COLUMNS` termina en `…, "cited_urls", "answer", "searched_urls"`: la
+  columna va **al final**, con las URLs unidas por `;`. Una fila de cada proveedor, con sus
+  fakes, tiene `searched_urls` poblado.
+  (l) **`results.csv` antiguos** (sin la columna):
+  - `--analyze` funciona y da el mismo `summary.md`. `analysis.py` no lee URLs y **no
+    cambia** (lo prueba el golden de Vigo, CA-4). El mismo CSV con la columna añadida da un
+    `summary.md` idéntico byte a byte (test).
+  - `--resume` **no reescribe cabecera ni filas**: las filas nuevas usan las columnas de la
+    cabecera existente, sin `searched_urls`, y sale por stderr un aviso de que el fichero es
+    anterior a SPEC-013 y de que las URLs están en `raw_responses.jsonl`. Test: filas
+    antiguas idénticas byte a byte, filas nuevas con tantos campos como la cabecera, y el
+    aviso.
+  - En esos ficheros antiguos, **`cited_urls` de Gemini significa "todos los chunks"**, es
+    decir, lo que ahora es `searched_urls`. `--resume` sobre ellos escribiría filas de
+    Gemini con el significado nuevo, así que el aviso lo dice.
+  (m) `probe/README.md` documenta:
+  - las dos columnas y su significado común;
+  - qué da cada proveedor;
+  - las redirecciones de Gemini;
+  - el cambio de significado de `cited_urls` en Gemini, con la fecha de SPEC-013;
+  - el comportamiento con ficheros antiguos.
+  Y deja de decir que las columnas no cambian.
 
 - **CA-4 — Sin regresiones y compatibilidad [Agente].**
-  Dado el cambio, cuando se ejecuta `python -m pytest -q probe/tests` y
-  `python -m pytest -q docs/piloto-artica/tools/tests` y `ruff check probe` desde la raíz
-  del repo, entonces todo está en verde; en particular siguen en verde, sin cambiar sus
-  expectativas: los tests de OpenAI y Gemini de `test_providers.py` (su `cited_urls` no
-  cambia), `test_claude_ok_collects_usage_urls_and_served_model`, el golden de Vigo
-  (`test_pilot_batch.py::test_ca4_vigo_summary_identical_to_before_the_change`) y los tests
-  del lote Viveiro (`test_pilot_batch.py`). **El golden de Vigo no se regenera**: su
-  entrada `probe/tests/fixtures/vigo_results.csv` se queda **sin** la columna
-  `searched_urls`, a propósito, y así el golden prueba también que `--analyze` lee un
-  `results.csv` antiguo (CA-3 e). `vigo_summary_before.md` no se toca. Si el golden
-  cambiara, sería un defecto del cambio, no un motivo para regenerarlo. Los únicos tests
-  existentes cuya expectativa cambia son el de la regla de unión de CA-3 (c) y, si hace
-  falta, las aserciones de columnas de `test_raw_responses.py` y `test_run_probe.py`, que
-  pasan a incluir `searched_urls` al final. Cada uno se cita en el ledger.
+  Dado el cambio, cuando se ejecutan desde la raíz del repo `python -m pytest -q
+  probe/tests`, `python -m pytest -q docs/piloto-artica/tools/tests` y `ruff check probe`,
+  entonces todo está en verde.
 
-- **CA-5 — Modo de búsqueda: sin cambio, o con dictamen [Agente sdd-probe].**
-  Dado el arreglo, cuando se comparan los parámetros que el adaptador de Claude envía antes
-  y después (tool `type`, `allowed_callers`, `max_uses`, `user_location`, modelo, effort,
-  `max_tokens`), entonces o bien son idénticos (lo demuestra un test sobre los `kwargs`
-  del cliente falso, y no hace falta dictamen), o bien **cualquier** diferencia lleva un
-  dictamen fechado de sdd-probe en el ledger de SPEC-013 (invariantes D-5 y RN-10: qué
-  cambia de lo que ve el usuario de claude.ai, fuentes, fecha) y la aprobación del humano
-  **antes** del merge. Un cambio de modo sin dictamen es RED.
+  Siguen en verde **sin cambiar sus expectativas**:
+  - `test_claude_ok_collects_usage_urls_and_served_model`;
+  - los tests de estado, errores, rechazos y tokens de OpenAI y Gemini de
+    `test_providers.py`;
+  - el golden de Vigo (`test_pilot_batch.py::test_ca4_vigo_summary_identical_to_before_the_change`);
+  - los tests del lote Viveiro (`test_pilot_batch.py`).
 
-- **CA-6 — Confirmación en real [Humano] autoriza → [Orquestador] ejecuta.**
-  Dado CA-3 (B1) y CA-4 en verde, cuando el orquestador repite la llamada de CA-2 con el
-  código arreglado y `--out "$env:PUSHLLM_PRIVADO\diagnostico\spec-013-post"` (1 llamada,
-  ≤ 0,25 €, estimada en ≈ 0,07 €), entonces la fila de Claude tiene `status=ok`, la
-  cabecera de `results.csv` termina en `searched_urls`, **`searched_urls` está poblado**
-  (≥ 1 URL si `web_searches ≥ 1`), `cited_urls` contiene solo URLs de citas (vacío si la
-  respuesta no trae citas), `answer` no tiene cortes a mitad de frase, y la línea de
-  `raw_responses.jsonl` existe. El ledger anota fecha, coste, número de búsquedas y los
-  recuentos de `searched_urls` y `cited_urls` (sin URLs ni texto). Si la llamada da
-  `status=error`, se repite una vez como máximo. Si el humano prefiere ahorrarse la
-  llamada, CA-6 se da por cubierto con CA-3 (f) más el primer humo de SPEC-008 CA-7, y el
-  verificador lo marca ⚠️ hasta ese humo.
+  **El golden de Vigo no se regenera.**
+  - Su entrada `probe/tests/fixtures/vigo_results.csv` se queda sin `searched_urls` y con
+    las `cited_urls` de Gemini con el significado antiguo, a propósito. Así prueba que
+    `--analyze` lee un `results.csv` antiguo.
+  - `analysis.py` no lee `cited_urls` ni `searched_urls` (comprobado el 2026-09-29), así
+    que la corrección de Gemini no puede mover `summary.md`.
+  - `vigo_summary_before.md` no se toca.
+  - Si el golden cambiara, sería un defecto, no un motivo para regenerarlo.
 
-- **CA-7 — Dictamen sobre URLs consultadas frente a citadas [Agente; consulta
-  sdd-metricas].**
-  Dado que con B1 Claude aporta URLs **consultadas** y no **citadas**, y que
-  `07-mvp-product-spec.md` §4 define *Source citation weight* como "Σ over answers citing
-  the source of the provider weight" (RN-04) y RN-08 ordena los gaps por ese peso, cuando
-  se consulta a sdd-metricas **antes del gate del verificador** (puede ir en paralelo con
-  CA-3), entonces consta en el ledger de SPEC-013 un dictamen fechado, con conclusión por
-  punto y fuentes, sobre:
+  **Tests existentes cuya expectativa cambia**, y cada uno se cita en el ledger:
+  - el de la regla de unión (CA-3 c);
+  - `test_gemini_ok_sums_thoughts_and_tool_tokens`: con el fake sin supports, su
+    `cited_urls` pasa de la lista de chunks a vacía, y la lista pasa a `searched_urls`;
+  - `test_openai_ok`: aserción nueva del `include`;
+  - si hace falta, las aserciones de columnas de `test_raw_responses.py` y
+    `test_run_probe.py`, con `searched_urls` al final.
+
+- **CA-5 — Parámetros de la llamada; dictamen de sdd-probe sobre el `include` de OpenAI
+  [Agente; consulta sdd-probe].**
+  Dado el arreglo, cuando se comparan los parámetros que envía cada adaptador antes y
+  después (tool `type`, `allowed_callers`, `max_uses`, `user_location`, modelo, effort,
+  `max_tokens`, `system`/`instructions`/`config`, `include`), entonces un test sobre los
+  `kwargs` de los clientes falsos demuestra que:
+  - Claude y Gemini envían **exactamente lo mismo** que antes;
+  - OpenAI envía lo mismo **más** `include=["web_search_call.action.sources"]` y nada
+    más.
+
+  Además, **antes de la llamada real de CA-6 y antes del merge**, consta en el ledger de
+  SPEC-013 un dictamen fechado de sdd-probe, con fuentes oficiales y fecha de consulta, que
+  confirme:
+  (1) que `include` solo cambia lo que la API devuelve, no lo que el modelo hace (ni la
+  búsqueda ni la respuesta), y que el sondeo sigue siendo fiel a D-5 y RN-10: lo que ve un
+  usuario de ChatGPT con búsqueda;
+  (2) que no cambia el coste por llamada (tokens facturados y precio por búsqueda). Si
+  cambia, lo cuantifica y se contrasta con la fila de OpenAI de CA-6 frente al humo de
+  SPEC-002 (unos 0,012 € por llamada);
+  (3) el nombre exacto del parámetro y la forma de `action.sources` vigentes, incluidos los
+  feeds `oai-*` sin URL;
+  (4) si las URLs de las acciones `open_page`/`find_in_page` de `web_search_call` deberían
+  contar como consultadas. Si el dictamen dice que sí, se registra como follow-up; esta
+  spec no las incluye.
+
+  Si el dictamen desaconseja el `include`, la spec vuelve a `borrador` y el humano decide.
+  Cualquier otro cambio de parámetros, en cualquier proveedor, sin dictamen, es RED.
+
+- **CA-6 — Confirmación en real, una llamada por proveedor [Humano] autoriza →
+  [Orquestador] ejecuta.**
+  Dado CA-3, CA-4 y el dictamen de CA-5 en verde, cuando el orquestador ejecuta, desde
+  `probe\` y con el `.env` cargado por el propio probe:
+  `.\.venv\Scripts\python run_probe.py --providers claude,openai,gemini --only D01 --runs 1 --out "$env:PUSHLLM_PRIVADO\diagnostico\spec-013-post"`
+  es decir, **3 llamadas**, una por proveedor. Coste estimado con los humos de SPEC-002:
+  Claude ≈ 0,075 €, OpenAI ≈ 0,012 €, Gemini ≈ 0,018 €, **≈ 0,11 € en total**. Tope:
+  **0,40 €** en total, contando como mucho una repetición por proveedor si da
+  `status=error` (6 llamadas como máximo).
+
+  Entonces:
+  - la cabecera de `results.csv` termina en `searched_urls`;
+  - las tres filas tienen `status=ok`;
+  - cada fila con `web_searches ≥ 1` tiene **`searched_urls` con al menos 1 URL**. En
+    Gemini, `web_searches` es el número de `web_search_queries`;
+  - en cada fila, toda URL de `cited_urls` está en `searched_urls`, salvo la excepción de
+    OpenAI de CA-3;
+  - `answer` de Claude no tiene cortes a mitad de frase;
+  - hay 3 líneas en `raw_responses.jsonl`, y la de OpenAI lleva `include` en `request`.
+
+  El ledger anota, por proveedor: fecha, coste, número de búsquedas y los recuentos de
+  `searched_urls` y `cited_urls`, sin URLs ni texto. Si una fila con búsqueda sale con
+  `searched_urls` vacía, CA-6 es RED para ese proveedor.
+
+  Si el humano prefiere no gastar, CA-6 se da por cubierto con CA-3 (d) más el primer humo
+  de SPEC-008 CA-7, y el verificador lo marca ⚠️ hasta ese humo.
+
+- **CA-7 — Dictamen sobre URLs consultadas frente a citadas, en los tres proveedores
+  [Agente; consulta sdd-metricas].**
+  Dado que `searched_urls` y `cited_urls` pasan a significar lo mismo en los tres
+  proveedores, y que `07-mvp-product-spec.md` §4 define *Source citation weight* como "Σ
+  over answers citing the source of the provider weight" (RN-04) y RN-08 ordena los gaps
+  por ese peso, cuando se consulta a sdd-metricas **antes del gate del verificador** (puede
+  ir en paralelo con CA-3), entonces consta en el ledger de SPEC-013 un dictamen fechado,
+  con conclusión por punto y fuentes, sobre:
   (1) que *Source citation weight*, *Coverage of cited sources* y RN-08 se calculan **solo
-  con `cited_urls`**, y que una URL solo consultada no suma peso de citación. Consecuencia
-  que el dictamen debe valorar de forma explícita: mientras Claude no cite, su peso de
-  RN-04 (10 %) no aporta nada al peso de citación;
-  (2) la propuesta de tratamiento para SPEC-011: las URLs consultadas de Claude se
-  muestran como **indicador aparte** (p. ej. una marca o recuento "consultada por Claude"
-  por fuente, junto al peso de citación), **sin** un peso propio ponderado dentro del
-  ranking. O bien, si el dictamen lo recomienda, un "peso de consulta" separado, que sería
-  una definición nueva de §4 y del dominio y se decide fuera de esta spec (sdd-producto y
-  el humano);
-  (3) si `searched_urls` vacía en OpenAI y Gemini ("no medido") sesga alguna comparación
-  entre proveedores que haga el análisis;
-  (4) que `analysis.py` (`summary.md`: SoV, menciones y posición) no usa URLs y no cambia.
-  Si el dictamen confirma (1), (3) y (4), la spec no cambia y el arquitecto añade
-  "URLs consultadas" a *Probe / ProbeRun* en `docs/fundacion/dominio.md` (definición: URLs
-  de resultados de búsqueda que el proveedor expone, no citadas; no suman peso de
-  citación) y deja una nota en SPEC-011 con el tratamiento (2). Si el dictamen pide cambiar
-  la columna, su significado o una definición de §4 o de las RN, la spec vuelve a
-  `borrador` antes del merge. *Evidencia*: dictamen en el ledger y, en su caso, el diff de
-  `dominio.md` y la nota en SPEC-011.
+  con `cited_urls`**, y que una URL solo consultada no suma peso de citación. Consecuencias
+  que el dictamen debe valorar de forma explícita:
+  - mientras Claude no cite, su 10 % de RN-04 no aporta nada;
+  - la corrección de Gemini reduce sus citadas respecto a los humos anteriores;
+  (2) si `searched_urls` es **comparable entre proveedores** tal como la definen los CA,
+  con estos límites:
+  - Claude, antes del filtrado dinámico;
+  - OpenAI, "the complete list of URLs the model consulted";
+  - Gemini, las fuentes de grounding, como redirecciones sin resolver;
+  (3) la **propuesta** para SPEC-011 y sdd-producto, sin crear aquí ninguna métrica: un
+  indicador "consultada por" por fuente, con los tres proveedores (recuento o marca por
+  proveedor, sin peso en el ranking de citación), junto al peso de citación, y cómo
+  explicar al cliente "consultadas" frente a "citadas" igual para todos. Si recomienda un
+  peso de consulta, es una definición nueva de §4 y del dominio, y la deciden sdd-producto
+  y el humano fuera de esta spec;
+  (4) cómo tratar los `results.csv` anteriores a SPEC-013, en los que `cited_urls` de
+  Gemini son todos los chunks, si SPEC-011 los usa;
+  (5) que `analysis.py` (`summary.md`: SoV, menciones y posición) no usa URLs y no cambia.
+
+  Si el dictamen confirma (1) y (5), la spec no cambia, y el arquitecto:
+  - añade "URLs consultadas" a *Probe / ProbeRun* en `docs/fundacion/dominio.md`
+    (definición: URLs que el proveedor declara haber recuperado para la respuesta; no suman
+    peso de citación);
+  - deja en SPEC-011 una nota con (2)–(4).
+
+  Si el dictamen pide cambiar una columna, su significado o una definición de §4 o de las
+  RN, la spec vuelve a `borrador` antes del merge.
+
+  *Evidencia*: el dictamen en el ledger y, en su caso, el diff de `dominio.md` y la nota
+  en SPEC-011.
 
 ## Entidades y reglas afectadas
 - FOUNDATION, No-negociables: "Las respuestas en bruto de los proveedores se guardan
@@ -321,78 +464,90 @@ con CA-3 y tiene que estar antes del gate del verificador.
 - ADR-001 (espacio privado, respuestas en bruto solo en `PUSHLLM_PRIVADO`; `probe/out/`
   ignorado), ADR-004 §2 (respuestas en bruto del piloto, en privado), ADR-006 §5 (ningún
   agente lee el `.env`; el probe carga las claves).
-- D-5 y RN-10 (modelo por defecto con búsqueda web y ubicación): no se tocan. B1 mantiene
-  el filtrado dinámico por defecto (CA-5).
+- D-5 y RN-10 (modelo por defecto con búsqueda web y ubicación): Claude y Gemini no
+  cambian. OpenAI añade `include`, y su fidelidad a D-5 la confirma el dictamen de CA-5.
 - RN-01/RN-11: las menciones se siguen leyendo del texto; el texto sin fragmentar no
   cambia qué nombres aparecen, solo quita saltos de línea espurios.
 - Dominio: *Probe / ProbeRun* ("URLs citadas"), *Source*. `07-mvp-product-spec.md` §4
   (*Source citation weight*, *Coverage of cited sources*), RN-04 y RN-08. Esta spec no
-  cambia ninguna de esas definiciones. Solo añade el dato "URLs consultadas", y el
-  tratamiento que se le dé en el análisis lo dictamina CA-7.
-- Código: `probe/providers.py` (`ProviderResult.searched_urls`; `_claude`; serialización
-  cruda en los tres adaptadores), `probe/run_probe.py` (`COLUMNS`, escritura con cabecera
-  antigua en `--resume`, `raw_responses.jsonl`), `probe/tests/fakes.py`,
-  `probe/tests/fixtures/claude_web_search_20260209.json` (nuevo),
-  `probe/tests/test_providers.py`, `probe/tests/test_run_probe.py`,
-  `probe/tests/test_raw_responses.py`, `probe/README.md`. `probe/analysis.py` **no
-  cambia**.
-- Documentación oficial citada en "Problema" (consultada el 2026-09-29).
+  cambia ninguna de esas definiciones:
+  - añade el dato "URLs consultadas";
+  - corrige `cited_urls` de Gemini para que cumpla "URLs citadas";
+  - el uso en el análisis lo dictamina CA-7.
+- Código:
+  - `probe/providers.py`: `ProviderResult.searched_urls`, `_claude`, `_openai`
+    (`include`), `_gemini` (chunks y supports), serialización cruda;
+  - `probe/run_probe.py`: `COLUMNS` y escritura con cabecera antigua en `--resume`;
+  - tests y fixtures: `probe/tests/fakes.py`,
+    `probe/tests/fixtures/claude_web_search_20260209.json` (nuevo),
+    `probe/tests/test_providers.py`, `probe/tests/test_run_probe.py`,
+    `probe/tests/test_raw_responses.py`;
+  - `probe/README.md`.
+  `probe/analysis.py` **no cambia**.
+- Documentación oficial citada en "Problema" y en CA-3 (Anthropic, Google y OpenAI;
+  consultada el 2026-09-29).
 
 ## Fuera de alcance
-- Cambiar modelo, versión del tool, `allowed_callers`, effort o `max_uses`. B2 está
-  rechazada por el humano (2026-09-29). Cualquier cambio de modo pasa por CA-5.
-- Rellenar `cited_urls` con URLs consultadas, o rellenar `searched_urls` con citas.
-- `searched_urls` de OpenAI (necesita `include=["web_search_call.action.sources"]`: cambia
-  la petición) y cambiar qué significa `cited_urls` en Gemini (`grounding_chunks` frente a
-  `grounding_supports`). Quedan como follow-ups en el ledger, con dictamen de sdd-probe y
-  de sdd-metricas.
-- Añadir `searched_urls` a ficheros `results.csv` existentes (ni con `--resume` ni con un
-  script): los humos antiguos se quedan como están.
+- Cambiar modelo, versión del tool, `allowed_callers`, effort o `max_uses` en cualquier
+  proveedor. B2 está rechazada por el humano (2026-09-29). El único cambio de petición es
+  el `include` de OpenAI (CA-5).
+- Rellenar `cited_urls` con URLs solo consultadas.
+- **Resolver las redirecciones `vertexaisearch` de Gemini** a la URL o al dominio real
+  (F-SPEC-001-2, fuera de esta spec; motivos en CA-3 g).
+- Contar como consultadas las URLs de las acciones `open_page`/`find_in_page` de OpenAI
+  (CA-5 punto 4: follow-up si el dictamen lo pide).
+- Añadir `searched_urls` a ficheros `results.csv` existentes, o reescribir su
+  `cited_urls` de Gemini, ni con `--resume` ni con un script. Los humos antiguos se quedan
+  como están.
 - Re-ejecutar los humos de SPEC-002 o SPEC-008.
-- Cambiar `analysis.py`/`summary.md`, o añadir ahí un análisis de fuentes. El análisis de
-  fuentes (qué dominios cita o consulta cada proveedor, peso de citación, top-10) es de
-  SPEC-011, con el dictamen de CA-7.
-- Cambiar las definiciones de `07-mvp-product-spec.md` §4 o las RN. Si CA-7 lo pide, lo
-  deciden sdd-producto y el humano fuera de esta spec.
+- Cambiar `analysis.py`/`summary.md` o añadir ahí un análisis de fuentes. El análisis de
+  fuentes y el posible indicador "consultada por" son de SPEC-011 y sdd-producto, con el
+  dictamen de CA-7.
+- Crear métricas nuevas o cambiar las definiciones de `07-mvp-product-spec.md` §4 o las
+  RN.
 - Retención o borrado de `raw_responses.jsonl` (lo cubre ADR-001 y su dictamen pendiente).
 - Tocar los ledgers de SPEC-002 y SPEC-008 (el orquestador enlaza allí esta spec cuando
   termine el verificador que trabaja en ellos).
 
 ## Notas para el gate humano
-- **Re-aprobación (enmienda (b), 2026-09-29).** Qué aprobar: (1) B1 tal como la concreta
-  CA-3: columna `searched_urls` **al final** de `results.csv`, poblada solo en Claude,
-  vacía en OpenAI y Gemini ("no medido"); (2) el comportamiento de `--resume` sobre
-  ficheros antiguos: **no** añade la columna, conserva la cabecera, avisa por stderr, y las
-  URLs quedan en `raw_responses.jsonl`; (3) CA-7, el dictamen de sdd-metricas; (4) el
-  gasto de CA-6 (1 llamada, ≈ 0,07 €, tope 0,25 €) o su sustitución por el primer humo de
-  SPEC-008 CA-7. El gasto de CA-2 ya se hizo: 0,0729 €.
+- **Qué aprobar (enmienda (c), 2026-09-29):**
+  1. `searched_urls` y `cited_urls` con el mismo significado en los tres proveedores
+     (CA-3), con la columna nueva **al final** de `results.csv`.
+  2. La **corrección de `cited_urls` en Gemini**: hasta ahora guardaba todos los
+     `grounding_chunks` (consultadas); pasa a guardar solo los referenciados por
+     `grounding_supports` (citadas).
+  3. El `include` en la petición de OpenAI, condicionado al dictamen de sdd-probe (CA-5).
+  4. El dictamen de sdd-metricas ampliado (CA-7).
+  5. El gasto de CA-6: **3 llamadas, ≈ 0,11 €, tope 0,40 €**. Sube respecto a la
+     llamada única ya autorizada (tope 0,25 €), así que hay que autorizar el tope nuevo.
+  El gasto de CA-2 ya se hizo: 0,0729 €.
 - **Mirar con lupa**:
-  - **Con B1, Claude no aporta peso de citación.** Según §4 y RN-04, el peso de citación
-    solo cuenta respuestas que *citan*. Mientras Claude no cite, su 10 % no suma nada al
-    ranking de fuentes de SPEC-011, y sus URLs consultadas salen como indicador aparte.
-    Es lo que pediste ("consultadas, no citadas"). CA-7 lo hace confirmar por sdd-metricas
-    antes del merge. Un "peso de consulta" sería una métrica nueva y no entra aquí.
-  - **OpenAI y Gemini con `searched_urls` vacía.** OpenAI podría dar sus fuentes
-    consultadas, pero para eso hay que cambiar la petición (`include=…`), cosa que esta
-    spec no hace. Gemini ya usa sus `grounding_chunks` como `cited_urls`, y es posible que
-    esa lista mezcle fuentes consultadas y citadas. Las dos cosas quedan como follow-ups.
-    La columna, por tanto, **no sirve para comparar proveedores**.
-  - **`--resume` sobre un fichero antiguo pierde la columna en el CSV** (no el dato, que
-    está en `raw_responses.jsonl`). La alternativa, reescribir la cabecera, rompe la regla
-    de CA-1 (d) de no reescribir nunca lo existente. Para el baseline de SPEC-008 CA-7, que
-    empieza en un directorio nuevo, no afecta.
-  - El **golden de Vigo no se regenera**: su entrada se queda en el formato antiguo y sirve
-    de prueba de compatibilidad. Si cambia, es un fallo.
-  - La **regla de unión del texto** (CA-3 c) se mantiene aunque en CA-2 el texto llegó en
-    un solo bloque: la fragmentación de los humos es real y la regla sale de la doc de
-    *Citations*.
-  - **Fixture sin datos reales**: por ADR-001 la respuesta en bruto no entra al repo; el
-    fixture copia la forma, no el contenido. La prueba sobre el contenido real (CA-3 f) se
-    hace offline en el espacio privado y solo deja recuentos en el ledger.
-  - `raw_responses.jsonl` guarda `encrypted_content` completo: 37,6 KB en la llamada de
-    CA-2 (unos MB por baseline completo). Es lo que hace la auditoría reproducible. Es dato
+  - **Humos antiguos de Gemini.** En los `results.csv` anteriores a SPEC-013, `cited_urls`
+    de Gemini son "consultadas" con otro nombre. Cualquier lectura de fuentes de esos
+    ficheros (SPEC-011) tiene que tenerlo en cuenta (CA-7 punto 4). `summary.md` no se ve
+    afectado, porque no lee URLs, y el golden de Vigo no cambia.
+  - **`--resume` sobre un fichero antiguo** sigue funcionando: no añade la columna y avisa.
+    Pero dejaría en el mismo fichero filas de Gemini con dos significados de `cited_urls`.
+    La alternativa es que `--resume` se niegue a continuar un fichero anterior a SPEC-013
+    y pida `--out` nuevo. Es más limpio, pero rompe "`--resume` debe seguir funcionando".
+    Tú decides. La spec, tal como está, permite reanudar y avisa. El baseline de SPEC-008
+    empieza en un directorio nuevo y no le afecta.
+  - **Comparabilidad real.** Las tres columnas significan lo mismo, pero no miden
+    exactamente lo mismo:
+    - Claude declara resultados antes del filtrado dinámico;
+    - OpenAI declara "todas las URLs consultadas";
+    - Gemini declara sus fuentes de grounding, y solo como redirecciones: hasta resolverlas
+      (F-SPEC-001-2) solo se pueden comparar recuentos, no dominios.
+    CA-7 punto 2 lo pone por escrito para el informe al cliente.
+  - **Con B1, Claude no aporta peso de citación** mientras no cite (§4 y RN-04). Sus
+    consultadas salen como indicador aparte (propuesta de CA-7, sin métrica nueva aquí).
+  - El **golden de Vigo no se regenera**: su entrada sigue en formato antiguo y prueba la
+    compatibilidad.
+  - **Fixture sin datos reales** (ADR-001): copia la forma, no el contenido. La prueba
+    sobre la respuesta real (CA-3 d) es offline, en privado, y deja solo recuentos.
+  - `raw_responses.jsonl` guarda `encrypted_content` completo: 37,6 KB en CA-2. Es dato
     privado de clase 1 (ADR-001).
-- **Épica: EPIC-FIX (bucket), no EPIC-002.** El defecto vive en el adaptador de Claude del
-  probe (código de SPEC-001, EPIC-001) y afecta a los dos lotes. Lo que liga esta spec a
-  EPIC-002 es que SPEC-008 CA-7 espera a que esté en `hecho`.
+- **Épica: EPIC-FIX (bucket), no EPIC-002.** El defecto vive en los adaptadores del probe
+  (código de SPEC-001, EPIC-001) y afecta a los dos lotes. SPEC-008 CA-7 espera a que esta
+  spec esté en `hecho`.
 - **Rama**: `ft/SPEC-013-respuesta-cruda-y-citas-de-claude` (CA-1 ya en `e82bbe7`).

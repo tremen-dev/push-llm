@@ -32,14 +32,13 @@ epica: EPIC-FIX
 
 ## Salvedades / follow-ups
 <!-- IDs F-SPEC-013-1, F-SPEC-013-2… con destino (spec futura o EPIC-MEJORA). -->
-- **F-SPEC-013-1** (sdd-arquitecto, 2026-09-29): `searched_urls` de OpenAI. La API Responses
-  solo da las fuentes consultadas con `include=["web_search_call.action.sources"]`, que
-  cambia la petición. Destino: spec futura en EPIC-FIX o EPIC-002, con dictamen de sdd-probe
-  (D-5) y de sdd-metricas.
-- **F-SPEC-013-2** (sdd-arquitecto, 2026-09-29): qué significa `cited_urls` en Gemini. Hoy
-  son todos los `grounding_chunks`, y los citados de verdad son los que referencia
-  `grounding_supports`. Puede mezclar consultadas y citadas. Destino: el mismo que
-  F-SPEC-013-1, con dictamen de sdd-metricas.
+- **F-SPEC-013-1** (sdd-arquitecto, 2026-09-29), `searched_urls` de OpenAI: **resuelto dentro
+  de la spec** por la enmienda (c). CA-3 (h–j) añade `include`, con el dictamen de sdd-probe
+  de CA-5.
+- **F-SPEC-013-2** (sdd-arquitecto, 2026-09-29), significado de `cited_urls` en Gemini:
+  **resuelto dentro de la spec** por la enmienda (c). CA-3 (e–g): `searched_urls` son todos
+  los chunks y `cited_urls` los referenciados por `grounding_supports`. Resolver las
+  redirecciones `vertexaisearch` sigue en F-SPEC-001-2.
 
 ## Cómo retomar (handoff)
 <!-- Estado real del trabajo para la siguiente sesión: qué está hecho, qué falta, dónde seguir. -->
@@ -75,3 +74,14 @@ epica: EPIC-FIX
   tal cual. Tras la re-aprobación: sdd-implementador hace CA-3/CA-4 (la aserción de columnas
   de `test_raw_responses.py` (a) pasará a incluir `searched_urls`: citarlo); el orquestador
   pide el dictamen de CA-7 a sdd-metricas y después la llamada de CA-6.
+- **2026-09-29 (sdd-arquitecto, enmienda (c))**: el humano no aprobó la (b) y pidió
+  `searched_urls` en los tres proveedores. La spec sigue en `borrador` y espera
+  aprobación. Cambian:
+  - CA-3: Gemini (chunks y supports) y OpenAI (`include=["web_search_call.action.sources"]`).
+    Hay corrección del significado de `cited_urls` en Gemini;
+  - CA-4: cambian las expectativas de `test_gemini_ok_sums_thoughts_and_tool_tokens` y de
+    `test_openai_ok`;
+  - CA-5: el dictamen de sdd-probe pasa a ser obligatorio;
+  - CA-6: 3 llamadas, ≈ 0,11 €, tope 0,40 €;
+  - CA-7: el dictamen de sdd-metricas cubre los tres proveedores.
+  F-SPEC-013-1 y F-SPEC-013-2 quedan resueltos dentro de la spec.

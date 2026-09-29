@@ -19,9 +19,10 @@ historial:
 
 > **Nota 2026-09-29 (c) (sdd-arquitecto): SPEC-013 en caso B1. No cambia ningún CA ni
 > requiere re-aprobación.** El diagnóstico de SPEC-013 (CA-2) mostró que Claude consulta URLs
-> pero no las cita. Por decisión del humano (B1), el probe añade la columna
-> `searched_urls` al final de `results.csv`, con las URLs consultadas por Claude.
-> `cited_urls` de Claude puede seguir vacía. Donde esta spec dice "`cited_urls` de Claude"
+> pero no las cita. Por decisión del humano (B1, ampliada a los tres proveedores), el probe
+> añade la columna `searched_urls` al final de `results.csv`, con las URLs consultadas por
+> Claude, OpenAI y Gemini. `cited_urls` pasa a significar solo "citadas" en los tres, lo
+> que corrige Gemini. `cited_urls` de Claude puede seguir vacía. Donde esta spec dice "`cited_urls` de Claude"
 > (CA-7, Entidades), léase "fuentes de Claude, citadas o consultadas (`searched_urls`)". La
 > dependencia no cambia: CA-7 sigue esperando a SPEC-013 en `hecho`. El baseline empieza
 > en un directorio nuevo y sale con la columna. No se usa `--resume` sobre humos
