@@ -2,8 +2,9 @@
 
 > Preguntas de paciente sobre medicina estética, comunes a los dos instrumentos del piloto.
 > **El probe mide `AV`, `AR` y `AG`** (SPEC-008) y es el instrumento del criterio Go.
-> **La medición a mano mide solo `AV` y `AM`**: es la calibración de SPEC-007 (ChatGPT,
-> Gemini y el resumen de IA de Google, desde el móvil; `AM` nunca en Google). Hay **tres niveles
+> **La medición a mano calibra `AR` en ChatGPT, Gemini y Google, y `AV` y `AM` en ChatGPT y
+> Gemini**: es la calibración de SPEC-007, desde el móvil (en Google, el resumen de IA;
+> `AV` y `AM` nunca en Google). **`AG` solo lo mide el probe.** Hay **tres niveles
 > geográficos** (ADR-005), cada uno medido e informado por separado:
 >
 > - **Núcleo `AV`** — Viveiro y A Mariña (más las preguntas del set que nombran también

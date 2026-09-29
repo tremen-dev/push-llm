@@ -180,13 +180,20 @@ def _flat(md: str) -> str:
 
 
 @pytest.mark.parametrize("snippet", [
-    "la medición a mano mide solo av y am",          # intro: manual = calibration
     "el probe mide av, ar y ag",
+    # amendment (c): calibration by level; AG only in the probe
+    "la medición a mano calibra ar en chatgpt, gemini y google, y av y am en chatgpt y",
+    "av y am nunca en google",
+    "ag solo lo mide el probe",
     "baseline oficial del probe",                    # CA-8: freeze at the latest there
     "fecha que fije el humano en el ledger",
 ])
 def test_intro_and_state_reflect_the_calibration(snippet):
     assert snippet in _flat(PROMPTS_MD.read_text(encoding="utf-8"))
+
+
+def test_intro_no_longer_says_the_manual_measures_only_av():
+    assert "la medición a mano mide solo av y am" not in _flat(PROMPTS_MD.read_text(encoding="utf-8"))
 
 
 def test_freeze_no_longer_tied_to_pass_1():

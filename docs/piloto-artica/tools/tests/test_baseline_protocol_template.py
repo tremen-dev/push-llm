@@ -135,14 +135,37 @@ def test_calibration_order_has_49_queries(order):
     assert len(order) == bd.CALIBRATION_QUERIES == 49
 
 
+AR = [f"AR{i:02d}" for i in range(1, 6)]
+AV = [f"AV{i:02d}" for i in range(1, 16)]
+
+
 def test_calibration_order_blocks(order):
+    """CA-3 (amendment (c)): ChatGPT AR -> AV -> AM (22), Gemini the same (22), Google AR
+    only (5); AR first in every app (human decision at the gate)."""
     ids = lambda app: [q["id"] for q in order if q["app"] == app]  # noqa: E731
-    av = [f"AV{i:02d}" for i in range(1, 16)]
-    assert ids("chatgpt") == av + ["AM01", "AM02"]
-    assert ids("gemini") == av + ["AM01", "AM02"]
-    assert ids("google") == av
-    assert [q["app"] for q in order][::17][:2] == ["chatgpt", "gemini"]
-    assert order[-1]["app"] == "google"
+    assert ids("chatgpt") == AR + AV + ["AM01", "AM02"]
+    assert ids("gemini") == AR + AV + ["AM01", "AM02"]
+    assert ids("google") == AR
+    assert [q["app"] for q in order] == ["chatgpt"] * 22 + ["gemini"] * 22 + ["google"] * 5
+
+
+def test_calibration_order_has_no_ag_and_no_google_av_or_am(order):
+    assert not [q for q in order if q["id"].startswith("AG")]
+    assert not [q for q in order if q["app"] == "google" and q["id"][:2] in {"AV", "AM"}]
+
+
+def test_calibration_order_uses_the_frozen_texts(order):
+    doc = bd.parse_prompts_doc((PILOT_DIR / "prompts-baseline.md").read_text(encoding="utf-8"))
+    texts = {q["id"]: q["text"] for q in doc["measurement"] + doc["regional"] + doc["brand"]}
+    assert all(q["text"] == texts[q["id"]] for q in order)
+
+
+def test_expected_layout_matches_the_order(order):
+    layout = {}
+    for q in order:
+        layout.setdefault((q["app"], q["id"][:2]), []).append(q["id"])
+    assert layout == {k: list(v) for k, v in bd.EXPECTED_LAYOUT.items()}
+    assert sum(len(v) for v in bd.EXPECTED_LAYOUT.values()) == 49
 
 
 def test_prefill_rows_follow_the_template(order):
@@ -153,6 +176,8 @@ def test_prefill_rows_follow_the_template(order):
     assert {r["resumen_ia"] for r in rows if r["app"] != "google"} == {"n-a"}
     assert {r["resumen_ia"] for r in rows if r["app"] == "google"} == {""}
     assert next(r for r in rows if r["id_pregunta"] == "AV14")["idioma"] == "gl"
+    assert next(r for r in rows if r["id_pregunta"] == "AR01")["idioma"] == "gl"
+    assert [r["id_pregunta"] for r in rows][:6] == AR + ["AV01"]
 
 
 def test_prefill_rejects_unknown_pass(order):
@@ -162,9 +187,14 @@ def test_prefill_rejects_unknown_pass(order):
 
 def test_questions_in_order_text(order):
     text = bd.questions_in_order(order)
-    assert text.count("\nAV01  ") == 3 and text.count("\nAM01  ") == 2
-    assert "AR01" not in text and "AG01" not in text
+    assert text.count("\nAR01  ") == 3 and text.count("\nAV01  ") == 2
+    assert text.count("\nAM01  ") == 2 and "AG01" not in text
     assert "49 consultas" in text
+    google = text.split("==== Google", 1)[1]
+    assert "AR05  " in google and "AV01" not in google and "AM01" not in google
+    chatgpt = text.split("==== ChatGPT", 1)[1].split("==== Gemini", 1)[0]
+    assert chatgpt.index("AR01") < chatgpt.index("AV01") < chatgpt.index("AM01")
+    assert "22 preguntas" in chatgpt
 
 
 def test_prefill_cli_writes_the_three_private_files(tmp_path):
@@ -174,4 +204,5 @@ def test_prefill_cli_writes_the_three_private_files(tmp_path):
         assert (tmp_path / name).exists(), name
     lines = (tmp_path / "captura-despues-prerrellenada.csv").read_text(
         encoding="utf-8-sig").splitlines()
-    assert len(lines) == 50 and ",despues,AV01,chatgpt," in lines[1]
+    assert len(lines) == 50 and ",despues,AR01,chatgpt," in lines[1]
+    assert lines[-1].split(",")[2:4] == ["AR05", "google"]

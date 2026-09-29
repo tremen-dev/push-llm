@@ -184,20 +184,29 @@ def render_coverage(cov: dict) -> str:
 
 
 # ---------------------------------------------------------------- CA-3/CA-5 calibration order
-# Amendment 2026-09-29 (b): the manual pass is a calibration: AV in ChatGPT, Gemini and
-# Google, plus AM in ChatGPT and Gemini (never in Google). AR/AG are measured by the probe.
-CALIBRATION_BLOCKS = (("chatgpt", ("AV", "AM")), ("gemini", ("AV", "AM")), ("google", ("AV",)))
+# Amendment 2026-09-29 (c): calibration by level. ChatGPT and Gemini: AR -> AV -> AM (AR
+# first, human decision at the gate); Google: AR only (never AV, AM or AG). AG is measured
+# by the probe only. 49 queries per pass.
+CALIBRATION_BLOCKS = (("chatgpt", ("AR", "AV", "AM")), ("gemini", ("AR", "AV", "AM")),
+                      ("google", ("AR",)))
 CALIBRATION_QUERIES = 49
 CALIBRATION_PASSES = ("antes", "despues")
 APP_TITLES = {"chatgpt": "ChatGPT (chat temporal)", "gemini": "Gemini", "google":
               "Google (incógnito, resumen de IA)"}
-BLOCK_TITLES = {"AV": "Bloque AV (núcleo)", "AM": "Bloque AM (marca)"}
+BLOCK_TITLES = {"AR": "Bloque AR (área de influencia)", "AV": "Bloque AV (núcleo)",
+                "AM": "Bloque AM (marca)"}
 PREFILL_MUNICIPIO = "Vilaboa"
+_LEVEL_IDS = {"AR": [f"AR{i:02d}" for i in range(1, 6)],
+              "AV": [f"AV{i:02d}" for i in range(1, 16)],
+              "AM": ["AM01", "AM02"]}
+# (app, block) -> ids of one pass, in order: the layout count_baseline.py requires.
+EXPECTED_LAYOUT = {(app, block): tuple(_LEVEL_IDS[block])
+                   for app, blocks in CALIBRATION_BLOCKS for block in blocks}
 
 
 def calibration_order(doc: dict) -> list[dict]:
     """The 49 queries of one calibration pass, in the protocol order."""
-    by_prefix = {"AV": doc["measurement"], "AM": doc["brand"]}
+    by_prefix = {"AR": doc["regional"], "AV": doc["measurement"], "AM": doc["brand"]}
     return [{"app": app, "block": block, "id": q["id"], "text": q["text"],
              "language": q["language"]}
             for app, blocks in CALIBRATION_BLOCKS for block in blocks for q in by_prefix[block]]
@@ -217,8 +226,8 @@ def prefill_rows(order: list[dict], pasada: str) -> list[dict]:
 
 
 def questions_in_order(order: list[dict]) -> str:
-    out = [f"Pasada de calibración: {len(order)} consultas (solo AV y AM). Municipio: "
-           f"{PREFILL_MUNICIPIO}. Si repartes en 2 días, corta solo entre apps."]
+    out = [f"Pasada de calibración: {len(order)} consultas (AR, AV y AM; en Google solo AR). "
+           f"Municipio: {PREFILL_MUNICIPIO}. Si repartes en 2 días, corta solo entre apps."]
     for app, blocks in CALIBRATION_BLOCKS:
         qs = [q for q in order if q["app"] == app]
         out += ["", f"==== {APP_TITLES[app]}: {len(qs)} preguntas ===="]
