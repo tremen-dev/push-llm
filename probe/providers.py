@@ -19,6 +19,10 @@ MAX_PAUSE_TURNS = 4
 GEMINI_REFUSAL_REASONS = {"SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST", "SPII", "RECITATION",
                           "IMAGE_SAFETY"}
 STATUSES = ("ok", "error", "refusal", "empty")
+# SPEC-013 CA-1 / ADR-006: never persisted, at any depth (Gemini's sdk_http_response carries
+# the HTTP headers). Compared case-insensitively.
+FORBIDDEN_KEYS = frozenset({"headers", "sdk_http_response", "api_key", "authorization",
+                            "x-api-key"})
 
 
 @dataclass
@@ -31,6 +35,41 @@ class ProviderResult:
     web_searches: int | None = None
     cited_urls: list[str] = field(default_factory=list)
     error: str = ""
+    request: dict = field(default_factory=dict)  # parameters sent (no client, no credentials)
+    responses: list = field(default_factory=list)  # every SDK response, JSON-ready (SPEC-013)
+
+
+def scrub(obj):
+    """Drop FORBIDDEN_KEYS at any depth (case-insensitive); returns a new structure."""
+    if isinstance(obj, dict):
+        return {k: scrub(v) for k, v in obj.items()
+                if not (isinstance(k, str) and k.lower() in FORBIDDEN_KEYS)}
+    if isinstance(obj, (list, tuple)):
+        return [scrub(v) for v in obj]
+    return obj
+
+
+def _jsonable(obj):
+    if obj is None or isinstance(obj, (str, int, float, bool)):
+        return obj
+    if isinstance(obj, dict):
+        return {str(k): _jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [_jsonable(v) for v in obj]
+    if hasattr(obj, "model_dump"):  # pydantic models of the three SDKs
+        try:
+            return _jsonable(obj.model_dump(mode="json", warnings=False))
+        except Exception:  # fall back to the attributes
+            pass
+    if hasattr(obj, "__dict__"):
+        return {k: _jsonable(v) for k, v in vars(obj).items() if not k.startswith("_")}
+    name = getattr(obj, "name", None)  # enums
+    return name if isinstance(name, str) else str(obj)
+
+
+def raw_json(obj):
+    """Full JSON form of an SDK response (nothing trimmed) without headers or keys."""
+    return scrub(_jsonable(obj))
 
 
 def _dedupe(urls):
@@ -52,16 +91,18 @@ def _location(cfg: dict) -> dict:
 
 # ---------------- Claude ----------------
 
-def _claude(prompt, cfg, model, client):
-    if client is None:
-        import anthropic
-        client = anthropic.Anthropic()
+def _claude(prompt, cfg, model, client, rec):
     pcfg = cfg["providers"]["claude"]
     tools = [{"type": pcfg["web_search_tool"], "name": "web_search",
               "max_uses": pcfg["max_searches"], "user_location": _location(cfg)}]
     kwargs = {}
     if pcfg.get("effort"):
         kwargs["output_config"] = {"effort": pcfg["effort"]}
+    rec["request"] = {"model": model, "max_tokens": pcfg["max_tokens"], "system": SYSTEM,
+                      "tools": tools, **kwargs, "prompt": prompt}
+    if client is None:
+        import anthropic
+        client = anthropic.Anthropic()
     messages = [{"role": "user", "content": prompt}]
     texts, urls = [], []
     tin = tout = searches = 0
@@ -69,6 +110,7 @@ def _claude(prompt, cfg, model, client):
     for _ in range(MAX_PAUSE_TURNS):
         resp = client.messages.create(model=model, max_tokens=pcfg["max_tokens"], system=SYSTEM,
                                       tools=tools, messages=messages, **kwargs)
+        rec["responses"].append(raw_json(resp))
         served = getattr(resp, "model", None) or served
         usage = resp.usage
         tin += usage.input_tokens or 0
@@ -93,18 +135,21 @@ def _claude(prompt, cfg, model, client):
 
 # ---------------- OpenAI ----------------
 
-def _openai(prompt, cfg, model, client):
-    if client is None:
-        from openai import OpenAI
-        client = OpenAI()
+def _openai(prompt, cfg, model, client, rec):
     pcfg = cfg["providers"]["openai"]
     loc = _location(cfg)
+    tools = [{"type": pcfg["web_search_tool"], "user_location": loc}]
     kwargs = {}
     if pcfg.get("effort"):
         kwargs["reasoning"] = {"effort": pcfg["effort"]}
-    resp = client.responses.create(model=model, instructions=SYSTEM, input=prompt,
-                                   tools=[{"type": pcfg["web_search_tool"], "user_location": loc}],
+    rec["request"] = {"model": model, "instructions": SYSTEM, "tools": tools, **kwargs,
+                      "prompt": prompt}
+    if client is None:
+        from openai import OpenAI
+        client = OpenAI()
+    resp = client.responses.create(model=model, instructions=SYSTEM, input=prompt, tools=tools,
                                    **kwargs)
+    rec["responses"].append(raw_json(resp))
     searches, urls, refused = 0, [], False
     for item in resp.output or []:
         if item.type == "web_search_call":
@@ -131,13 +176,15 @@ def _enum_name(x) -> str:
     return getattr(x, "name", None) or str(x).split(".")[-1]
 
 
-def _gemini(prompt, cfg, model, client):
+def _gemini(prompt, cfg, model, client, rec):
+    pcfg = cfg["providers"]["gemini"]
+    config = {"system_instruction": SYSTEM, "tools": [{pcfg["web_search_tool"]: {}}]}
+    rec["request"] = {"model": model, "config": config, "prompt": prompt}
     if client is None:
         from google import genai
         client = genai.Client()
-    pcfg = cfg["providers"]["gemini"]
-    config = {"system_instruction": SYSTEM, "tools": [{pcfg["web_search_tool"]: {}}]}
     resp = client.models.generate_content(model=model, contents=prompt, config=config)
+    rec["responses"].append(raw_json(resp))
     um = resp.usage_metadata
     tin = (um.prompt_token_count or 0) + (getattr(um, "tool_use_prompt_token_count", 0) or 0)
     tout = (um.candidates_token_count or 0) + (getattr(um, "thoughts_token_count", 0) or 0)
@@ -164,11 +211,17 @@ ADAPTERS = {"claude": _claude, "openai": _openai, "gemini": _gemini}
 
 
 def ask(name: str, prompt: str, cfg: dict, model: str, client=None) -> ProviderResult:
-    """Call one provider; never raises. Failures become status=error rows."""
+    """Call one provider; never raises. Failures become status=error rows.
+    The result carries the request sent and every raw SDK response (SPEC-013 CA-1)."""
+    rec = {"request": {}, "responses": []}
     try:
-        return ADAPTERS[name](prompt, cfg, model, client)
+        r = ADAPTERS[name](prompt, cfg, model, client, rec)
     except Exception as e:  # keep going, log the failure in the row
-        return ProviderResult("error", "", model, error=f"{type(e).__name__}: {e}")
+        r = ProviderResult("error", "", model, error=f"{type(e).__name__}: {e}")
+        rec["responses"] = []  # an error line keeps no partial responses
+    r.request = scrub(_jsonable(rec["request"]))
+    r.responses = rec["responses"]
+    return r
 
 
 def cost_eur(r: ProviderResult, name: str, cfg: dict) -> float:
