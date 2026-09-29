@@ -71,6 +71,17 @@ def test_ca1_brand_questions_am_are_not_in_the_probe():
     assert not [r for r in read_csv(PROBE_DIR / "prompts.csv") if r["id"].startswith("AM")]
 
 
+def test_ca7_pilot_prompts_equal_to_set_frozen_at_official_baseline():
+    """SPEC-007 CA-8: the set froze when the official baseline started (ledger of SPEC-008,
+    "Registro de la congelación del set"). A new question needs a new id, never an edit."""
+    lines = (FIXTURES / "pilot-set-frozen.tsv").read_text(encoding="utf-8").splitlines()
+    frozen = [tuple(line.split("\t", 1)) for line in lines if line and not line.startswith("#")]
+    assert len(frozen) == 24
+    probe = [(r["id"], r["prompt"]) for r in read_csv(PROBE_DIR / "prompts.csv")
+             if r["id"][:2] in LEVELS]
+    assert probe == frozen
+
+
 def test_ca1_prompt_ids_unique():
     ids = [r["id"] for r in read_csv(PROBE_DIR / "prompts.csv")]
     assert len(ids) == len(set(ids))

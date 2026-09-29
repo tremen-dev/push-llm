@@ -1,0 +1,26 @@
+# AV01-AV15, AR01-AR05, AG01-AG04 (id, prompt) as in probe/prompts.csv at commit 60863af.
+# Frozen at the start of the official baseline, 2026-09-29T15:30:43Z (SPEC-007 CA-8, SPEC-008 CA-7).
+AV01	¿Cuál es la mejor clínica de medicina estética en Viveiro?
+AV02	Recomiéndame una clínica de medicina estética en A Mariña lucense.
+AV03	¿Merece la pena ir a Lugo o a A Coruña para hacerme tratamientos de medicina estética, o hay buenas clínicas en A Mariña?
+AV04	¿Dónde me pongo bótox en Viveiro con un médico de confianza?
+AV05	¿Cuánto cuesta el ácido hialurónico en labios en Viveiro y dónde me lo hago?
+AV06	Quiero quitarme las manchas de la cara con láser en Burela o en Foz. ¿Qué clínica me recomiendas?
+AV07	Tengo grasa localizada y flacidez en el abdomen. ¿Qué clínica de Viveiro me lo puede tratar sin cirugía?
+AV08	¿Cuánto cuesta un tratamiento médico para la celulitis en A Mariña y qué clínica me recomiendas?
+AV09	¿Dónde puedo hacerme un trasplante capilar en la provincia de Lugo?
+AV10	¿Cuánto cuesta un injerto capilar con técnica DHI en Galicia y qué clínica me recomiendas cerca de Viveiro?
+AV11	¿Es mejor hacerme el injerto capilar en Turquía o en una clínica de Lugo?
+AV12	¿Dónde me puedo operar los párpados caídos (blefaroplastia) en Viveiro o en Lugo?
+AV13	¿Qué clínica de medicina estética de Viveiro tiene médicos titulados y buenas opiniones?
+AV14	Cal é a mellor clínica de medicina estética en Viveiro?
+AV15	Onde me podo facer un transplante capilar preto de Viveiro?
+AR01	Vivo en Ferrol. Que clínica de medicina estética con médicos me recomendas pola zona, aínda que teña que desprazarme un pouco?
+AR02	Vivo entre Narón y Ortigueira. ¿Dónde me pongo bótox con un médico de confianza por la zona, aunque tenga que desplazarme un poco?
+AR03	Vivo en Vilalba. ¿Qué clínica con médicos titulados y buenas opiniones me recomiendas para ponerme ácido hialurónico, aunque tenga que desplazarme?
+AR04	Vivo entre Sarria y A Fonsagrada. ¿Cuánto cuesta un injerto capilar y qué clínica me recomiendas, aunque tenga que desplazarme?
+AR05	Vivo en Tapia de Casariego (Asturias). ¿Qué clínica de medicina estética me recomiendas cerca, aunque tenga que desplazarme un poco?
+AG01	¿Cuál es la mejor clínica de Galicia para hacerme un injerto capilar con técnica DHI?
+AG02	¿Cuánto cuesta un trasplante capilar con técnica DHI en Galicia y dónde me recomiendas hacerlo?
+AG03	¿Dónde me recomiendas operarme los párpados superiores caídos (blefaroplastia) en Galicia?
+AG04	Cal é a mellor clínica de Galicia para operarme as pálpebras superiores caídas (blefaroplastia)?

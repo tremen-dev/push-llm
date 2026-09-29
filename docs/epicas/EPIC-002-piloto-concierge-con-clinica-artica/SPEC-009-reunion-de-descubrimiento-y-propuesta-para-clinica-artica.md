@@ -13,6 +13,20 @@ historial:
 ---
 # SPEC-009 — Reunión de descubrimiento y propuesta para Clínica Ártica
 
+> **Nota 2026-09-29 (c) (sdd-arquitecto) — Go "crecer fuera, defender dentro" (ADR-009,
+> borrador). No cambia ningún CA ni requiere re-aprobación por sí misma; deja una decisión
+> pendiente.** Esta spec no promete "+15 pts en el núcleo" en ningún sitio, así que no hay
+> nada que retirar. Pero su CA-3 dice que "cómo sabremos si funciona" usa "los dos criterios
+> de la épica, referidos al **núcleo**", y que el área de influencia aparece "solo como
+> también lo medimos, sin objetivo". Con ADR-009 el núcleo pasa a ser condición de
+> **defensa** y el crecimiento se mide en `AR`. **Follow-up F-SPEC-009-1 (→ humano, antes
+> de redactar `propuesta.md`)**: decidir si la propuesta cuenta a la clínica el Go nuevo
+> (p. ej. "que os recomienden también a pacientes de Ferrolterra, norte de Lugo y occidente
+> de Asturias, sin perder lo que ya tenéis en A Mariña", sin garantía) o lo deja como
+> criterio interno de Tremendev. Si se cuenta, CA-3 necesita enmienda y la spec,
+> re-aprobación; si no, CA-3 queda como está y el Go se explica solo en el cierre
+> (SPEC-012). El nivel Galicia sigue sin aparecer (ADR-005 §6, vigente).
+
 > **Nota 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008). No cambia ningún CA ni
 > requiere re-aprobación.** Las citas a ADR-003 y ADR-005 de esta spec siguen valiendo en lo
 > que usa (lote aparte, niveles `AV`/`AR`/`AG` sin mezclar, Go solo con `AV`, nivel Galicia

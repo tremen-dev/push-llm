@@ -2,7 +2,7 @@
 id: SPEC-008
 tipo: spec
 epica: EPIC-002
-estado: en-progreso
+estado: borrador
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-28, por: sdd-arquitecto}
@@ -15,8 +15,34 @@ historial:
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
   - {estado: en-progreso, fecha: 2026-09-29, por: sdd-implementador}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
 ---
 # SPEC-008 — Catálogo de Viveiro y A Mariña en el probe
+
+> **Enmienda 2026-09-29 (d) (sdd-arquitecto) — decisión de CA-10: "crecer fuera, defender
+> dentro" (ADR-009, borrador).** **Hecho de la spec**: el baseline oficial (CA-7) se ejecutó
+> el 2026-09-29 (set congelado a las 15:30:43Z, commit `60863af`; todas las respuestas
+> `ok`; modelos servidos = dictamen). En veredictos frente a umbral (cifras solo en el
+> espacio privado, ADR-004 §2 y §3): el SoV ponderado del núcleo `AV` **supera el umbral de
+> techo de CA-10 (≥ 85 %)**, así que **saltó el aviso de techo**; `AR` tiene presencia
+> minoritaria de la clínica, **con margen de crecimiento**; `AG`, **sin presencia**.
+> **Decisión del humano (Alberto Fojo, 2026-09-29), antes de la primera acción**: ninguna de
+> las tres opciones de CA-10; el Go pasa a **crecer en el área de influencia `AR`**, con el
+> núcleo `AV` como **condición de defensa** (no debe caer de forma significativa respecto al
+> baseline oficial), y ≥ 1
+> paciente atribuido (EPIC-002, criterio 4, commit `f40637f`). Contradice ADR-005 §4 (Go
+> solo con `AV`), así que la recoge **ADR-009**, que lo supera en parte.
+> Cambian: CA-5 (coste con el diseño nuevo de `AR`), CA-7 (qué parte del baseline es base de
+> qué condición), CA-9 (puntos (d) y (g), sustituidos por CA-11), CA-10 (decisión
+> registrada), **CA-11 nuevo** (dictamen de `sdd-metricas` sobre el Go con `AR`), **CA-12
+> nuevo** ("antes" de `AR` con el diseño de CA-11, antes de la primera acción), entidades,
+> dependencias y notas. CA-1 a CA-4, CA-6 y CA-8 no cambian. **Altera el alcance aprobado**
+> (una medición nueva antes de la primera acción y, según la opción, reabrir la
+> congelación): la spec pasa `bloqueada` → `borrador` y necesita **nueva aprobación
+> humana**, junto con ADR-009. Lo ya implementado y verificado sigue valiendo. **Primera
+> acción del piloto: espera** a CA-11 y CA-12. La anotación de la decisión en el ledger
+> (evidencia de CA-10) la hace sdd-implementador; este cambio no toca el ledger.
 
 > **Nota 2026-09-29 (c) (sdd-arquitecto): SPEC-013 en caso B1. No cambia ningún CA ni
 > requiere re-aprobación.** El diagnóstico de SPEC-013 (CA-2) mostró que Claude consulta URLs
@@ -144,6 +170,12 @@ código; además el resultado del lote de Vigo no puede cambiar.
   semana) y la ejecución `AR`/`AG` que le toque, recalculado con el coste medido en el humo
   (`c`); si no cabe en ≤ 20 €, el dictamen propone cómo, sin bajar los runs de las
   mediciones del Go por debajo de los del baseline.
+  **Enmienda 2026-09-29 (d)**: el cálculo se rehace con el diseño de `AR` que fije CA-11
+  (el "antes" de CA-12 en el mes del baseline; las mediciones `AR` "después" y la defensa
+  `AV` en el mes del cierre). Si no cabe en ≤ 20 €, el dictamen de `sdd-probe` propone la
+  palanca (p. ej. no lanzar el `AR` de 1 run en una semana con medición `AR` del Go, o `AG`
+  cada 8 semanas), sin bajar los runs de las mediciones "después" de `AR` por debajo de los
+  de su "antes".
   *Evidencia*: dictamen y cálculo en el ledger.
 - **CA-6 (documentación) [Agente]**: Dado D-8, cuando se cierre la spec, entonces
   `probe/README.md` (en inglés) explica cómo lanzar el lote de Viveiro, dónde sale y que el
@@ -161,7 +193,11 @@ código; además el resultado del lote de Vigo no puede cambiar.
   criterio 4): el Go se calcula probe contra probe (SPEC-007 CA-2 e) y solo con `AV`
   (ADR-005 §4). **No depende** de ninguna pasada manual. Si no puede lanzarse antes de la
   primera acción, la primera acción espera: sin baseline del probe no hay criterio Go (ya
-  no hay alternativa manual). *Evidencia*: fechas del baseline frente a la del `hecho` de
+  no hay alternativa manual). **Enmienda 2026-09-29 (d) (ADR-009)**: esta ejecución es la
+  base de la **condición de defensa** del núcleo (solo `AV`); la base de la
+  **condición de crecimiento** es el "antes" de `AR` de CA-12, no las filas `AR` de 1 run de
+  esta ejecución (salvo que CA-11 diga que bastan). Los niveles siguen sin mezclarse.
+  *Evidencia*: fechas del baseline frente a la del `hecho` de
   SPEC-013, la de congelación y la de la primera acción del registro de SPEC-012; runs por
   nivel iguales a los de CA-9.
 - **CA-8 (nada en bruto en el repo) [Verificador]**: Dado ADR-001, cuando se cierre la spec,
@@ -200,6 +236,10 @@ código; además el resultado del lote de Vigo no puede cambiar.
   las instrucciones del ledger. El dictamen lo emite `sdd-metricas`; este CA no lo
   prejuzga. *Evidencia*: dictamen con fecha anterior al baseline y tabla condición →
   cambio en el ledger.
+  **Enmienda 2026-09-29 (d) (ADR-009)**: el dictamen ya emitido sigue valiendo en (a), (b),
+  (c), (e), (f), (h) e (i). Su punto **(d)** (Δ ≥ +15 pts en el núcleo) queda **sustituido**
+  por CA-11 (ii) y (iii); su punto **(g)**, en lo que toca a `AR`, por CA-11 (i) y (ii). En
+  `AG`, (g) sigue igual.
 - **CA-10 (margen para el criterio Go) [Agente avisa; Humano decide]**: Dado que la clínica
   podría ya aparecer mucho en las preguntas de Viveiro, cuando el baseline oficial (CA-7)
   deje el SoV ponderado del núcleo `AV` a menos de 15 pts de su techo (≥ 85 %), entonces,
@@ -209,6 +249,56 @@ código; además el resultado del lote de Vigo no puede cambiar.
   con `AV` y solo con el probe (sale de SPEC-007 CA-8, enmienda 2026-09-29 (b)).
   *Evidencia*: cifra del ponderado del núcleo en el `summary.md` privado; si aplica,
   decisión fechada en el ledger anterior a la primera acción.
+  **Decisión registrada (enmienda 2026-09-29 (d))**: el aviso saltó (el ponderado del
+  núcleo supera el 85 %; cifra en el `summary.md` privado). El humano
+  (Alberto Fojo, 2026-09-29, antes de la primera acción) decidió "crecer fuera, defender
+  dentro" (ADR-009; EPIC-002, criterio 4). La evidencia de este CA es esa decisión anotada
+  con fecha en el ledger, anterior a la primera acción del registro de SPEC-012.
+- **CA-11 (dictamen del Go con `AR`: crecer fuera, defender dentro) [Agente; consulta
+  sdd-metricas]**: Dado ADR-009, el baseline oficial (CA-7: núcleo por encima del umbral de
+  techo; `AR` medido con 5 preguntas × 1 run; cifras en el espacio privado, que el dictamen
+  puede leer y cita solo como veredictos en el repo) y el set congelado (SPEC-007 CA-8), cuando se prepare el
+  "antes" de `AR` (CA-12) y **antes de lanzarlo y de la primera acción**, entonces consta en
+  el ledger un dictamen fechado de `sdd-metricas` (conclusión por punto, condiciones,
+  fuentes) que fija al menos:
+  (i) **diseño de medición de `AR`**: más runs con las mismas 5 preguntas (opción A), más
+  preguntas `AR` (opción B) o ambas; runs por ejecución; qué cifra se usa (recuento de
+  casillas pregunta × proveedor, SoV bruto por proveedor o ponderado solo de `AR`); cuántas
+  mediciones "después", en qué semanas y con qué separación; y, si recomienda la opción B,
+  cuántas preguntas nuevas y con qué cobertura (Ferrolterra, norte e interior de Lugo,
+  occidente de Asturias);
+  (ii) **umbral de crecimiento y regla de estabilidad** de la condición (C), decidible con
+  sí/no desde los `results.csv` del "antes" y de las mediciones "después", con el ruido
+  esperable, la probabilidad de un Go falso y la de detectar una subida real, como el punto
+  (e) de CA-9;
+  (iii) **umbral de defensa** del núcleo, condición (D): cuánto puede caer el SoV ponderado
+  de `AV` frente al baseline oficial sin que cuente como caída significativa, con qué mediciones "después"
+  (las dos de CA-9 (c) u otra forma) y si basta con una o hace falta en las dos;
+  (iv) qué de CA-9 (f) (mismo instrumento) se aplica a `AR`, incluido el cambio de modelo
+  por defecto entre el baseline oficial y CA-12;
+  (v) si el dictamen no puede fijar (ii) con 5 preguntas a ningún número de runs razonable,
+  lo dice y recomienda B.
+  Ninguna regla combina niveles en una cifra (ADR-009 §2). Cada condición se mapea a un
+  cambio en `batches/viveiro.json`, `analysis.py`, el README, las instrucciones del ledger o
+  SPEC-012. El dictamen lo emite `sdd-metricas`; este CA no lo prejuzga. Si la opción
+  elegida es B, el dictamen se pide **después** de que el humano apruebe las preguntas
+  nuevas y antes de medirlas. *Evidencia*: dictamen con fecha anterior al "antes" de CA-12 y
+  a la primera acción; tabla condición → cambio.
+- **CA-12 ("antes" de `AR` del Go) [Humano lanza; Agente revisa]**: Dado CA-11 y la opción
+  que apruebe el humano en el gate, cuando se ejecute el lote de Viveiro solo con `AR` y el
+  diseño de CA-11 (opción A: `--levels AR` con los runs de CA-11; opción B: además las
+  preguntas `AR` nuevas), en un directorio nuevo del espacio privado y **antes de la primera
+  acción**, entonces: existen su `results.csv` y `summary.md` con fecha; el ledger recoge
+  fecha, runs, llamadas por estado, coste y modelos por proveedor; la medición queda
+  completa (≥ 90 % de filas `ok` por proveedor con peso, como CA-9 (a).2); y la petición es
+  la del baseline oficial salvo el modelo (CA-9 (f)). **Solo si es la opción B**: antes de
+  esta ejecución, las preguntas nuevas llevan ids nuevos (`AR06`…), se añaden a
+  `docs/piloto-artica/prompts-baseline.md` y a `probe/prompts.csv` (CA-1), sus competidoras
+  pasan la verificación de CA-2, y el ledger registra una **segunda fecha de congelación**
+  solo para ellas; las 24 preguntas ya congeladas no cambian de id ni de texto. Si no puede
+  lanzarse antes de la primera acción, la primera acción espera: sin "antes" de `AR` no hay
+  condición de crecimiento. *Evidencia*: fechas de CA-11, de CA-12 y de la primera acción;
+  runs iguales a los de CA-11; test CA-1 en verde con el set (y, si B, el set ampliado).
 
 ## Entidades y reglas afectadas
 - Dominio: Prompt, Prompt catalogue, Clinic, Provider, Probe / ProbeRun, Mention.
@@ -221,6 +311,9 @@ código; además el resultado del lote de Vigo no puede cambiar.
   del proveedor; sin ello el baseline oficial no tiene fuentes de Claude para SPEC-011 ni
   cumple el No-negociable de guardar la respuesta en bruto) y del dictamen de CA-9. Ya
   **no** depende de ninguna pasada manual de SPEC-007.
+- **ADR-009** (enmienda (d)): Go = crecer en `AR` + defender `AV` + ≥ 1 paciente, sin
+  mezclar niveles; supera en parte ADR-005 §4 y §6 y ADR-008 §6. CA-12 depende de CA-11;
+  la primera acción del piloto (SPEC-012) depende de CA-7, CA-10, CA-11 y CA-12.
 
 ## Fuera de alcance
 - Google AI Overviews y Perplexity en el probe (siguen fuera; AI Overviews se mide a mano
@@ -274,3 +367,32 @@ código; además el resultado del lote de Vigo no puede cambiar.
   preguntas × ejecución), dentro de los 20 €; CA-5 lo recalcula. (5) Claude sí entra en el
   ponderado del Go con el probe (RN-04 normalizado), aunque la calibración manual solo
   contraste ChatGPT y Gemini.
+- **Enmienda 2026-09-29 (d) — a mirar con lupa: cómo medir `AR` para el Go.** Hay que
+  elegir en el gate entre dos opciones; el número de runs exacto lo fija después
+  `sdd-metricas` (CA-11). Costes con `c` ≈ 0,12 € por pregunta × run con los 3 proveedores
+  (cifra operativa, no de visibilidad), suponiendo 3 runs y dos mediciones "después" como en
+  el núcleo:
+  - **Opción A — más runs, mismas 5 preguntas `AR`** (no reabre la congelación): "antes"
+    5 × 3 ≈ **1,8 €**; cada "después" ≈ 1,8 €, dos ≈ 3,6 €; **≈ 5,4 € en todo el piloto**.
+    El mes del cierre sube unos 3 € (de ≈ 15 € a ≈ 18 € típico; el peor mes natural queda en
+    torno a 20 €, en el límite: CA-5 lo recalcula y propone palanca). Se puede lanzar en
+    cuanto haya dictamen: retraso de la primera acción de 1–2 días. Con 5 runs: 3,0 € por
+    ejecución, ≈ 9 € en el piloto (el mes del cierre ya no cabe sin palanca).
+  - **Opción B — más preguntas `AR` (y más runs)** (reabre la congelación **solo para
+    añadir**, CA-12): p. ej. 10 preguntas nuevas (15 en total) × 3 runs: "antes" ≈ **5,4 €**;
+    cada "después" ≈ 5,4 €, dos ≈ 10,8 €; **≈ 16 € en todo el piloto**. El mes del cierre
+    pasa de ≈ 15 € a ≈ 26 €: **no cabe en ≤ 20 €** sin recortar otra cosa (p. ej. menos runs
+    en la defensa del núcleo o `AV` semanal suspendido en las semanas del cierre). Además:
+    redactar y aprobar las preguntas (enmienda de SPEC-007), verificar competidoras de las
+    zonas nuevas (CA-2), nueva fecha de congelación, tests; retraso de la primera acción de
+    varios días. Riesgo: las preguntas se escriben después de haber visto el baseline de
+    `AR`.
+  - **Recomendación del arquitecto: opción A.** No toca el set congelado, cuesta un tercio,
+    cabe en el presupuesto y no retrasa. Salvedad honesta: más runs reducen el ruido de cada
+    casilla, pero no el de tener solo 5 preguntas; una subida puede venir de 1–2 preguntas.
+    Por eso CA-11 (v) obliga a `sdd-metricas` a decir si 5 preguntas bastan; si dice que no,
+    se pasa a B antes de la primera acción.
+- **Enmienda (d) — también a mirar**: (1) La primera acción espera a CA-11 y CA-12. (2) El
+  umbral de defensa del núcleo lo fija `sdd-metricas`; con el núcleo por encima del techo,
+  una caída pequeña puede ser ruido, y el dictamen debe decir cuánto. (3) Qué se cuenta a la
+  clínica sobre el Go nuevo es de SPEC-009 (nota allí), no de esta spec.

@@ -23,7 +23,7 @@ epica: EPIC-002
 | CA-4 | `probe/probe_config.json`: sección `batch` del lote Vigo (prefijos `D F O E P H`, locales Vigo+Pontevedra, lista explícita de sus 52 marcas, salida `probe`). Golden generado con el código anterior (commit 8fe5132): `probe/tests/fixtures/vigo_results.csv` (incluye respuestas que nombran a Novoa, Medical Hair, Dorsia, Ártica, Hospital Capilar…) y `vigo_summary_before.md` | `test_pilot_batch.py::test_ca4_vigo_summary_identical_to_before_the_change`, `::test_ca4_default_batch_is_vigo`, `::test_ca4_default_run_never_executes_pilot_prompts`, `::test_ca4_pilot_brand_based_in_vigo_is_not_in_vigo_batch`, `::test_ca4_every_brand_belongs_to_some_batch`; todos los tests previos en verde (`python -m pytest -q probe/tests`: 156) | Intermedia 2026-09-29: regenerado el golden con el código de `8fe5132^` (git archive) → idéntico a `vigo_summary_before.md` (salvo CRLF); el mismo código viejo con el `brands.csv` nuevo da otro resumen (estética openai 25→50 %, ponderado 54,2→69,4 %), así que el test tiene dientes; lista Vigo = las 52 marcas previas; filas previas de `brands.csv`, `prompts.csv` y `probe_config.json` (salvo `batch`) sin cambios; `pytest probe/tests` 133 verde, `ruff` limpio | ✅ |
 | CA-5 | Dictamen `sdd-probe` y cálculo en este ledger ("Dictamen sdd-probe (CA-5)"); cadencia aceptada por el humano; runs por nivel en `probe/batches/viveiro.json` (`AV` 3 desde la enmienda (b)) y `--levels` en `probe/run_probe.py`. Enmienda (b): "Mes del cierre y mes del baseline (enmienda (b))" con `c` = 0,1142 € y umbrales de `c'` | Cálculo reproducible en el propio dictamen; `test_pilot_batch.py::test_ca5_*` (`test_ca5_simple_pilot_command_uses_runs_per_level`: 15 × 3 + 9 = 54 llamadas por proveedor) | Intermedia 2026-09-29: recalculado: 72 p×e → 8,9/16,2 €; mes normal 9,2/16,8 €; baseline 102 p×e alto 22,97 € → regla de 2 runs 19,6 €; precios coinciden con `probe_config.json`; `AR/AG` a menor cadencia que `AV` | ✅ |
 | CA-6 | `probe/README.md` §"Batches" (lote Vigo = defecto; comandos del lote piloto con `.\.venv\Scripts\python`; runs por nivel; salida). Enmienda (b): comando simple = baseline oficial (`AV` 3, `AR`/`AG` 1; cierra el finding 1), medición "después" con `--levels AV`, humo en directorio nuevo, orden sin pasada manual, líneas del Go en `summary.md` | `test_pilot_batch.py::test_ca6_readme_documents_pilot_batch_with_working_commands` y `::test_ca6_ledger_human_commands_within_budget_and_use_venv_python` (los comandos del README y del ledger se ejecutan offline: lote piloto y ≤ 54 llamadas por proveedor; el ledger sigue el orden de la enmienda (b)) | Intermedia 2026-09-29: sección "Batches" presente, lote Vigo = defecto, salida y comandos válidos. Salvedad: el comando de baseline del README (24 × 3 runs, 216 llamadas) no sigue la cadencia de CA-5 (`AR/AG` 1 run; regla 2/3 runs) que sí siguen las instrucciones del ledger | ⚠️ |
-| CA-7 | [Humano lanza] Baseline oficial del Go, sin ejecutar. Comandos exactos, orden y registro de la congelación en "Instrucciones para el humano (CA-7)"; forma fijada por el dictamen CA-9 (a) | — (fechas frente al `hecho` de SPEC-013, la congelación y la primera acción de SPEC-012) | Pendiente [Humano]: no ejecutado en verificación intermedia; comandos del ledger revisados | ❌ |
+| CA-7 | **Ejecutado el 2026-09-29** (orquestador, con autorización del humano), en el orden de las instrucciones: humo de seguimiento (F-SPEC-013-5 cerrado sin reabrir) → congelación (2026-09-29T15:30:43Z, `60863af`) → baseline oficial `run_probe.py --config batches/viveiro.json`, 15:31:12Z–16:15:10Z. 162 llamadas, 162 `ok` (54 por proveedor, 0 excluidas); modelos servidos = `probe_config.json` (`claude-sonnet-5-5`, `gemini-3.6-flash`, `gpt-5.6-luna`); coste 6,73 € (c real 0,1245 € ≤ 0,1307: CA-5 sin cambios); "Medición completa": sí; **Aviso de techo (CA-10): sí** (decisión del humano pendiente, paso 5). Cifras de visibilidad y revisión de "Ártica" suelta solo en privado (ADR-004 §2): `$PUSHLLM_PRIVADO\piloto-artica\ca7-baseline-evidencia.md`; salida en `…\piloto-artica\probe\`, log en `…\baseline-run.log`. Nada en el repo | Congelación: `test_pilot_batch.py::test_ca7_pilot_prompts_equal_to_set_frozen_at_official_baseline` con `probe/tests/fixtures/pilot-set-frozen.tsv` (24 `id`/`prompt` del commit `60863af`). Fechas: SPEC-013 `hecho` (`0ed5384`) y dictamen CA-9 antes de la congelación; congelación 29 s antes de la primera fila; primera acción de SPEC-012 aún no ocurrida | Pendiente [Humano]: no ejecutado en verificación intermedia; comandos del ledger revisados | ❌ |
 | CA-8 | [Verificador]. Ninguna salida en el repo: tests con `tmp_path`; la salida por defecto del lote es `$PUSHLLM_PRIVADO/piloto-artica/probe` y el respaldo `probe/out/piloto-artica/probe` está bajo `probe/out/` (ignorado); `run_probe.py` rechaza `--out` vacío o raíz de unidad (`unsafe_out`) | `test_run_probe.py::test_ca8_default_inside_repo_is_gitignored` (sin cambios); `test_pilot_batch.py::test_ca8_out_empty_or_root_is_refused`, `::test_ca8_unsafe_out_rules` | Intermedia 2026-09-29: `git ls-files` solo lista fixtures sintéticos de test (`probe/tests/fixtures/vigo_results.csv`, `vigo_summary_before.md`), ninguna salida de lote; `git status --ignored` sin `probe/out/` (no existe); `probe/out/` en `.gitignore`. Repetir al cierre tras CA-7 | ✅ |
 | CA-9 | Dictamen `sdd-metricas` fechado 2026-09-29 en "Dictamen sdd-metricas (CA-9)" con tabla condición → cambio; `probe/batches/viveiro.json` (`AV` 3 runs, `go.min_valid_share` 0,9, `client_review_aliases`); `probe/analysis.py` (`analyze_levels`: ponderado por run, estabilidad por casilla, medición completa, respuestas solo por "Ártica", casillas `AR`/`AG` con la clínica, modelos servidos; `_core_go_lines`, `_bare_lines`); README; instrucciones de este ledger | `test_pilot_batch.py::test_ca9_config_fixes_the_go_instrument`, `::test_ca9_weighted_sov_per_run_and_pooled`, `::test_ca9_stability_per_question_and_provider`, `::test_ca9_go_measurement_complete_only_with_enough_valid_rows_per_provider`, `::test_ca9_bare_artica_answers_are_counted_and_flagged_for_review`, `::test_ca9_levels_outside_core_list_cells_with_client_without_percentages`, `::test_ca9_models_served_are_reported`; golden de Vigo intacto (`test_ca4_vigo_summary_identical_to_before_the_change`) | | |
 | CA-10 | `probe/batches/viveiro.json` (`go.ceiling` 0,85); `probe/analysis.py` (`_ceiling_warning`: línea "Aviso de techo (SPEC-008 CA-10)" en la sección `AV` de `summary.md` si el ponderado del núcleo es ≥ 85 %, solo con `AV`). Decisión humana, si aplica, tras el baseline (paso 5 de las instrucciones) | `test_pilot_batch.py::test_ca10_ceiling_warning_only_from_core_weighted` (20/20, 17/20 = 85 % avisa; 16/20 no; 0 no), `::test_ca10_ceiling_ignores_other_levels` (`AR` al 100 % no avisa) | | |
@@ -33,6 +33,8 @@ Tests (2026-09-29, tras los findings): `python -m pytest -q probe/tests` → 156
 Tests (2026-09-29, enmienda (b), CA-9/CA-10, con `PUSHLLM_PRIVADO` en el entorno):
 `pytest probe/tests` → 226 en verde; `pytest docs/piloto-artica/tools/tests` → 143 en verde;
 `ruff check probe` limpio.
+Tests (2026-09-29, registro de CA-7 y congelación): `pytest probe/tests` → 227 en verde;
+`pytest docs/piloto-artica/tools/tests` → 143 en verde; `py -m ruff check probe` limpio.
 
 ## Diseño (mecanismo de CA-3, propuesto por el implementador)
 - **Lote = fichero de configuración** pasado con `--config`. `batches/viveiro.json` hereda
@@ -528,10 +530,14 @@ Nunca se decide después de ver el efecto (CA-10).
 Preparado el 2026-09-29. Lo rellena el agente con lo que avise el humano tras el paso 3:
 | Campo | Valor |
 |---|---|
-| Fecha y hora UTC de congelación (inicio del baseline, `congelacion-set.txt`) | pendiente |
-| Commit del repo en ese momento (`prompts.csv` y `prompts-baseline.md` sin cambios pendientes) | pendiente |
-| Preguntas congeladas | `AV01`–`AV15`, `AR01`–`AR05`, `AG01`–`AG04` (24), texto literal de `docs/piloto-artica/prompts-baseline.md` |
-| Primera fila `timestamp_utc` de `piloto-artica/probe/results.csv` | pendiente |
+| Fecha y hora UTC de congelación (inicio del baseline, `congelacion-set.txt`) | **2026-09-29T15:30:43Z** |
+| Commit del repo en ese momento (`prompts.csv` y `prompts-baseline.md` sin cambios pendientes) | **`60863af`** (sin cambios pendientes en el set; `git diff 60863af HEAD` de los dos ficheros vacío el 2026-09-29) |
+| Preguntas congeladas | `AV01`–`AV15`, `AR01`–`AR05`, `AG01`–`AG04` (24), texto literal de `docs/piloto-artica/prompts-baseline.md`; copia en `probe/tests/fixtures/pilot-set-frozen.tsv` |
+| Primera fila `timestamp_utc` de `piloto-artica/probe/results.csv` | **2026-09-29T15:31:12Z** (última 16:15:10Z) |
+
+Registrado el 2026-09-29 por sdd-implementador. Hecho el paso 1 de abajo (fixture y
+`test_ca7_pilot_prompts_equal_to_set_frozen_at_official_baseline`); el paso 2 queda para el
+orquestador: fecha **2026-09-29T15:30:43Z**, commit `60863af`, al ledger de SPEC-007 CA-8.
 
 - Tras el registro, el agente:
   1. copia en `probe/tests/fixtures/pilot-set-frozen.tsv` las 24 filas (`id`, `prompt`) del
@@ -683,8 +689,34 @@ Humo de Viveiro (informativo para CA-7): 9/9 `ok`, modelos = dictamen, Claude 0 
   nivel y `--levels` (1), Clínica Villoria como miembro del lote piloto (2), alias punycode
   de Virxe da Mariña (3), `--out` vacío o raíz rechazado y comprobación de
   `PUSHLLM_PRIVADO` en los pasos del humano (4).
+- **F-SPEC-013-5 — cerrado sin reabrir el 2026-09-29** (humo de seguimiento, paso 1 de
+  CA-7, `…\piloto-artica\probe-smoke-spec013`): 9/9 `ok`; OpenAI 1,00 búsquedas por llamada
+  (umbral 1,67) y 0,0116 € por llamada (umbral 0,0144 €), por debajo de los dos, así que el
+  `include` de OpenAI no se toca y el instrumento del Go queda fijado (dictamen CA-9 (f));
+  total 0,3646 €, c' = 0,1215 € ≤ 0,1307 € (CA-5 sin cambios); modelos servidos = configuración;
+  la cabecera de `results.csv` termina en `searched_urls`.
+- **F-SPEC-008-3 — revisión a mano del baseline oficial (2026-09-29, sdd-implementador)**: se
+  leyeron en privado todas las respuestas del núcleo que `summary.md` lista con la clínica solo
+  por "Ártica" suelta. **Todas se refieren a Clínica Ártica** (nombre comercial con su
+  dirección o su oferta); ninguna usa "ártica" como adjetivo, así que la sensibilidad del
+  dictamen CA-9 (h) no cambia nada en el baseline. Cuántas y cuáles, en privado
+  (`ca7-baseline-evidencia.md`, ADR-004 §2). Se repite en cada medición "después".
+- **F-SPEC-008-12** (→ humano, antes de la primera acción; CA-10): el baseline oficial dio el
+  **Aviso de techo**. Falta la decisión del humano (mantener el criterio, subconjunto de `AV`
+  o cambiar el umbral), con fecha, en este ledger. No es del implementador.
+- **F-SPEC-008-13** (→ sdd-implementador / verificador): `ruff` no está en el venv del probe
+  (`probe\.venv`); se ejecutó con `py -m ruff`. Valorar añadirlo a las dependencias de
+  desarrollo.
 
 ## Cómo retomar (handoff)
+- **2026-09-29 (d) (sdd-implementador, tras la ejecución de CA-7)**: CA-7 registrado en la
+  matriz (mi mitad), registro de la congelación relleno, fixture
+  `probe/tests/fixtures/pilot-set-frozen.tsv` con su test, F-SPEC-013-5 cerrado y revisión de
+  "Ártica" suelta hecha (todas son la clínica). Cifras en
+  `$PUSHLLM_PRIVADO\piloto-artica\ca7-baseline-evidencia.md` (ADR-004). Sin commit.
+  Falta: decisión del humano sobre el Aviso de techo (F-SPEC-008-12) antes de la primera
+  acción; fecha de congelación al ledger de SPEC-007 CA-8 (orquestador); verificación de
+  CA-7, CA-9, CA-10 y repetición de CA-8 (sdd-verificador).
 - **2026-09-29 (c) (sdd-implementador, tras la re-aprobación de la enmienda (b))**: spec en
   `en-progreso`. F-SPEC-008-9 hecho.
   - Dictamen CA-9 fechado antes del baseline.
