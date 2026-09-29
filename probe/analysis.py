@@ -478,7 +478,10 @@ def _core_go_lines(res: dict, b: dict, client: str) -> list[str]:
                 f"válidos: {_of(st['all'], n)}; en alguno: {_of(st['some'], n)}; en ninguno: "
                 f"{_of(st['none'], n)}."]
     share = b.get("go", {}).get("min_valid_share")
-    if share is not None:
+    if share is not None and not res["levels"][res["core"]]:
+        out += ["", "Medición completa para la condición (D) del Go: **no aplica** (no se midió "
+                    f"{res['core']})."]
+    elif share is not None:
         verdict = "sí" if res["go_complete"] else "no"
         out += ["", f"Medición completa para la condición (D) del Go: **{verdict}** (cada proveedor "
                     f"con peso tiene ≥ {share * 100:.0f} % de sus filas del núcleo con "
@@ -493,6 +496,9 @@ def _growth_lines(res: dict, b: dict, level: str) -> list[str]:
     if not gr or gr["level"] != level:
         return []
     runs = go.get("growth", {}).get("runs")
+    if not res["levels"][level]:  # the run did not measure this level (e.g. --levels AV)
+        return ["", f"Medición completa para la condición (C) del Go: **no aplica** (no se midió "
+                    f"{level})."]
     if gr["runs"] != runs:
         return ["", f"SoV ponderado de {level}: no se da (esta medición no tiene {runs} runs en "
                     "cada pregunta × proveedor, el diseño de la condición (C) de CA-11; solo "

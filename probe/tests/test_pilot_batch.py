@@ -683,6 +683,22 @@ def test_ca11_ar_measurement_incomplete_with_errors(vcfg):
     assert _res(vcfg, rows)["growth"]["complete"] is False  # 13/15 < 0.9
 
 
+def test_ca11_completeness_does_not_apply_to_a_level_that_was_not_measured(vcfg):
+    """An AR-only run (CA-12) did not measure AV: (D) "no aplica", not "no"; and vice versa."""
+    md = analysis.render_summary(_res(vcfg, ar_rows()), vcfg)
+    av = md.split("## Nivel AV", 1)[1].split("\n## Nivel AR", 1)[0]
+    assert "Medición completa para la condición (D) del Go: **no aplica** (no se midió AV)" in av
+    assert "**no**" not in av
+    ar = md.split("## Nivel AR", 1)[1].split("\n## Nivel AG", 1)[0]
+    assert "Medición completa para la condición (C) del Go: **sí**" in ar
+    md = analysis.render_summary(_res(vcfg, core_rows(_all_cells(runs=3))), vcfg)
+    ar = md.split("## Nivel AR", 1)[1].split("\n## Nivel AG", 1)[0]
+    assert "Medición completa para la condición (C) del Go: **no aplica** (no se midió AR)" in ar
+    assert "no se da" not in ar and "**no**" not in ar
+    av = md.split("## Nivel AV", 1)[1].split("\n## Nivel AR", 1)[0]
+    assert "Medición completa para la condición (D) del Go: **sí**" in av
+
+
 def _hits(cells):
     return lambda pid, prov, run: (pid, prov) in cells
 

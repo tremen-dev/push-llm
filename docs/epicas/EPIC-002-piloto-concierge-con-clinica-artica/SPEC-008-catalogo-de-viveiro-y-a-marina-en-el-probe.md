@@ -2,7 +2,7 @@
 id: SPEC-008
 tipo: spec
 epica: EPIC-002
-estado: en-progreso
+estado: hecho
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-28, por: sdd-arquitecto}
@@ -19,6 +19,12 @@ historial:
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
   - {estado: en-progreso, fecha: 2026-09-29, por: sdd-implementador}
+  - {estado: en-revision, fecha: 2026-09-29, por: sdd-implementador}
+  - {estado: en-progreso, fecha: 2026-09-29, por: sdd-verificador}
+  - {estado: en-revision, fecha: 2026-09-29, por: sdd-implementador}
+  - {estado: en-progreso, fecha: 2026-09-29, por: sdd-verificador}
+  - {estado: en-revision, fecha: 2026-09-29, por: sdd-implementador}
+  - {estado: hecho, fecha: 2026-09-29, por: sdd-verificador}
 ---
 # SPEC-008 — Catálogo de Viveiro y A Mariña en el probe
 
