@@ -406,7 +406,12 @@ def test_ca6_readme_documents_pilot_batch_with_working_commands(tmp_path):
 def test_ca6_ledger_human_commands_within_budget_and_use_venv_python(tmp_path):
     steps = LEDGER.read_text(encoding="utf-8").split("## Instrucciones para el humano", 1)[1]
     steps = steps.split("\n## ", 1)[0]
-    assert "Activate.ps1" not in steps and "pasada 1" in steps
+    assert "Activate.ps1" not in steps
+    # order of the enmienda (b): smoke -> SPEC-013 hecho -> CA-9 -> freeze -> baseline -> CA-10
+    for step in ("F-SPEC-013-5", "SPEC-013", "CA-9", "congelación", "Aviso de techo",
+                 "primera acción", "probe-smoke-spec013"):
+        assert step in steps, step
+    assert "después de la pasada 1" not in steps
     run_lines = [ln for ln in steps.splitlines()
                  if "run_probe.py" in ln and not ln.lstrip().startswith("#")
                  and not ln.lstrip().startswith("-")]
