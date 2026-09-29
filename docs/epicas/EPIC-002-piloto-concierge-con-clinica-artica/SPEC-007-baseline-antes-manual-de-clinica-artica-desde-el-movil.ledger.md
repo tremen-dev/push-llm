@@ -278,6 +278,159 @@ que el criterio Go exige estabilidad: la subida debe verse en las dos pasadas "d
 | (g)–(j) niveles `AR`/`AG` | **Sin objeto en la manual** | `AR` y `AG` ya no se preguntan a mano; sus definiciones se trasladan al probe en SPEC-008 CA-9 (g). |
 | "b/d en niveles" | **Sin objeto** | Ya no hay bloques `AR`/`AG` en la pasada. |
 
+### Tercera ampliación (o)–(s) — calibración por nivel, 2026-09-29, antes de la pasada "antes"
+- **Emisor**: sdd-implementador aplicando `.ai-context/skills/sdd-metricas.md` (advisory, sin
+  cambiar reglas), como las ampliaciones anteriores. **Fecha**: 2026-09-29; la pasada "antes"
+  no ha empezado. **Fuentes**: las de los dictámenes anteriores; SPEC-007 enmienda (c) (CA-2
+  o–s, CA-3, CA-5, CA-7, CA-10) y sus decisiones del gate (AR primero; un veredicto `AR`
+  débil basta para contar el objetivo sin garantía; la ejecución `AR` la fija este
+  dictamen); ADR-009 §2 y §5 (niveles nunca en una cifra común); SPEC-008 CA-7 (baseline
+  oficial: `AV` con 3 runs, `AR` con 1 run) y CA-11/CA-12 (dictamen del Go con `AR`: las filas
+  `AR` de 1 run del baseline no sirven como base de (C); el "antes" de `AR` tiene 3 runs,
+  ejecutado el 2026-09-29, `…\piloto-artica\probe-AR-antes\`); ADR-004 §2.
+- **Ninguna regla de negocio cambia.** RN-01, RN-02, RN-04 y RN-06 se aplican igual. Lo nuevo
+  son reglas de lectura de la calibración por nivel; ninguna entra en (C), en (D) ni en otra
+  cifra del Go. Aquí solo hay reglas y umbrales: ningún dato de visibilidad de la clínica
+  (ADR-004 §2).
+
+#### (o) `AR`: qué se compara y con qué — **correcto con condiciones**
+1. **Unidad**: la casilla pregunta `AR` × asistente presente en los dos instrumentos
+   (ChatGPT ↔ `openai`, Gemini ↔ `gemini`): 5 casillas por asistente, 10 en total. Claude
+   (solo probe) y Google (solo manual) no tienen pareja.
+2. **Ejecución emparejada: el "antes" de `AR` de SPEC-008 CA-12** (3 runs, mismo diseño que
+   (C)), **no** las filas `AR` del baseline oficial (CA-7). Motivos: (i) con 1 run una casilla
+   no se puede resumir por mayoría ni distinguir una casilla estable de una repartida, que
+   es justo lo que hace falta en un nivel con resultados repartidos; (ii) SPEC-008 CA-11 ya
+   descartó esas filas como base de (C): calibrar contra ellas sería calibrar un instrumento
+   que el Go no usa. En el "después" (SPEC-012), la medición `AR` "después" del probe más
+   cercana en fechas, con sus 3 runs. **Ventana máxima: 7 días**, igual que (k.5), medida con
+   las fechas de las filas `AR` del probe y las de las filas `AR` de la pasada (0 si se
+   solapan). La ventana `AR` y la `AV` (q) se comprueban **por separado**. Fuera de la
+   ventana: la comparación se hace, pero el veredicto `AR` es "no"; si hace falta otra
+   ejecución `AR` (`--levels AR --runs 3`, directorio nuevo, con autorización del humano),
+   no sustituye al "antes" de CA-12 como base de (C).
+3. **Lado app y lado probe**: como (k.2) y (k.3), con `AR` en lugar de `AV`. El
+   `results.csv` de `AR` se lee aparte del de `AV`; de cada fichero solo cuentan las filas de
+   su nivel.
+4. **Resumen de runs** (matiza k.4): "k de n" runs válidos con la clínica. La casilla del
+   probe es **comparable** solo con **≥ 2 runs válidos** (con 1 no hay resumen posible). Es
+   **unánime** si k = 0 o k = n (la clínica sale en todos los runs o en ninguno) y
+   **repartida** en cualquier otro caso (con 3 runs, 1 de 3 o 2 de 3; con 2 runs, el empate).
+   Se sigue dando la mayoría ("sale", "no sale", "empate") y la posición mediana, pero lo que
+   decide en (p) es unánime/repartida.
+5. **Diferencias conocidas** (matiza k.6): (i) **ubicación**: las preguntas `AR` se formulan
+   desde Ferrolterra, Vilalba, Sarria/A Fonsagrada o Tapia de Casariego; la manual se hace
+   desde **Vilaboa** y el probe envía **Viveiro**, y ninguno de los dos está en el lugar del
+   paciente. Aquí pesa más que en `AV`: la ubicación Viveiro del probe está al lado de la
+   clínica y puede empujarla hacia arriba en una pregunta que pide desplazarse, y Vilaboa la
+   aleja. No se corrige (sería inventar un efecto); la calibración mide "instrumento +
+   ubicación" juntos, se escribe como limitación en el informe y es la primera causa
+   candidata en un "no" tras la lectura. (ii) Modelo de la app frente al de la API y (iii)
+   catálogo cerrado del probe: como (k.6).
+6. **Clínicas de fuera de la comarca** (se reactiva (i), solo para la lectura manual de
+   `AR`): una cadena con varias sedes cuenta como **una marca** (nombre canónico en
+   `alias-canonicos.csv`); la sede, si la respuesta la dice, va a `observaciones`. La
+   posición de la clínica en `AR` se informa como **lista de puestos**, sin media.
+
+#### (p) "Coinciden de forma razonable" en `AR` — **dudoso con 5 casillas: el veredicto se rebaja a "sin discrepancia gruesa"**
+1. **Qué se puede afirmar**: con 5 casillas por asistente **ningún umbral de acuerdo
+   distingue un acuerdo real de uno por azar**. Si la clínica sale poco en `AR`, los dos
+   instrumentos dirán "no sale" en casi todas las casillas y el acuerdo será alto aunque no
+   midan lo mismo; si sale repartida, dos instrumentos idénticos discrepan a menudo (una
+   casilla con 1 de 3 o 2 de 3 runs discrepa de la app por puro azar una vez de cada tres, y
+   una con p ≈ 1/2, la mitad de las veces). Una casilla mueve 20 pts del acuerdo. Por eso
+   **en `AR` no se afirma "coinciden de forma razonable"**: el veredicto se rotula
+   "**sin discrepancia gruesa en `AR`: sí / no**" y el informe dice que es un veredicto débil
+   (solo descarta una contradicción clara), sin preguntas nuevas (set congelado).
+2. **Discrepancia gruesa**: una casilla comparable (app válida y probe con ≥ 2 runs válidos)
+   **unánime** en el probe en la que la app dice lo contrario (probe en todos los runs y app
+   "no sale", o probe en ninguno y app "sale"). Una casilla **repartida** es **compatible**
+   con cualquier respuesta de la app (generaliza el empate de (l.1): la app, con una sola
+   respuesta, puede salir de cualquiera de los dos lados).
+3. **Veredicto "sin discrepancia gruesa en `AR`: sí"** si y solo si se cumplen **todas**:
+   (a) la pasada está dentro de la ventana de 7 días respecto a la ejecución `AR` (o.2); y en
+   ChatGPT **y** en Gemini (b) hay **≥ 4 casillas comparables** (de 5); (c) hay **≥ 3
+   casillas decisivas** (comparables y unánimes en el probe): con menos no hay nada que
+   contrastar y el "sí" sería vacío; y (d) hay **como mucho 1 discrepancia gruesa**. Si falla
+   una, "no". El veredicto es **por asistente y después de nivel** (los dos asistentes
+   tienen que pasar), sobre las 10 casillas `AR`, **nunca** junto con `AV`.
+4. **Ruido**: si los dos instrumentos midieran lo mismo, una casilla unánime en 3 runs
+   corresponde a una probabilidad real alta o baja, y que la app salga del otro lado es poco
+   probable (del orden de 1 de cada 10 o menos); **dos** contradicciones en 5 casillas por
+   azar es raro. Con 1 permitida, el "no" señala una diferencia gruesa de verdad, no mala
+   suerte. Es un umbral de **alarma**, no una prueba.
+5. **SoV bruto en `AR`: no se usa en el veredicto.** Con 5 respuestas de la app una sola
+   mueve 20 pts y el error típico de la diferencia app − probe supera ± 25 pts con resultados
+   repartidos: un tope sería ruido. Se informan los dos lados como **recuentos** ("x de 5" en
+   la app, "k de n" runs en el probe), **sin porcentajes** (como (j)).
+6. **Posición**: informativa, como lista de puestos por casilla en los dos lados; no decide.
+7. **Si es "no"**: se revisa en el orden de (l.4) (lectura → protocolo manual →
+   configuración del probe → ubicación, que aquí pesa más, o.5) y se anota en el ledger la
+   causa y la **decisión del humano para `AR`**. Hasta entonces **no se enseña a la clínica
+   ninguna cifra `AR` del probe** y **se revisa la frase del objetivo de SPEC-009** antes de
+   enviar la propuesta. Un "no" no cambia cómo se calcula (C) (probe contra probe, CA-2 e):
+   el humano decide si (C) sigue tal cual o con la salvedad escrita. Un "sí" débil basta para
+   contar el objetivo en la propuesta **como objetivo, no como dato ni garantía** (decisión
+   del humano en el gate). Ninguna cifra manual entra en (C).
+
+#### (q) `AV` con 2 asistentes — **correcto: (k) y (l) siguen, sin cambiar umbrales**
+1. Casilla pregunta `AV` × asistente (ChatGPT, Gemini): 15 por asistente, 30 en total. La
+   ausencia de filas Google no toca el acuerdo: Google nunca estuvo en él ((k.1), (m.1)).
+2. **Ejecución emparejada**: el baseline oficial (SPEC-008 CA-7, `AV` con 3 runs,
+   `…\piloto-artica\probe\`), con la ventana de 7 días de (k.5) medida con sus filas `AV`. En
+   el "después", la medición "después" del probe más cercana.
+3. **Umbrales de (l.2), sin cambios**: ≥ 12 casillas comparables, acuerdo ≥ 70 % y diferencia
+   de SoV bruto ≤ 20 pts en cada asistente; posición informativa (± 2 puestos). Con 15
+   casillas el ruido de (l.3) sigue igual. Veredicto rotulado "**coinciden de forma razonable
+   en `AV`: sí / no**".
+4. **Si es "no"**: orden de revisión de (l.4); **no se enseña a la clínica ninguna cifra `AV`
+   del probe** y **se revisa la frase "ya sois la clínica que la IA recomienda en A Mariña"**
+   de SPEC-009 antes de enviar. Ninguna cifra manual entra en (D).
+
+#### (r) Google AI Overviews en `AR` — **correcto con condiciones**
+1. Canal aparte (RN-04, D-6): **fuera del acuerdo, de los dos veredictos y del Go** ((C)
+   incluida). Solo búsquedas `AR` (5 por pasada); en `AV` ya no hay búsquedas Google.
+2. Con 5 búsquedas y una pasada se dan **recuentos "x de 5"**, sin porcentajes: búsquedas
+   válidas; cuántas tuvieron resumen de IA; en cuántas sale la clínica **dentro** del
+   resumen, sobre las válidas y sobre las que tuvieron resumen. **Sin resumen**: búsqueda
+   válida, en el denominador de "sobre las válidas" y sin la clínica. El paquete de mapas y
+   los resultados normales no cuentan (van a `observaciones`).
+3. **Ubicación**: Google pesa mucho la ubicación del dispositivo. Una búsqueda que nombra
+   Ferrol, Vilalba, Sarria o Tapia hecha desde Vilaboa mide "alguien de Pontevedra que busca
+   en esa zona", no al paciente de allí. No se corrige; se escribe como limitación y se
+   repite igual en el "después" (misma ubicación, P-4).
+4. **Antes/después (SPEC-012)**: la regla de "cambio claro" de (m.4) (≥ 5 búsquedas de 15)
+   **no cabe** y se **sustituye**: con 5 búsquedas el margen del 95 % de una diferencia de dos
+   proporciones es de unos ± 60 pts, más que casi cualquier cambio posible. El antes/después
+   de este canal **solo se describe**: "x de 5 antes → y de 5 después", con las búsquedas con
+   resumen de cada pasada; nunca se llama "cambio claro", ni mejora ni empeoramiento, ni se
+   pone objetivo ni promesa.
+
+#### (s) Qué queda del dictamen anterior
+| Punto | Estado | Detalle |
+|---|---|---|
+| (k.1) unidad | **Sigue en `AV`** | 15 × 2. `AR` tiene su unidad propia (o.1). |
+| (k.2)–(k.3) lado app y lado probe | **Siguen**; en `AR` **matizados** | En `AR`, su propio `results.csv` y solo sus filas (o.3). |
+| (k.4) resumen de runs | **Sigue en `AV`**; en `AR` **matizado** | En `AR`, ≥ 2 runs válidos y unánime/repartida (o.4). |
+| (k.5) ejecución y ventana | **Sigue en `AV`** (q.2); en `AR` **sustituido** por (o.2) | Dos ejecuciones emparejadas, dos ventanas de 7 días, comprobadas por separado. |
+| (k.6) diferencias conocidas | **Sigue**; en `AR` **matizado** | La ubicación pesa más en `AR` (o.5). |
+| (l) "coinciden de forma razonable" | **Queda solo para `AV`** (q.3), sin cambios de umbral | En `AR` lo sustituye (p): "sin discrepancia gruesa". |
+| (m) AI Overviews | **Sin objeto en `AV`** (no hay búsquedas `AV` en Google) | Su lectura pasa a `AR` según (r); (m.4) sustituido por (r.4). |
+| (n)(b) una pasada | **Sigue** | Una pasada "antes" y una "después", cada una con 49 consultas y dos ejecuciones emparejadas. |
+| (n)(c) sin ponderado manual | **Sigue, en los dos niveles** | Tampoco hay ponderado manual en `AR`. |
+| (n)(e) mismo instrumento | **Sigue** | (C) y (D) son probe contra probe; ninguna cifra manual entra en ellas. |
+| (n)(f) ruido del Go | **Sin objeto en la manual** | Sin cambios. |
+| (n)(g) indicadores de `AR` | **Sin objeto en la manual** | Los indicadores de `AR` del Go son los del probe (SPEC-008 CA-11). |
+| (n)(i) cadenas y posición | **Reactivado solo para la lectura manual de `AR`** (o.6) | Cadena = una marca; puestos en lista, sin media. |
+| (n)(j) solo recuentos | **Reactivado para `AR`** | Todo lo de `AR` (app, probe, Google) en recuentos, sin porcentajes. |
+| `AG` | **Sigue fuera de la manual** | Ni calibración ni AI Overviews. |
+- **Regla transversal**: **ninguna regla suma, promedia ni pondera casillas, acuerdos,
+  recuentos ni SoV de `AR` y `AV` en una cifra o en un veredicto común**; no hay veredicto
+  "global" (ADR-005 §4, ADR-009 §2). El informe tiene una sección por nivel.
+- **Plantilla**: no hace falta columna nueva: el nivel sale del prefijo de `id_pregunta` y las
+  dos ejecuciones emparejadas van en el ledger y en la línea de órdenes (`--probe-av`,
+  `--probe-ar`).
+
 ### Tabla condición → cambio
 | Condición | Cambio | Dónde |
 |---|---|---|
@@ -299,16 +452,27 @@ que el criterio Go exige estabilidad: la subida debe verse en las dos pasadas "d
 | ~~i cadenas y posición~~ **sin objeto (n)** en la manual | Cadena = una marca en `alias-canonicos.csv`; puestos en lista | `procedimiento-recuento.md` §7; tests `test_chains_are_one_brand_in_levels`, `test_level_positions_are_listed_not_averaged` |
 | ~~j solo recuentos~~ **sin objeto (n)** en la manual | Secciones de nivel sin porcentajes | `count_baseline.py` (`render`); test `test_render_levels_as_counts_without_percentages` |
 | ~~b/d en niveles~~ **sin objeto (n)** | Una sola pasada con los tres niveles; Google dentro de cada nivel | `protocolo-captura.md` ("Antes de empezar" 4, "Cómo preguntar" 1); test `test_protocol_three_levels_block_order` |
-| k1–k4 casilla, lado app, lado probe, resumen de runs | `summarize_probe` (mayoría k/n, empate, mediana de puestos) y `compare_with_probe` | `procedimiento-recuento.md` §6; `count_baseline.py`; tests `test_probe_cell_*`, `test_probe_position_*`, `test_agreement_*` |
-| k5 ejecución emparejada y ventana de 7 días | Baseline del probe primero; ventana comprobada por la herramienta | `protocolo-captura.md` "Antes de empezar" 1; `procedimiento-recuento.md` §6.1; `count_baseline.py` (`MAX_WINDOW_DAYS`); tests `test_window_*`; "Instrucciones para el humano" |
+| k1–k4 casilla, lado app, lado probe, resumen de runs (**solo `AV`** desde (s); en `AR`, (o)) | `summarize_probe` (mayoría k/n, empate, mediana de puestos) y `compare_with_probe` | `procedimiento-recuento.md` §6; `count_baseline.py`; tests `test_probe_cell_*`, `test_probe_position_*`, `test_agreement_*` |
+| k5 ejecución emparejada y ventana de 7 días (**`AV`**, (q.2); en `AR`, (o.2)) | Baseline del probe primero; ventana comprobada por la herramienta | `protocolo-captura.md` "Antes de empezar" 1; `procedimiento-recuento.md` §6.1; `count_baseline.py` (`MAX_WINDOW_DAYS`); tests `test_window_*`; "Instrucciones para el humano" |
 | k5 `results.csv` posterior a SPEC-013 | La herramienta rechaza un `results.csv` sin `searched_urls` | `count_baseline.py` (`read_probe`); test `test_read_probe_refuses_results_without_searched_urls` |
 | k6 Vilaboa/Viveiro, modelo, catálogo | Limitaciones escritas; modelos en el informe | `protocolo-captura.md` "Antes de empezar" 2; `procedimiento-recuento.md` §6.4; render (`test_render_calibration_*`) |
-| l1–l2 acuerdo y veredicto | Umbrales 12 comparables, 70 %, 20 pts; posición informativa (≤ 2) | `procedimiento-recuento.md` §6.2–6.3; `count_baseline.py` (`MIN_COMPARABLE`, `MIN_AGREEMENT`, `MAX_SOV_GAP`, `POSITION_TOLERANCE`); tests `test_verdict_*` |
+| l1–l2 acuerdo y veredicto (**queda solo para `AV`**, (q.3)) | Umbrales 12 comparables, 70 %, 20 pts; posición informativa (≤ 2) | `procedimiento-recuento.md` §6.2–6.3; `count_baseline.py` (`MIN_COMPARABLE`, `MIN_AGREEMENT`, `MAX_SOV_GAP`, `POSITION_TOLERANCE`); tests `test_verdict_*` |
 | l4 si no coinciden | Orden de revisión; sin cifras del probe a la clínica ni propuesta hasta decisión | `procedimiento-recuento.md` §6.5; texto del informe (`test_render_calibration_says_what_to_do_if_no`) |
-| m AI Overviews | Recuentos "x de n" sin porcentajes; lectura antes/después (≥ 5 búsquedas) | `procedimiento-recuento.md` §3; `count_baseline.py` (`AIO_CLEAR_CHANGE`); tests `test_google_*`, `test_render_google_as_counts_without_percentages` |
+| ~~m AI Overviews~~ **sin objeto en `AV` (s)**; sustituida por (r); `AIO_CLEAR_CHANGE` y los tests `test_google_*` sobre `AV` retirados | Recuentos "x de n" sin porcentajes; lectura antes/después (≥ 5 búsquedas) | `procedimiento-recuento.md` §3; `count_baseline.py` (`AIO_CLEAR_CHANGE`); tests `test_google_*`, `test_render_google_as_counts_without_percentages` |
 | n (b) una pasada | Protocolo de 49 consultas, `pasada` = `antes`/`despues`; herramienta de una pasada | `protocolo-captura.md`; `count_baseline.py` (`_check`); tests `test_protocol_calibration_*`, `test_mixed_passes_fail_loudly` |
 | n (c) sin ponderado manual | La herramienta no calcula ponderado | `count_baseline.py`; test `test_no_manual_weighted_figure` |
 | n (f), (g)–(j), "b/d en niveles" | **Sin objeto en la manual** (filas `f`, `g`, `i`, `j` y "b/d en niveles" de arriba quedan históricas; `b` sustituida; `h` sigue en el probe) | Retirados `count_level`, estabilidad p1/p2 y sus tests; `test_level_rows_are_ignored` |
+| o1–o3 casilla `AR` × asistente; ejecución `AR` = "antes" de SPEC-008 CA-12 (3 runs), ventana de 7 días propia; `results.csv` por nivel | `compare_ar` con su propio `results.csv`; `--probe-av` y `--probe-ar`; ventanas por nivel | `procedimiento-recuento.md` §6-AR.1; `protocolo-captura.md` "Antes de empezar" 1; `count_baseline.py` (`compare_ar`, `AR_MAX_WINDOW_DAYS`, `main`); tests `test_ar_*window*`, `test_cli_writes_two_tables_and_two_verdicts` |
+| o4 ≥ 2 runs válidos; unánime / repartida | `summarize_probe(level="AR")` con `unanimous`; casilla con 1 run no comparable | `count_baseline.py` (`AR_MIN_VALID_RUNS`); tests `test_ar_probe_cell_*`, `test_ar_one_run_rows_are_not_comparable` |
+| o5 ubicación Vilaboa/Viveiro frente a preguntas de fuera | Limitación escrita; primera causa candidata tras la lectura | `protocolo-captura.md` "Antes de empezar" 3; `procedimiento-recuento.md` §6-AR.5; render (`test_render_ar_writes_its_limits`) |
+| o6 (reactiva i) cadenas y puestos en lista | Cadena = una marca; posiciones `AR` en lista, sin media | `procedimiento-recuento.md` §2; `count_baseline.py` (`count`, nivel `AR`); tests `test_ar_positions_are_listed_not_averaged`, `test_ar_chains_are_one_brand` |
+| p1–p3 "sin discrepancia gruesa en `AR`": ≥ 4 comparables, ≥ 3 decisivas, ≤ 1 discrepancia gruesa por asistente; repartida = compatible; veredicto por asistente y de nivel | `compare_ar` y su veredicto | `procedimiento-recuento.md` §6-AR.2–6-AR.4; `count_baseline.py` (`AR_MIN_COMPARABLE`, `AR_MIN_DECISIVE`, `AR_MAX_GROSS`); tests `test_ar_verdict_*`, `test_thresholds_of_the_dictamen` |
+| p5–p6 sin SoV ni porcentajes en `AR`; posición informativa | Recuentos "x de 5" y "k de n"; puestos en lista | `count_baseline.py` (`render_calibration`); tests `test_render_ar_sections_without_percentages`, `test_ar_verdict_ignores_sov` |
+| p7 si es "no" en `AR` | Orden de revisión; sin cifras `AR` del probe a la clínica; revisar la frase del objetivo de SPEC-009; (C) no cambia | `procedimiento-recuento.md` §6-AR.6 y §7; render (`test_render_says_what_each_no_blocks`) |
+| q `AV` con 2 asistentes | Mismos umbrales de (l.2); veredicto "coinciden de forma razonable en `AV`"; "no" revisa la frase "ya sois la clínica que la IA recomienda en A Mariña" | `procedimiento-recuento.md` §6-AV; `count_baseline.py` (`compare_av`); tests `test_verdict_*`, `test_render_says_what_each_no_blocks` |
+| r AI Overviews solo `AR`: "x de 5", sin porcentajes; antes/después solo descrito | Google solo en `AR`; filas Google `AV`/`AM` rechazadas | `protocolo-captura.md`; `procedimiento-recuento.md` §3; `count_baseline.py` (`_check`, `count`); tests `test_google_overviews_only_in_ar`, `test_render_google_as_counts_without_percentages`, `test_google_av_or_am_rows_are_rejected` |
+| s ningún número ni veredicto que combine niveles | Informe con una sección por nivel y dos veredictos | `count_baseline.py` (`render_calibration`); tests `test_render_never_combines_levels`, `test_levels_are_counted_apart` |
+| CA-3/CA-5 (c) reparto de 49 filas | Orden `AR` → `AV` → `AM` en ChatGPT y Gemini, Google solo `AR`; `_check` exige el reparto y rechaza `AG` | `baseline_docs.py` (`CALIBRATION_BLOCKS`, `EXPECTED_LAYOUT`); `count_baseline.py` (`_check`); tests `test_calibration_order_blocks`, `test_incomplete_or_extra_layout_fails_loudly`, `test_ag_rows_are_rejected` |
 
 ### Tratamientos del nivel AG (CA-1)
 Comprobado en clinicaartica.es el **2026-09-29** (HTTP 200; título y H1 de cada página):
