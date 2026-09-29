@@ -15,9 +15,10 @@ Runs every prompt of a **batch** in `prompts.csv` N times against each configure
 ```powershell
 cd probe
 py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+.\.venv\Scripts\python -m pip install -r requirements.txt
 ```
+
+No `Activate.ps1` needed (avoids the PowerShell execution policy): call `.\.venv\Scripts\python` directly. Where this README writes `python run_probe.py`, PowerShell users can write `.\.venv\Scripts\python run_probe.py`.
 
 bash: `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`.
 
@@ -75,19 +76,25 @@ A batch is configuration, not code. The default config `probe_config.json` **is 
 - prompts: ids `AVnn` (core: Viveiro and A Mariña), `ARnn` (area of influence) and `AGnn` (Galicia), the same ids and literal texts as `docs/piloto-artica/prompts-baseline.md`; the level is the id prefix. Brand questions `AM` are not in the probe.
 - brands: only those listed in `batch.brands` take part (membership, not city). Pilot competitors based in Vigo or Pontevedra are listed there and **not** in the Vigo batch, so they never change the Vigo results.
 - `summary.md` reports each level apart: the client's answers per provider, the weighted SoV (RN-03) **only for `AV`**, and only "x of n" counts for `AR` and `AG`. No figure adds up levels.
+- runs: per level in `batch.levels` (`AV` 2, `AR` 1, `AG` 1), so the plain command is the safe baseline of the SPEC-008 cost dictamen (39 prompt-runs per provider). `--runs N` overrides every selected level; `--levels AV` (or `AR,AG`) selects levels.
+- `summary.md` ends with "observations to review by hand": sentences naming a clinic next to "sin médico", "esteticista", "no sanitario"… (`batch.review_terms`). Not a metric.
 - output: `$PUSHLLM_PRIVADO/piloto-artica/probe/` (private, ADR-001/ADR-004).
 
-`--only` must name prompts of the chosen batch; other ids are refused. From `probe/` (PowerShell):
+`--only` must name prompts of the chosen batch; other ids are refused. `--out` empty or a drive root (e.g. `PUSHLLM_PRIVADO` unset) is refused. The baseline goes **after** pass 1 of the manual baseline (SPEC-007), which freezes the question set; the smoke can run before. From `probe/` (PowerShell, `PUSHLLM_PRIVADO` set as a user variable):
 
 ```powershell
 # Pilot smoke: one prompt per level x 1 run x 3 providers = 9 calls
-python run_probe.py --config batches/viveiro.json --only AV01,AR01,AG01 --runs 1 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke"
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --only AV01,AR01,AG01 --runs 1 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke"
 
-# Pilot baseline: 24 prompts x runs per provider x 3 providers (216 calls with 3 runs)
-python run_probe.py --config batches/viveiro.json
+# Pilot baseline, runs per level (AV 2, AR/AG 1): 39 prompt-runs x 3 providers = 117 calls
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json
+
+# ...or, if the smoke cost per prompt-run is <= 0.19 EUR (SPEC-008 ledger): AV with 3 runs, then AR/AG with 1
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AV --runs 3
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AR,AG --resume
 
 # Offline recount of the pilot batch (no calls)
-python run_probe.py --config batches/viveiro.json --analyze
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --analyze
 ```
 
 ## Output
