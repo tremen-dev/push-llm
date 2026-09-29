@@ -1,0 +1,583 @@
+/* ============================================================
+   doc.css — capa de DOCUMENTO para tremen-ds
+   Propuestas, informes y entregables paginados (A4 → PDF).
+
+   Depende de: colors_and_type.css (tokens y tipografía).
+   Pensado para renderizarse con Paged.js (numeración, pies
+   de página, cabeceras de tabla repetidas) y para imprimirse
+   desde Chrome. Sin Paged.js sigue siendo legible en pantalla.
+
+   Anatomía mínima:
+     <body class="v-papel doc">
+       <section class="cover v-tremendo">…</section>   ← portada oscura
+       <section class="page">…</section>               ← páginas claras
+     </body>
+
+   Dos temas conviven en el mismo documento:
+     .v-tremendo → oscuro cálido + ember (portada, aperturas)
+     .v-papel    → papel + tinta + ember (cuerpo del documento)
+   Ambos exponen los mismos tokens, así que todo componente
+   funciona dentro de cualquiera de los dos.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   THEME — "Papel": la versión clara del sistema.
+   Mismos tokens que .v-tremendo, valores invertidos.
+   --accent-text es el ember oscurecido para texto pequeño
+   (contraste AA sobre papel); --accent se reserva para líneas,
+   rellenos y cifras grandes.
+   ------------------------------------------------------------ */
+.v-papel {
+  --bg:           var(--paper);
+  --bg-elev:      var(--bone);
+  --bg-step:      #EFEAE0;
+  --fg:           var(--ink);
+  --fg-muted:     rgba(10, 10, 11, 0.66);
+  --fg-dim:       rgba(10, 10, 11, 0.44);
+  --line:         #E4DED2;
+  --line-strong:  #CFC6B5;
+  --accent:       var(--ember);
+  --accent-text:  #C24F00;
+  --accent-ink:   #110A04;
+  --accent-soft:  rgba(255, 107, 0, 0.08);
+  --selection:    var(--ember);
+
+  --radius:       var(--r-md);
+  --radius-card:  var(--r-lg);
+
+  background: var(--bg);
+  color: var(--fg);
+}
+.v-tremendo {
+  --accent-text:  var(--ember);
+  --accent-soft:  rgba(255, 107, 0, 0.12);
+}
+
+/* ------------------------------------------------------------
+   Página
+   ------------------------------------------------------------ */
+@page {
+  size: A4;
+  margin: 20mm 17mm 22mm 17mm;
+
+  @bottom-left {
+    content: string(doc-running);
+    font-family: 'Geist Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 7.5pt;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(10, 10, 11, 0.44);
+    vertical-align: top;
+    padding-top: 6mm;
+  }
+  @bottom-right {
+    content: counter(page) " / " counter(pages);
+    font-family: 'Geist Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 7.5pt;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: rgba(10, 10, 11, 0.44);
+    vertical-align: top;
+    padding-top: 6mm;
+  }
+}
+@page cover {
+  margin: 0;
+  background: #111110;
+  @bottom-left  { content: none; }
+  @bottom-right { content: none; }
+}
+@page dark {
+  margin: 0;
+  background: #111110;
+  @bottom-left  { content: none; }
+  @bottom-right { content: none; }
+}
+
+.doc { string-set: doc-running attr(data-running); }
+
+/* ------------------------------------------------------------
+   Base tipográfica del documento (puntos, no píxeles)
+   ------------------------------------------------------------ */
+body.doc {
+  font: 400 10.25pt/1.5 var(--font-sans);
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  hyphens: manual;
+}
+.doc p { margin: 0 0 8pt; }
+.doc p:last-child { margin-bottom: 0; }
+.doc strong { font-weight: 600; color: var(--fg); }
+.doc em { font-style: italic; }
+.doc a { color: var(--accent-text); text-decoration: none; }
+.doc ul, .doc ol { margin: 0 0 10pt; padding-left: 16pt; }
+.doc li { margin: 0 0 4pt; }
+.doc li::marker { color: var(--accent); }
+.doc hr { border: 0; border-top: 1px solid var(--line); margin: 18pt 0; }
+
+/* Portada */
+.cover {
+  page: cover;
+  break-after: page;
+  box-sizing: border-box;
+  height: 297mm;
+  padding: 22mm 20mm 18mm;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(900px 600px at 85% -10%, rgba(255, 107, 0, 0.16), transparent 60%),
+    radial-gradient(700px 500px at -10% 40%, rgba(255, 184, 0, 0.06), transparent 60%),
+    #111110;
+  color: var(--bone);
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(245, 241, 234, 0.05) 1px, transparent 1px);
+  background-size: 3px 3px;
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+}
+.cover > * { position: relative; }
+.cover .lockup { font-size: 20px; }
+.cover .lockup .br { font-size: 20px; }
+.cover .cover-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.cover .cover-title {
+  margin-top: auto;
+}
+.cover h1 {
+  margin: 14pt 0 0;
+  font: 800 44pt/0.98 var(--font-sans);
+  letter-spacing: -0.045em;
+  color: var(--bone);
+  max-width: 150mm;
+}
+.cover h1 em {
+  font-style: italic;
+  font-weight: 700;
+  color: var(--accent);
+}
+.cover .lede {
+  margin-top: 16pt;
+  font-size: 13pt;
+  line-height: 1.45;
+  max-width: 125mm;
+  color: rgba(245, 241, 234, 0.66);
+}
+.cover .cover-meta {
+  margin-top: auto;
+  padding-top: 14pt;
+  border-top: 1px solid rgba(245, 241, 234, 0.14);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18pt;
+}
+.cover .cover-meta .k {
+  font: 600 7.5pt/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6pt;
+}
+.cover .cover-meta .v {
+  font: 500 10pt/1.4 var(--font-sans);
+  color: var(--bone);
+}
+.cover .cover-meta .v small {
+  display: block;
+  font-weight: 400;
+  color: rgba(245, 241, 234, 0.55);
+}
+
+/* Bloque de sección */
+.page { break-before: page; }
+.sec { margin-bottom: 16pt; }
+
+.doc .section-eyebrow { margin-bottom: 10pt; }
+.doc .section-eyebrow .num { font-size: 8pt; color: var(--accent-text); }
+
+.doc h2 {
+  margin: 0 0 12pt;
+  font: 800 22pt/1.05 var(--font-sans);
+  letter-spacing: -0.035em;
+  color: var(--fg);
+  max-width: 150mm;
+  break-after: avoid;
+}
+.doc h2 em { font-style: italic; font-weight: 700; color: var(--accent-text); }
+.doc h3 {
+  margin: 16pt 0 6pt;
+  font: 700 12.5pt/1.2 var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  break-after: avoid;
+}
+.doc h4 {
+  margin: 12pt 0 4pt;
+  font: 600 10.5pt/1.3 var(--font-sans);
+  color: var(--fg);
+  break-after: avoid;
+}
+.doc .lede {
+  font-size: 12pt;
+  line-height: 1.45;
+  max-width: 155mm;
+  color: var(--fg-muted);
+  margin-bottom: 12pt;
+}
+.doc .lede strong { color: var(--fg); }
+
+/* Apertura de fase: bloque oscuro dentro de página clara */
+.opener {
+  --bg: #111110; --bg-elev: #1A1815; --fg: var(--bone);
+  --fg-muted: rgba(245, 241, 234, 0.66); --fg-dim: rgba(245, 241, 234, 0.42);
+  --line: #2A2620; --line-strong: #3D362C; --accent-text: var(--ember);
+  background:
+    radial-gradient(520px 260px at 90% -20%, rgba(255, 107, 0, 0.18), transparent 60%),
+    #111110;
+  color: var(--bone);
+  border-radius: var(--radius-card);
+  padding: 20pt 22pt 18pt;
+  margin-bottom: 16pt;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8pt 24pt;
+  align-items: end;
+  break-inside: avoid;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.opener .eyebrow { grid-column: 1 / -1; }
+.opener h2 { margin: 0; color: var(--bone); font-size: 24pt; }
+.opener h2 em { color: var(--accent); }
+.opener .what {
+  grid-column: 1;
+  margin: 4pt 0 0;
+  font-size: 10.5pt;
+  line-height: 1.45;
+  color: rgba(245, 241, 234, 0.7);
+  max-width: 120mm;
+}
+.opener .price {
+  grid-column: 2;
+  grid-row: 2 / span 2;
+  text-align: right;
+  align-self: end;
+  white-space: nowrap;
+}
+.opener .price .n {
+  display: block;
+  font: 700 20pt/1 var(--font-sans);
+  letter-spacing: -0.03em;
+  color: var(--accent);
+}
+.opener .price .n + .n { margin-top: 4pt; }
+.opener .price .l {
+  display: block;
+  margin-top: 6pt;
+  font: 500 7.5pt/1.4 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 234, 0.5);
+}
+.opener .price .n small { font-size: 10pt; font-weight: 500; color: rgba(245, 241, 234, 0.6); letter-spacing: 0; }
+
+/* Tablas */
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6pt 0 12pt;
+  font-size: 9.25pt;
+  line-height: 1.4;
+}
+.tbl th, .tbl td {
+  text-align: left;
+  vertical-align: top;
+  padding: 6pt 8pt 6pt 0;
+  border-bottom: 1px solid var(--line);
+}
+.tbl th {
+  font: 600 7.5pt/1.2 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  border-bottom: 1px solid var(--line-strong);
+  padding-bottom: 5pt;
+}
+.tbl thead { display: table-header-group; }
+.tbl tr { break-inside: avoid; }
+.tbl td.c, .tbl th.c { text-align: center; }
+.tbl td.r, .tbl th.r { text-align: right; }
+.tbl td.num, .tbl th.num {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 9pt;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.tbl td.idx {
+  font: 600 8.5pt/1.5 var(--font-mono);
+  color: var(--accent-text);
+  width: 14pt;
+  padding-right: 4pt;
+}
+.tbl tr.total td {
+  border-bottom: 0;
+  border-top: 1.5px solid var(--fg);
+  font-weight: 600;
+  padding-top: 7pt;
+}
+.tbl tr.total + tr.total td { border-top: 0; padding-top: 2pt; }
+.tbl tr.total td.num { color: var(--accent-text); }
+.tbl.tight td, .tbl.tight th { padding-top: 3.5pt; padding-bottom: 3.5pt; }
+.tbl .sub { display: block; color: var(--fg-dim); font-size: 8.5pt; }
+
+/* Marcas de estado (sustituyen a los emojis) */
+.mark {
+  display: inline-block;
+  font: 600 7.5pt/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3pt 6pt;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+}
+.mark.ok   { color: #0F6B3A; background: rgba(15, 107, 58, 0.10); }
+.mark.no   { color: #B3261E; background: rgba(179, 38, 30, 0.10); }
+.mark.part { color: var(--accent-text); background: var(--accent-soft); }
+.mark.neutral { color: var(--fg-muted); background: var(--bg-step); }
+
+.dot {
+  display: inline-block;
+  width: 8pt; height: 8pt;
+  border-radius: 50%;
+  vertical-align: -1pt;
+  margin-right: 5pt;
+}
+.dot.red    { background: #E5352B; }
+.dot.amber  { background: #FFB800; }
+.dot.blue   { background: #2F6FED; }
+.dot.grey   { background: #C9C2B5; }
+.dot.green  { background: #1E9E5A; }
+
+/* Cajas */
+.callout {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-card);
+  padding: 11pt 14pt;
+  margin: 10pt 0 12pt;
+  font-size: 9.75pt;
+  line-height: 1.5;
+  color: var(--fg);
+  break-inside: avoid;
+}
+.callout .br { color: var(--accent); font-family: var(--font-mono); font-weight: 600; }
+.callout strong { color: var(--fg); }
+.callout.accent {
+  border-style: solid;
+  border-color: rgba(255, 107, 0, 0.35);
+  background: var(--accent-soft);
+}
+.callout.dark {
+  --fg: var(--bone);
+  border: 0;
+  background: #111110;
+  color: var(--bone);
+}
+
+.panel {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 12pt 14pt;
+  break-inside: avoid;
+}
+
+.price-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12pt;
+  flex-wrap: wrap;
+  margin: 8pt 0 4pt;
+}
+.price-line .n {
+  font: 700 18pt/1 var(--font-sans);
+  letter-spacing: -0.03em;
+  color: var(--fg);
+}
+.price-line .n b { color: var(--accent-text); font-weight: 700; }
+.price-line .note { font-size: 9pt; color: var(--fg-muted); }
+
+/* Rejilla de dos columnas para bloques cortos */
+.cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14pt 20pt; }
+.cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12pt 16pt; }
+
+/* Diagramas (Mermaid) */
+.figure {
+  margin: 8pt 0 14pt;
+  break-inside: avoid;
+}
+.figure .mermaid {
+  display: flex;
+  justify-content: center;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 8pt 8pt;
+}
+/* El SVG conserva su proporción: max-height evita diagramas de página entera */
+.figure .mermaid svg {
+  max-width: 100% !important;
+  max-height: 95mm;
+  width: auto !important;
+  height: auto;
+}
+.figure.short .mermaid svg { max-height: 80mm; }
+.figure figcaption {
+  margin-top: 6pt;
+  font: 500 7.5pt/1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.figure.wide .mermaid svg { width: 100%; }
+
+/* Capas: pila de pasos con "chips" (alternativa HTML a un diagrama
+   cuando el flujo es una lista ordenada de capas) */
+.layers { display: grid; gap: 6pt; margin: 8pt 0 14pt; }
+.layer {
+  display: grid;
+  grid-template-columns: 22pt 1fr;
+  gap: 8pt;
+  padding: 9pt 12pt 9pt 10pt;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--bg-elev);
+  break-inside: avoid;
+}
+.layer .n {
+  font: 700 15pt/1 var(--font-sans);
+  letter-spacing: -0.03em;
+  color: var(--accent);
+}
+.layer .t { font: 600 9.75pt/1.3 var(--font-sans); margin-bottom: 5pt; color: var(--fg); }
+.layer .t small { font-weight: 400; font-size: 9pt; color: var(--fg-muted); }
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 4pt 6pt; }
+.chip {
+  display: inline-block;
+  padding: 3pt 7pt;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: #FFFFFF;
+  font-size: 8.5pt;
+  line-height: 1.3;
+  color: var(--fg);
+}
+.chip.q { border-style: dashed; }
+.chip.accent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.chip.red    { background: #FBE3E1; border-color: #E5352B; }
+.chip.amber  { background: #FFF1CC; border-color: #FFB800; }
+.chip.blue   { background: #E0E9FB; border-color: #2F6FED; }
+.chip.grey   { background: #EFEAE0; border-color: #C9C2B5; }
+.chip.green  { background: #DFF3E7; border-color: #1E9E5A; }
+.arrow { font: 500 8pt/1.3 var(--font-mono); color: var(--fg-dim); white-space: nowrap; }
+.arrow b { font-weight: 500; color: var(--fg-muted); }
+
+/* Índice (con Paged.js resuelve los números de página) */
+.toc { list-style: none; padding: 0; margin: 0; }
+.toc li {
+  display: flex;
+  align-items: baseline;
+  gap: 8pt;
+  padding: 6pt 0;
+  border-bottom: 1px solid var(--line);
+  margin: 0;
+}
+.toc li .n { font: 600 8pt/1 var(--font-mono); color: var(--accent-text); letter-spacing: 0.1em; width: 36pt; flex: none; }
+.toc li a { flex: 1; color: var(--fg); font-weight: 500; }
+.toc li a::after {
+  content: target-counter(attr(href), page);
+  float: right;
+  font: 500 9pt/1 var(--font-mono);
+  color: var(--fg-dim);
+}
+.toc li.sub { padding-left: 44pt; }
+.toc li.sub a { font-weight: 400; color: var(--fg-muted); }
+
+/* Variante compacta: para resúmenes que deben caber en una página */
+.compact { font-size: 9pt; line-height: 1.4; }
+.compact h2 { font-size: 20pt; margin-bottom: 8pt; }
+.compact h3 { font-size: 11pt; margin: 9pt 0 4pt; }
+.compact p { margin-bottom: 5pt; }
+.compact ul, .compact ol { margin-bottom: 5pt; padding-left: 13pt; }
+.compact li { margin-bottom: 2pt; }
+.compact .tbl { font-size: 8.5pt; margin: 3pt 0 6pt; }
+.compact .tbl.tight td, .compact .tbl.tight th { padding-top: 3pt; padding-bottom: 3pt; }
+.compact .tbl td.num { font-size: 8.25pt; }
+.compact .cols-2 { gap: 6pt 18pt; }
+.compact .callout { padding: 8pt 12pt; font-size: 9pt; margin: 6pt 0 0; }
+.compact .small { font-size: 8pt; }
+
+/* Ojo: nada de `white-space: nowrap` dentro de tablas al 100 %: si la tabla
+   desborda 1 px en horizontal, Paged.js lo trata como desbordamiento y
+   parte la página a mitad de tabla dejando huecos. */
+.tbl.needs td:last-child { padding-right: 0; }
+
+/* Utilidades */
+.muted { color: var(--fg-muted); }
+.dim { color: var(--fg-dim); }
+.small { font-size: 9pt; }
+.mono { font-family: var(--font-mono); }
+.avoid { break-inside: avoid; }
+.keep { break-before: avoid; }
+.mt-0 { margin-top: 0 !important; }
+.mb-0 { margin-bottom: 0 !important; }
+
+/* Pie de cierre */
+.closing {
+  margin-top: 24pt;
+  padding-top: 12pt;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16pt;
+  font-size: 9pt;
+  color: var(--fg-muted);
+}
+.closing .stamp-foot {
+  white-space: nowrap;
+  font: 500 7.5pt/1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.closing .stamp-foot .br { color: var(--accent); }
+
+/* ------------------------------------------------------------
+   Pantalla: la vista previa de Paged.js sobre fondo oscuro
+   ------------------------------------------------------------ */
+@media screen {
+  body.doc { background: #111110; }
+  .pagedjs_pages { padding: 32px 0 64px; }
+  .pagedjs_page {
+    background: var(--paper);
+    margin: 0 auto 24px;
+    box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(245, 241, 234, 0.06);
+  }
+  .pagedjs_page[data-page-name="cover"],
+  .pagedjs_page[data-page-name="dark"] { background: #111110; }
+}
+@media print {
+  body.doc { background: transparent; }
+  .pagedjs_page { box-shadow: none; margin: 0; }
+}
