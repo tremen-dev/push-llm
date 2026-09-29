@@ -318,14 +318,25 @@ antes de CA-6 y CA-7 antes del gate del verificador.
   - `--analyze` funciona y da el mismo `summary.md`. `analysis.py` no lee URLs y **no
     cambia** (lo prueba el golden de Vigo, CA-4). El mismo CSV con la columna añadida da un
     `summary.md` idéntico byte a byte (test).
-  - `--resume` **no reescribe cabecera ni filas**: las filas nuevas usan las columnas de la
-    cabecera existente, sin `searched_urls`, y sale por stderr un aviso de que el fichero es
-    anterior a SPEC-013 y de que las URLs están en `raw_responses.jsonl`. Test: filas
-    antiguas idénticas byte a byte, filas nuevas con tantos campos como la cabecera, y el
-    aviso.
-  - En esos ficheros antiguos, **`cited_urls` de Gemini significa "todos los chunks"**, es
-    decir, lo que ahora es `searched_urls`. `--resume` sobre ellos escribiría filas de
-    Gemini con el significado nuevo, así que el aviso lo dice.
+  - **`--resume` se niega a continuar un `results.csv` antiguo** (decisión del humano,
+    2026-09-29). Un fichero es antiguo si su cabecera no contiene `searched_urls`. En ese
+    caso `run_probe.py`:
+    - sale con error (código distinto de 0), **antes de llamar a ningún proveedor y antes
+      de abrir para escribir** `results.csv` o `raw_responses.jsonl`;
+    - muestra un mensaje claro: el fichero es anterior a SPEC-013, no tiene
+      `searched_urls` y su `cited_urls` de Gemini tiene otro significado; se puede usar
+      `--out` con un directorio nuevo, o `--analyze` para recontar.
+    Motivo: en esos ficheros, **`cited_urls` de Gemini significa "todos los chunks"** (lo
+    que ahora es `searched_urls`). Reanudar mezclaría en un mismo fichero filas de Gemini
+    con dos significados.
+    Test (cliente falso que cuenta las llamadas): con un `results.csv` antiguo y un
+    `raw_responses.jsonl` existente, `main(["--resume", …])` termina con error y:
+    - el mensaje nombra `searched_urls` y `--out`;
+    - `results.csv` queda idéntico byte a byte, y `raw_responses.jsonl` también (o no se
+      crea si no existía);
+    - el cliente falso registra **0 llamadas**.
+  - `--resume` sobre un `results.csv` que ya tiene `searched_urls` sigue funcionando como
+    en CA-1 (d): añade filas y líneas, nunca reescribe.
   (m) `probe/README.md` documenta:
   - las dos columnas y su significado común;
   - qué da cada proveedor;
@@ -354,6 +365,8 @@ antes de CA-6 y CA-7 antes del gate del verificador.
     que la corrección de Gemini no puede mover `summary.md`.
   - `vigo_summary_before.md` no se toca.
   - Si el golden cambiara, sería un defecto, no un motivo para regenerarlo.
+  - La compatibilidad de `--resume` la prueba el test de CA-3 (l): sobre un CSV antiguo,
+    sale con error, los ficheros no cambian y hay 0 llamadas.
 
   **Tests existentes cuya expectativa cambia**, y cada uno se cita en el ledger:
   - el de la regla de unión (CA-3 c);
@@ -477,7 +490,8 @@ antes de CA-6 y CA-7 antes del gate del verificador.
 - Código:
   - `probe/providers.py`: `ProviderResult.searched_urls`, `_claude`, `_openai`
     (`include`), `_gemini` (chunks y supports), serialización cruda;
-  - `probe/run_probe.py`: `COLUMNS` y escritura con cabecera antigua en `--resume`;
+  - `probe/run_probe.py`: `COLUMNS` y rechazo de `--resume` sobre un `results.csv` sin
+    `searched_urls`;
   - tests y fixtures: `probe/tests/fakes.py`,
     `probe/tests/fixtures/claude_web_search_20260209.json` (nuevo),
     `probe/tests/test_providers.py`, `probe/tests/test_run_probe.py`,
@@ -526,12 +540,11 @@ antes de CA-6 y CA-7 antes del gate del verificador.
     de Gemini son "consultadas" con otro nombre. Cualquier lectura de fuentes de esos
     ficheros (SPEC-011) tiene que tenerlo en cuenta (CA-7 punto 4). `summary.md` no se ve
     afectado, porque no lee URLs, y el golden de Vigo no cambia.
-  - **`--resume` sobre un fichero antiguo** sigue funcionando: no añade la columna y avisa.
-    Pero dejaría en el mismo fichero filas de Gemini con dos significados de `cited_urls`.
-    La alternativa es que `--resume` se niegue a continuar un fichero anterior a SPEC-013
-    y pida `--out` nuevo. Es más limpio, pero rompe "`--resume` debe seguir funcionando".
-    Tú decides. La spec, tal como está, permite reanudar y avisa. El baseline de SPEC-008
-    empieza en un directorio nuevo y no le afecta.
+  - **`--resume` sobre un fichero antiguo se niega** (decisión del humano, 2026-09-29): sale
+    con error, sin tocar ficheros y sin llamar a ningún proveedor, para que nunca se
+    mezclen dos significados de `cited_urls` de Gemini en el mismo fichero. `--analyze`
+    sobre ficheros antiguos sigue funcionando. El baseline de SPEC-008 empieza en un
+    directorio nuevo y no le afecta.
   - **Comparabilidad real.** Las tres columnas significan lo mismo, pero no miden
     exactamente lo mismo:
     - Claude declara resultados antes del filtrado dinámico;
