@@ -1,13 +1,13 @@
 # Probe kit (Cycle 0 baseline)
 
-Runs every prompt in `prompts.csv` N times against each configured provider (web search on, user location Vigo), stores the raw answer and its usage/cost metadata per row in `results.csv`, and writes `summary.md` with the analysis against the hypothesis in `../03-local-market-vigo-pontevedra.md` §2.
+Runs every prompt of a **batch** in `prompts.csv` N times against each configured provider (web search on, user location of the batch; default batch: Vigo/Pontevedra), stores the raw answer and its usage/cost metadata per row in `results.csv`, and writes `summary.md` with the analysis against the hypothesis in `../03-local-market-vigo-pontevedra.md` §2.
 
 ## Files
 
 - `run_probe.py` — CLI (probe, resume, offline analysis).
 - `probe_config.json` — **configuration, not code**: model id per provider, runs per provider, prices (USD per M input/output tokens and per web search, with date and source), USD/EUR rate, usage weights (RN-04), web search tool version, effort. Values follow the `sdd-probe` dictamen in the SPEC-001 ledger. **Re-check each app's default model before every run.**
 - `providers.py` (adapters), `matching.py` (RN-01 matching + RN-11 short acronyms), `analysis.py` (coverage, weighted aggregate, leader, directories), `settings.py` (config loader).
-- `prompts.csv`: 44 prompts (es + gl) across dental, fertility, ophthalmology, aesthetic, physio, hospital. `brands.csv`: 43 clinics/hospitals + 9 directories with aliases (columns `specialty, brand, city, type, aliases, exact_aliases`; see *Brand matching* below).
+- `prompts.csv`: 44 prompts of the Vigo batch (es + gl) across dental, fertility, ophthalmology, aesthetic, physio, hospital, plus the 24 prompts of the Clínica Ártica pilot batch (`AV`, `AR`, `AG`; see *Batches*). `brands.csv`: clinics/hospitals and directories with aliases; which of them take part in a run is decided by the batch (columns `specialty, brand, city, type, aliases, exact_aliases`; see *Brand matching* below).
 - `tests/` — offline tests (no keys, no network).
 
 ## Install (Windows PowerShell)
@@ -43,7 +43,7 @@ read -rs GEMINI_API_KEY && export GEMINI_API_KEY
 export PUSHLLM_PRIVADO=/ruta/privada/fuera/del/repo
 ```
 
-Output directory precedence: `--out DIR` > `$PUSHLLM_PRIVADO/probe` > `probe/out/` (gitignored fallback). Providers are enabled by the presence of their key. Model ids can be overridden per run with `CLAUDE_MODEL`, `OPENAI_MODEL`, `GEMINI_MODEL`.
+Output directory precedence: `--out DIR` > `$PUSHLLM_PRIVADO/<batch output_subdir>` (`probe` for the Vigo batch, `piloto-artica/probe` for the pilot batch) > `probe/out/` (gitignored fallback). Providers are enabled by the presence of their key. Model ids can be overridden per run with `CLAUDE_MODEL`, `OPENAI_MODEL`, `GEMINI_MODEL`.
 
 ## Commands
 
@@ -65,6 +65,30 @@ python -m pytest probe/tests
 ```
 
 The same commands work in bash (`--out "$PUSHLLM_PRIVADO/probe-smoke"`). Without `--resume`, the probe refuses to overwrite an existing `results.csv`.
+
+## Batches (SPEC-008, ADR-003, ADR-005)
+
+A batch is configuration, not code. The default config `probe_config.json` **is the Vigo/Pontevedra batch** (EPIC-001, SPEC-002): user location Vigo, local cities Vigo and Pontevedra, prompts `D`, `F`, `O`, `E`, `P`, `H`, its listed member brands, output `$PUSHLLM_PRIVADO/probe`. Running without `--config` behaves exactly as before.
+
+`batches/viveiro.json` is the **Clínica Ártica pilot batch**. It `extends` `probe_config.json` (models, prices, weights and currency are inherited) and replaces `user_location` (Viveiro, Galicia, ES) and `batch`:
+
+- prompts: ids `AVnn` (core: Viveiro and A Mariña), `ARnn` (area of influence) and `AGnn` (Galicia), the same ids and literal texts as `docs/piloto-artica/prompts-baseline.md`; the level is the id prefix. Brand questions `AM` are not in the probe.
+- brands: only those listed in `batch.brands` take part (membership, not city). Pilot competitors based in Vigo or Pontevedra are listed there and **not** in the Vigo batch, so they never change the Vigo results.
+- `summary.md` reports each level apart: the client's answers per provider, the weighted SoV (RN-03) **only for `AV`**, and only "x of n" counts for `AR` and `AG`. No figure adds up levels.
+- output: `$PUSHLLM_PRIVADO/piloto-artica/probe/` (private, ADR-001/ADR-004).
+
+`--only` must name prompts of the chosen batch; other ids are refused. From `probe/` (PowerShell):
+
+```powershell
+# Pilot smoke: one prompt per level x 1 run x 3 providers = 9 calls
+python run_probe.py --config batches/viveiro.json --only AV01,AR01,AG01 --runs 1 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke"
+
+# Pilot baseline: 24 prompts x runs per provider x 3 providers (216 calls with 3 runs)
+python run_probe.py --config batches/viveiro.json
+
+# Offline recount of the pilot batch (no calls)
+python run_probe.py --config batches/viveiro.json --analyze
+```
 
 ## Output
 
