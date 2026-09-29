@@ -25,7 +25,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 MIN_ALIAS_LEN = 4
 EXACT_ALIAS_RE = re.compile(r"[A-Z0-9]{2,3}")
-LOCAL_CITIES = {"Vigo", "Pontevedra"}
+LOCAL_CITIES = {"Vigo", "Pontevedra"}  # default batch; equals probe_config.json batch
 
 
 def norm(s: str) -> str:
@@ -81,8 +81,25 @@ def load_brands(path: str | Path | None = None) -> list[dict]:
     return rows
 
 
-def is_local_clinic(brand: dict) -> bool:
-    return brand["type"] != "directory" and brand["city"] in LOCAL_CITIES
+def batch_brands(brands: list[dict], members) -> list[dict]:
+    """Rows of the brands declared as members of a batch (SPEC-008 CA-3, ADR-005 §5).
+
+    Membership, not city, decides: a pilot brand based in Vigo takes part only in the
+    batches that list it. An unknown name fails loudly (typo guard).
+    """
+    members = list(members)
+    known = {b["brand"] for b in brands}
+    unknown = [m for m in members if m not in known]
+    if unknown:
+        raise ValueError(f"batch brands not in brands.csv: {', '.join(unknown)}")
+    keep = set(members)
+    return [b for b in brands if b["brand"] in keep]
+
+
+def is_local_clinic(brand: dict, local_cities=None) -> bool:
+    """Clinic (not directory) of one of the batch's local cities (default: Vigo batch)."""
+    cities = LOCAL_CITIES if local_cities is None else set(local_cities)
+    return brand["type"] != "directory" and brand["city"] in cities
 
 
 def _occurrences(t: str, pattern: str):

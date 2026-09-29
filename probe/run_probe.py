@@ -7,12 +7,16 @@ writes summary.md with the offline analysis (see analysis.py).
 Model ids, runs per provider, prices and weights: probe_config.json
 (override the model with CLAUDE_MODEL / OPENAI_MODEL / GEMINI_MODEL).
 Providers are enabled by the presence of their API key.
-Output directory: --out, else $PUSHLLM_PRIVADO/probe, else probe/out (gitignored).
+Output directory: --out, else $PUSHLLM_PRIVADO/<batch output_subdir>, else probe/out
+(gitignored). Batches (SPEC-008, ADR-003): the default config is the Vigo/Pontevedra
+batch; --config batches/viveiro.json runs the Clinica Artica pilot batch (AV/AR/AG
+prompts, Viveiro location, its member brands, $PUSHLLM_PRIVADO/piloto-artica/probe).
 
     python run_probe.py --only D01,E01,F01,O01 --runs 1   # smoke: 12 calls
     python run_probe.py                                   # full: 44 x 3 x 3
     python run_probe.py --resume                          # continue a cut run
     python run_probe.py --analyze                         # recount offline, no calls
+    python run_probe.py --config batches/viveiro.json     # pilot batch: 24 x 3 x 3
 """
 from __future__ import annotations
 
@@ -35,12 +39,19 @@ COLUMNS = ["timestamp_utc", "prompt_id", "specialty", "city", "provider", "run",
            "brands_mentioned", "directories_mentioned", "cited_urls", "answer"]
 
 
-def output_dir(option: str | None, env) -> Path:
+def output_dir(option: str | None, env, batch: dict | None = None) -> Path:
+    sub = (batch or {}).get("output_subdir", "probe")
     if option:
         return Path(option)
     if env.get("PUSHLLM_PRIVADO"):
-        return Path(env["PUSHLLM_PRIVADO"]) / "probe"
-    return HERE / "out"
+        return Path(env["PUSHLLM_PRIVADO"]) / sub
+    return HERE / "out" if sub == "probe" else HERE / "out" / sub
+
+
+def batch_prompts(prompts: list[dict], batch: dict) -> list[dict]:
+    """Prompts whose id is one of the batch prefixes followed by digits (e.g. D01, AV01)."""
+    in_batch = settings.prompt_matcher(batch)
+    return [p for p in prompts if in_batch(p["id"])]
 
 
 def parse_args(argv):
@@ -49,7 +60,8 @@ def parse_args(argv):
     ap.add_argument("--providers", default="claude,openai,gemini")
     ap.add_argument("--only", default="", help="comma list of prompt ids")
     ap.add_argument("--out", default=None, help="output directory (default: $PUSHLLM_PRIVADO/probe or probe/out)")
-    ap.add_argument("--config", default=None, help="config file (default: probe_config.json)")
+    ap.add_argument("--config", default=None,
+                    help="config or batch file (default: probe_config.json = Vigo batch)")
     ap.add_argument("--resume", action="store_true",
                     help="append to existing results.csv; only call (prompt, provider, run) without a status=ok row")
     ap.add_argument("--analyze", action="store_true", help="recompute summary.md from results.csv; no provider calls")
@@ -71,8 +83,9 @@ def main(argv=None, env=None, ask=None):
     env = os.environ if env is None else env
     ask = ask or providers.ask
     cfg = settings.load_config(args.config)
-    brands = matching.load_brands()
-    out = output_dir(args.out, env)
+    batch = settings.batch(cfg)
+    brands = matching.batch_brands(matching.load_brands(), batch["brands"])
+    out = output_dir(args.out, env, batch)
     results = out / "results.csv"
 
     if args.analyze:
@@ -83,9 +96,12 @@ def main(argv=None, env=None, ask=None):
         return
 
     with open(HERE / "prompts.csv", encoding="utf-8") as f:
-        prompts = list(csv.DictReader(f))
+        prompts = batch_prompts(list(csv.DictReader(f)), batch)
     if args.only:
         keep = set(args.only.split(","))
+        outside = sorted(keep - {p["id"] for p in prompts})
+        if outside:
+            sys.exit(f"not in batch {batch['name']}: {','.join(outside)}")
         prompts = [p for p in prompts if p["id"] in keep]
 
     active = []

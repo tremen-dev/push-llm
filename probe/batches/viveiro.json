@@ -1,0 +1,49 @@
+{
+  "_comment": "Clinica Artica pilot batch (EPIC-002, SPEC-008 CA-3; ADR-003 §3-§4, ADR-005). Extends probe_config.json: providers, prices, currency and weights are inherited unchanged; this file replaces user_location and batch as a whole. Levels are read from the prompt id prefix (AV core, AR area of influence, AG Galicia) and are reported apart: the weighted SoV uses only AV. Brands take part by membership (the list below), not by city: pilot brands based in Vigo or Pontevedra stay out of the Vigo batch (ADR-005 §5). Competitor sources and dates: SPEC-008 ledger.",
+  "extends": "../probe_config.json",
+  "user_location": {
+    "city": "Viveiro",
+    "region": "Galicia",
+    "country": "ES",
+    "timezone": "Europe/Madrid"
+  },
+  "batch": {
+    "name": "piloto-artica-viveiro",
+    "title": "Resumen del probe — piloto Clínica Ártica (lote Viveiro)",
+    "prompt_prefixes": ["AV", "AR", "AG"],
+    "levels": [
+      {"prefix": "AV", "label": "núcleo: Viveiro y A Mariña (único nivel del criterio Go)", "core": true},
+      {"prefix": "AR", "label": "área de influencia (indicador aparte, no cuenta para el Go)"},
+      {"prefix": "AG", "label": "Galicia (indicador aparte, sin objetivo)"}
+    ],
+    "client_brand": "Clínica Ártica",
+    "local_cities": ["Viveiro", "Burela", "Foz", "Ribadeo", "Cervo", "Xove", "O Vicedo", "Ourol",
+                     "Alfoz", "Lourenzá", "Mondoñedo", "O Valadouro", "Barreiros", "Trabada",
+                     "A Pontenova", "Riotorto"],
+    "output_subdir": "piloto-artica/probe",
+    "brands": [
+      "Clínica Ártica",
+      "Luxury Clínica Médico Estética",
+      "Clínica Virxe da Mariña",
+      "Gaia Pro Aging",
+      "Clínica Pío Vila Ayán",
+      "Dorsia",
+      "Avance Capilar",
+      "Medical Hair",
+      "Hospital Capilar",
+      "Clínica Novoa",
+      "Clínica Dr. Torres",
+      "Clínica Villoria L'Essence",
+      "Clínica Ulloa",
+      "Clínica Dr. Cerqueiro",
+      "Clínica Marta Prieto",
+      "Clínicas Médicas Dr Luna",
+      "Doctoralia",
+      "Top Doctors",
+      "Multiestetica",
+      "SaludOnNet",
+      "ClinicPoint",
+      "Páxinas Galegas"
+    ]
+  }
+}
