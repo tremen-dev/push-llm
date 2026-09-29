@@ -100,28 +100,50 @@ def test_protocol_no_longer_asks_for_viveiro_as_measurement_place(protocol):
 
 
 @pytest.mark.parametrize("snippet", [
-    # amendment 2026-09-29 (b): the manual pass is a calibration of the probe
+    # amendment 2026-09-29 (b), kept by (c): one calibration pass before, one after
     "49 consultas", "60–90 min", "20–25 min",
     "`antes`", "`despues`",
-    "primero el bloque av y después las am",        # chatgpt and gemini
-    "google solo el bloque av",
-    "baseline oficial del probe", "7 días",          # CA-2 (k5): pairing and window
     "el corte cae entre apps",                       # 2-day split rule (CA-5)
     "mismas en las dos pasadas",
+    # amendment (c): order by app and block, AR first (human decision at the gate)
+    "primero el bloque ar, después el av y por último las am (22 consultas)",
+    "lo mismo en gemini (22)",
+    "en google solo el bloque ar (5; nunca av, am ni ag)",
+    # two paired executions of the probe, each with its 7-day window (CA-2 o, q)
+    "baseline oficial del probe", "spec-008 ca-12", "las dos ejecuciones", "7 días",
+    # location limitation rewritten for AR
+    "ferrolterra", "asturias", "pesa más",
 ])
 def test_protocol_calibration_covers(protocol, snippet):
     assert snippet in _flat(protocol)
 
 
-def test_protocol_calibration_asks_no_ar_or_ag(protocol):
-    """CA-3 evidence: AR/AG do not appear in the question order of the protocol."""
-    order = protocol.split("## Cómo preguntar", 1)[1].split("\n## ", 1)[0]
-    assert not re.search(r"\bA[RG]\b|\bA[RG]\d\d\b", order)
+def _order_section(protocol: str) -> str:
+    return protocol.split("## Cómo preguntar", 1)[1].split("\n## ", 1)[0]
+
+
+def test_protocol_order_names_the_three_blocks_and_no_ag(protocol):
+    """CA-3 (c) evidence: AR, AV and AM in the question order; AG never asked by hand."""
+    order = _order_section(protocol)
+    for block in ("AR", "AV", "AM"):
+        assert re.search(rf"\b{block}\b", order), block
+    assert "nunca AV, AM ni AG" in order
+    assert len(re.findall(r"\bAG\b", order)) == 1
+
+
+def test_protocol_first_block_is_ar(protocol):
+    order = _flat(_order_section(protocol))
+    assert order.index("bloque ar") < order.index("el av") < order.index("las am")
+
+
+def test_protocol_field_lists_the_three_levels(protocol):
+    assert "`AR01`…`AR05`, `AV01`…`AV15`, `AM01`, `AM02`" in protocol
 
 
 def test_protocol_calibration_has_no_second_before_pass(protocol):
     flat = _flat(protocol)
     assert "pasada 2" not in flat and "`p1`" not in flat and "76 consultas" not in flat
+    assert "google solo el bloque av" not in flat and "(17 consultas)" not in flat
 
 
 # ------------------------------------------------------------ calibration order and prefill
