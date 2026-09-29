@@ -2,12 +2,21 @@
 id: SPEC-005
 tipo: spec
 epica: EPIC-001
-estado: borrador
+estado: bloqueada
 aprobada-por:
 historial:
   - {estado: borrador, fecha: 2026-09-23, por: sdd-arquitecto}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
 ---
 # SPEC-005 — Registro y evaluación de las entrevistas
+
+> **Bloqueada 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008).** El humano cierra
+> EPIC-001; no hay entrevistas de Vigo que registrar ni veredicto Go de la épica. No se
+> ejecuta. **Rescatable** para la épica de validación del nicho nuevo: el registro privado y
+> a tiempo (CA-2), el punto de control de captación (CA-3), el agregado anonimizado y su
+> comprobación (CA-4, CA-5), la regla cerrada del veredicto (CA-6, sin la pata del probe
+> de Vigo) y la hoja no retocada a posteriori (CA-7). El reparto por segmentos (CA-1) y el
+> criterio Go los fija de nuevo sdd-producto para el nicho nuevo.
 
 > Spec **mixta**: las entrevistas, las notas nominales y la puntuación son **acción
 > del humano** en el espacio privado; el agregado anonimizado y el cálculo del

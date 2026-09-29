@@ -7,14 +7,29 @@ aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-28, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-28, por: Alberto Fojo}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
+  - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
 ---
 # SPEC-009 — Reunión de descubrimiento y propuesta para Clínica Ártica
+
+> **Nota 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008). No cambia ningún CA ni
+> requiere re-aprobación.** Las citas a ADR-003 y ADR-005 de esta spec siguen valiendo en lo
+> que usa (lote aparte, niveles `AV`/`AR`/`AG` sin mezclar, Go solo con `AV`, nivel Galicia
+> sin prometer, marcas del piloto fuera del lote de Vigo). Lo que ADR-008 deroga es el
+> encuadre como "excepción a D-2" y sus prohibiciones de prospección y de "Asturias no es
+> mercado"; el lote de Vigo queda aparcado, intacto, como configuración por defecto.
 
 > Spec **documental**. El agente redacta el kit de la reunión y la propuesta; el humano
 > ensaya, se reúne, envía la propuesta y cobra. Plantillas en
 > `docs/piloto-artica/reunion/` (castellano, D-8), sin datos de personas ni cifras de la
 > clínica; notas, propuesta enviada, respuesta, consentimientos y factura en
 > `$PUSHLLM_PRIVADO/piloto-artica/reunion/` (ADR-004).
+
+> **Enmienda 2026-09-29 (sdd-arquitecto) — tres niveles (ADR-005).** La medición tiene
+> núcleo (Viveiro y A Mariña, criterio Go), área de influencia y Galicia (solo
+> tratamientos de desplazamiento). Cambian CA-2, CA-3, CA-5 y CA-10. La spec vuelve a
+> `borrador` (estaba `aprobada`, sin empezar) y necesita **nueva aprobación humana**.
 
 ## Problema
 La clínica es un cliente **cálido** que ya quiere invertir: no hay que conseguir la
@@ -56,7 +71,11 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   próximas 12 semanas; gasto actual en captación por partida; qué entienden por
   "posicionamiento en IA" y qué han oído o probado; si algún paciente ha mencionado ChatGPT
   u otro asistente; quién decide y quién aprueba contenidos; qué contenido podrían aportar
-  (precios, fotos, datos de profesionales, preguntas frecuentes de pacientes). Fuera del
+  (precios, fotos, datos de profesionales, preguntas frecuentes de pacientes); y, por la
+  enmienda de 2026-09-29, **qué tratamientos quieren atraer de pacientes de fuera de
+  A Mariña** (Ferrolterra, occidente de Asturias, resto de Galicia) y **de dónde vino el
+  último paciente que se desplazó** desde fuera para un tratamiento (conducta pasada, no
+  "¿os interesaría…?"). Fuera del
   bloque de expectativas no hay preguntas hipotéticas ("¿pagarías…?", "¿te
   interesaría…?"). *Evidencia*: checklist de cobertura; búsqueda de patrones prohibidos
   fuera de ese bloque, sin coincidencias.
@@ -71,10 +90,15 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   D-7** en sus dos opciones (450 € por 3 meses prepago o 199 €/mes) con el tratamiento del
   IVA explícito; expectativas (movimiento en 4–12 semanas, sin garantía de aparecer ni de
   número de pacientes); "cómo sabremos si funciona", en palabras llanas, con los dos
-  criterios de la épica; qué pasa al terminar (renovar o no, sin permanencia). No hay
+  criterios de la épica, referidos al **núcleo** (Viveiro y A Mariña); qué pasa al terminar
+  (renovar o no, sin permanencia). Por la enmienda de 2026-09-29 (ADR-005 §6): el nivel
+  Galicia **no aparece** en la propuesta como objetivo, entregable ni expectativa, y el área
+  de influencia, si aparece, lo hace solo como "también lo medimos y os lo contamos", sin
+  objetivo. No hay
   opción gratuita ni descuento sobre D-7; cualquier desviación exige decisión del humano
   registrada en el ledger antes del envío. *Evidencia*: conteo de palabras; checklist;
-  cifras de precio iguales a D-7.
+  cifras de precio iguales a D-7; búsqueda de "Galicia" en `propuesta.md`, sin
+  coincidencias.
 - **CA-4 (acuerdos y consentimientos) [Agente]**: Dado que sin ellos no se puede medir ni
   publicar, cuando se publique `docs/piloto-artica/reunion/acuerdos.md` (anexo de la
   propuesta, para firmar o aceptar por escrito), entonces recoge: (a) la clínica avisa por
@@ -93,7 +117,10 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   primero?", "¿cuántos pacientes me vas a traer?", "somos amigos, ¿no me lo haces gratis?",
   "¿por qué no empezamos ya y lo hablamos luego?", "la web la lleva otra persona/agencia",
   "¿y si ChatGPT cambia?", "¿podemos poner precios / antes y después?" (remite a la
-  revisión normativa, sin afirmar que se pueda) y "¿esto no es SEO?"; y ≥ 4 frases para
+  revisión normativa, sin afirmar que se pueda), "¿esto no es SEO?" y (enmienda
+  2026-09-29) "¿y saldremos cuando alguien de Coruña o Vigo busque un injerto capilar?"
+  (respuesta honesta: se mide y se informa, compiten cadenas con varias sedes y no se
+  promete); y ≥ 4 frases para
   volver a hechos pasados. *Evidencia*: recuento y checklist.
 - **CA-6 (dictamen RGPD antes de enviar la propuesta) [Agente; consulta
   sdd-sanidad-regulacion]**: Dado que Tremendev accederá a la analítica de la clínica
@@ -125,7 +152,8 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   *Evidencia*: fechas en el ledger; documentos en el espacio privado.
 - **CA-10 (sin jerga ni datos personales) [Verificador]**: Dado D-3 y ADR-004, cuando se
   revisen los textos de `docs/piloto-artica/reunion/`, entonces no aparecen "AEO", "GEO",
-  "SoV", "share of voice", "LLM", "visibilidad en IA" ni "posicionamiento garantizado", y
+  "SoV", "share of voice", "LLM", "visibilidad en IA" ni "posicionamiento garantizado",
+  ni una promesa de aparecer en el nivel Galicia (ADR-005 §6), y
   no hay emails, teléfonos (salvo marcadores `{…}`) ni nombres de persona. *Evidencia*:
   búsqueda por script, sin coincidencias.
 
@@ -133,7 +161,7 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
 - Dominio: Clinic, Provider (como "asistente"), AttributionEvent, Action (qué hace cada
   parte).
 - D-3 (se vende pacientes, no visibilidad), D-7 (precio), D-8 (idioma), RN-07, RN-09.
-- ADR-003, ADR-004. Reutiliza las reglas de SPEC-004 CA-3, CA-4, CA-6, CA-11 y CA-12 sin
+- ADR-003, ADR-004, ADR-005 (§6: el nivel Galicia no se promete). Reutiliza las reglas de SPEC-004 CA-3, CA-4, CA-6, CA-11 y CA-12 sin
   copiar sus ficheros. Depende de SPEC-007 CA-5 y CA-10.
 
 ## Fuera de alcance
@@ -152,3 +180,10 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
 - **Pregunta abierta**: la duración cuenta desde la primera acción (propuesta) o desde el
   pago. Propongo desde la primera acción, con la atribución instalada antes.
 - La reunión puede prepararse ya en paralelo a SPEC-007; solo exige la pasada 1 hecha.
+- **Enmienda 2026-09-29 — a mirar**: (1) la propuesta no menciona Galicia en absoluto
+  (test simple y a prueba de despistes); si quieres poder decir "pacientes de toda
+  Galicia para capilar" aunque sea sin compromiso, hay que relajar CA-3. (2) El área de
+  influencia puede aparecer en la propuesta solo como dato que se informa, no como objetivo.
+  (3) La respuesta de la clínica a "qué tratamientos queréis atraer de fuera" puede cambiar
+  el set `AR`/`AG` solo si llega **antes** de la pasada 1 de SPEC-007 (después, el set está
+  congelado y cualquier pregunta nueva se informa aparte).

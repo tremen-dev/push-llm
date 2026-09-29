@@ -43,3 +43,27 @@ H02,hospital,Pontevedra,discovery,¿Qué hospital privado hay en Pontevedra y qu
 H03,hospital,Vigo,specific,¿Dónde hacerme un chequeo médico completo privado en Vigo?
 H04,hospital,Vigo,specific,Mejor traumatólogo privado en Vigo para una rodilla.
 H05,hospital,Vigo,specific,Dermatólogo privado en Vigo sin lista de espera, ¿cuál?
+AV01,aesthetic,Viveiro,discovery,¿Cuál es la mejor clínica de medicina estética en Viveiro?
+AV02,aesthetic,Viveiro,discovery,Recomiéndame una clínica de medicina estética en A Mariña lucense.
+AV03,aesthetic,Viveiro,comparison,"¿Merece la pena ir a Lugo o a A Coruña para hacerme tratamientos de medicina estética, o hay buenas clínicas en A Mariña?"
+AV04,aesthetic,Viveiro,specific,¿Dónde me pongo bótox en Viveiro con un médico de confianza?
+AV05,aesthetic,Viveiro,price,¿Cuánto cuesta el ácido hialurónico en labios en Viveiro y dónde me lo hago?
+AV06,aesthetic,Viveiro,specific,Quiero quitarme las manchas de la cara con láser en Burela o en Foz. ¿Qué clínica me recomiendas?
+AV07,aesthetic,Viveiro,specific,Tengo grasa localizada y flacidez en el abdomen. ¿Qué clínica de Viveiro me lo puede tratar sin cirugía?
+AV08,aesthetic,Viveiro,price,¿Cuánto cuesta un tratamiento médico para la celulitis en A Mariña y qué clínica me recomiendas?
+AV09,aesthetic,Viveiro,discovery,¿Dónde puedo hacerme un trasplante capilar en la provincia de Lugo?
+AV10,aesthetic,Viveiro,price,¿Cuánto cuesta un injerto capilar con técnica DHI en Galicia y qué clínica me recomiendas cerca de Viveiro?
+AV11,aesthetic,Viveiro,comparison,¿Es mejor hacerme el injerto capilar en Turquía o en una clínica de Lugo?
+AV12,aesthetic,Viveiro,specific,¿Dónde me puedo operar los párpados caídos (blefaroplastia) en Viveiro o en Lugo?
+AV13,aesthetic,Viveiro,trust,¿Qué clínica de medicina estética de Viveiro tiene médicos titulados y buenas opiniones?
+AV14,aesthetic,Viveiro,discovery,Cal é a mellor clínica de medicina estética en Viveiro?
+AV15,aesthetic,Viveiro,discovery,Onde me podo facer un transplante capilar preto de Viveiro?
+AR01,aesthetic,Viveiro,discovery,"Vivo en Ferrol. Que clínica de medicina estética con médicos me recomendas pola zona, aínda que teña que desprazarme un pouco?"
+AR02,aesthetic,Viveiro,specific,"Vivo entre Narón y Ortigueira. ¿Dónde me pongo bótox con un médico de confianza por la zona, aunque tenga que desplazarme un poco?"
+AR03,aesthetic,Viveiro,trust,"Vivo en Vilalba. ¿Qué clínica con médicos titulados y buenas opiniones me recomiendas para ponerme ácido hialurónico, aunque tenga que desplazarme?"
+AR04,aesthetic,Viveiro,price,"Vivo entre Sarria y A Fonsagrada. ¿Cuánto cuesta un injerto capilar y qué clínica me recomiendas, aunque tenga que desplazarme?"
+AR05,aesthetic,Viveiro,discovery,"Vivo en Tapia de Casariego (Asturias). ¿Qué clínica de medicina estética me recomiendas cerca, aunque tenga que desplazarme un poco?"
+AG01,aesthetic,Viveiro,discovery,¿Cuál es la mejor clínica de Galicia para hacerme un injerto capilar con técnica DHI?
+AG02,aesthetic,Viveiro,price,¿Cuánto cuesta un trasplante capilar con técnica DHI en Galicia y dónde me recomiendas hacerlo?
+AG03,aesthetic,Viveiro,discovery,¿Dónde me recomiendas operarme los párpados superiores caídos (blefaroplastia) en Galicia?
+AG04,aesthetic,Viveiro,discovery,Cal é a mellor clínica de Galicia para operarme as pálpebras superiores caídas (blefaroplastia)?

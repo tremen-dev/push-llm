@@ -1,36 +1,109 @@
 {
-  "_comment": "Probe configuration (SPEC-001 CA-1/CA-2). Model ids, runs, prices and weights are configuration, not code (FOUNDATION No-negociables). Values follow the sdd-probe dictamen recorded in docs/epicas/EPIC-001-ciclo-0-baseline-y-validacion-del-problema/SPEC-001-ajustes-del-probe-para-el-baseline.ledger.md. Re-check each app's default model before every probe run.",
-  "dictamen_date": "2026-09-23",
+  "_comment": "Probe configuration (SPEC-001 CA-1/CA-2). Model ids, runs, prices and weights are configuration, not code (FOUNDATION No-negociables). Values follow the most recent dated sdd-probe dictamen (vigente): docs/epicas/EPIC-001-ciclo-0-baseline-y-validacion-del-problema/SPEC-002-ejecucion-del-probe-baseline-y-veredicto-de-la-hipotesis.ledger.md (2026-09-29; supersedes the SPEC-001 one of 2026-09-23). Re-check each app's default model before every probe run.",
+  "dictamen_date": "2026-09-29",
   "user_location": {
     "city": "Vigo",
     "region": "Galicia",
     "country": "ES",
     "timezone": "Europe/Madrid"
   },
+  "batch": {
+    "_comment": "Default batch: Vigo/Pontevedra baseline of EPIC-001 (SPEC-002). ADR-003 §3-§4 / SPEC-008 CA-3-CA-4: prompts, local cities and member brands are configuration. A brand takes part in a batch only if listed here (membership, not city): pilot brands based in Vigo never enter this batch (ADR-005 §5).",
+    "name": "vigo-pontevedra",
+    "title": "Resumen del probe Vigo/Pontevedra",
+    "prompt_prefixes": [
+      "D",
+      "F",
+      "O",
+      "E",
+      "P",
+      "H"
+    ],
+    "local_cities": [
+      "Vigo",
+      "Pontevedra"
+    ],
+    "output_subdir": "probe",
+    "brands": [
+      "Clínica Torres",
+      "Clínica Dental Grandío Pazos",
+      "Clínica Hernández Vallejo",
+      "Clínica Guitián",
+      "Titanium Clínica Dental",
+      "Clínica Bastida",
+      "Sanitas Milenium Vigo",
+      "Adeslas Dental Vigo",
+      "Vitaldent Vigo",
+      "Clínica Dental Gamero",
+      "Garrido Madarnás",
+      "Clínica Monteporreiro",
+      "Clínica Sorrisos",
+      "Castro&Umaña Ortodoncia",
+      "Clínica Dental Domínguez",
+      "Vitaldent Pontevedra",
+      "IVI Vigo",
+      "Clínica NIDA",
+      "Vithas Vigo Reproducción",
+      "Ribera Povisa",
+      "Clínica Villoria",
+      "Clínica Oftalmológica Malvar y Pérez",
+      "Vithas Clínica Cadarso",
+      "Ribera Povisa Oftalmología",
+      "Fernández-Vigo",
+      "Quirónsalud Miguel Domínguez",
+      "Clínica Villoria L'Essence",
+      "Clínica Dra. Helga Rivera",
+      "Clínica Femme",
+      "Centro Láser Vigo",
+      "Clínica MIA",
+      "Clínica Rey",
+      "Clínica Murillo",
+      "Único Life Clinics",
+      "DeCastro Medicina Estética",
+      "Garden Clinic",
+      "Dra. Adriana Antesola",
+      "Centros Bellum",
+      "Fisioterapia Gulpari",
+      "Centro Vibar",
+      "C1dema",
+      "Pablo Losada Crespo",
+      "Fisioterapia Ficas",
+      "Doctoralia",
+      "Top Doctors",
+      "reproduccionasistida.org",
+      "mundofertilidad",
+      "mejoresdevigo.es",
+      "SaludOnNet",
+      "ClinicPoint",
+      "Multiestetica",
+      "docdental"
+    ]
+  },
   "currency": {
-    "usd_per_eur": 1.1411,
-    "date": "2026-09-23",
+    "usd_per_eur": 1.1378,
+    "date": "2026-09-28",
     "source": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html"
   },
   "providers": {
     "claude": {
-      "model": "claude-sonnet-5",
+      "model": "claude-sonnet-5-5",
       "model_env": "CLAUDE_MODEL",
       "api_key_env": "ANTHROPIC_API_KEY",
       "runs": 3,
       "weight": 0.10,
       "web_search_tool": "web_search_20260209",
       "max_searches": 5,
-      "effort": "low",
-      "max_tokens": 4000,
+      "effort": "medium",
+      "_effort_comment": "medium as in the Claude apps (Sonnet 5.5 default there), decided by the human 2026-09-29 (F-SPEC-002-4, D-5): https://www.unite.ai/anthropic-releases-claude-sonnet-5-5-at-unchanged-sonnet-5-pricing/ (2026-09-28). max_tokens bounds thinking + answer per request (thinking counts toward it: https://platform.claude.com/docs/en/build-with-claude/effort); 16000 leaves room for adaptive thinking at medium and stays under the anthropic SDK non-streaming limit (21333).",
+      "max_tokens": 16000,
       "price": {
         "input_usd_per_mtok": 2.0,
         "output_usd_per_mtok": 10.0,
         "search_usd": 0.01,
-        "date": "2026-09-23",
-        "source": "https://platform.claude.com/docs/en/about-claude/models/overview ; https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool"
+        "date": "2026-09-29",
+        "source": "https://platform.claude.com/docs/en/models/sonnet-5-5/overview ; https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool"
       },
-      "model_source": "https://www.anthropic.com/news/claude-sonnet-5 (Sonnet 5 = default model for Free and Pro plans)"
+      "model_source": "https://simonwillison.net/2026/Sep/28/claude-sonnet-5-5/ (2026-09-28: Sonnet 5.5 is now the model used for the free tier on claude.ai); https://www.anthropic.com/claude/sonnet (anyone can chat with Sonnet 5.5 on Claude.ai, web, iOS and Android)"
     },
     "openai": {
       "model": "gpt-5.6-luna",
@@ -44,10 +117,10 @@
         "input_usd_per_mtok": 0.20,
         "output_usd_per_mtok": 1.20,
         "search_usd": 0.01,
-        "date": "2026-09-23",
+        "date": "2026-09-29",
         "source": "https://developers.openai.com/api/docs/models/gpt-5.6-luna ; https://developers.openai.com/api/docs/pricing"
       },
-      "model_source": "https://www.macrumors.com/2026/08/06/chatgpt-free-unlimited-text-chats/ (GPT-5.6 Luna = default for Free and Go since 2026-08-06); GPT-6 Luna announced 2026-09-22, not yet in Chat: https://techcrunch.com/2026/09/22/openai-launches-gpt-6-sol-and-luna/"
+      "model_source": "https://www.macrumors.com/2026/08/06/chatgpt-free-unlimited-text-chats/ (GPT-5.6 Luna = default for Free and Go since 2026-08-06); GPT-6 Luna announced 2026-09-22, still not in Chat on 2026-09-29 (Free/Go: desktop app only; ChatGPT: Work and Codex): https://9to5mac.com/2026/09/22/openai-upgrading-chatgpt-and-codex-with-two-more-gpt-6-models/ ; https://releasebot.io/updates/openai/chatgpt"
     },
     "gemini": {
       "model": "gemini-3.6-flash",
@@ -61,10 +134,10 @@
         "input_usd_per_mtok": 0.75,
         "output_usd_per_mtok": 3.75,
         "search_usd": 0.014,
-        "date": "2026-09-23",
+        "date": "2026-09-29",
         "source": "https://ai.google.dev/gemini-api/docs/pricing (price valid through 2026-12-31; 5,000 free searches/month ignored, conservative)"
       },
-      "model_source": "https://gemini.google/release-notes/ (2026-07-21: Gemini 3.6 Flash for all Gemini app users); https://ai.google.dev/gemini-api/docs/models"
+      "model_source": "https://gemini.google/release-notes/ (2026-07-21: Gemini 3.6 Flash for all Gemini app users; no model change up to the 2026-09-10 note; 3.8 Flash in the app only for AI Pro/Ultra); https://ai.google.dev/gemini-api/docs/models"
     }
   }
 }

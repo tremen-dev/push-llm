@@ -9,6 +9,10 @@ historial:
 ---
 # SPEC-012 — Ejecución, medición semanal y cierre del piloto
 
+> **Nota 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008).** Ajustadas tres
+> referencias (transferibilidad al resto del nicho, ADR citados, segundo cliente) sin cambiar
+> el fondo; la spec sigue en `borrador`.
+
 > Spec **operativa y deliberadamente menos detallada**: las acciones concretas salen de
 > SPEC-011 y la cadencia del probe de SPEC-008 CA-5, que aún no existen. Aquí se fija lo
 > que no depende de ellas: el registro, la puerta de publicación, la medición, los
@@ -67,7 +71,7 @@ honesto sobre H1 y H3, incluido decir "no ha funcionado" a un cliente de confian
   probe si hubo baseline de probe); H3 = ≥ 1 AttributionEvent en cualquier señal durante el
   piloto (RN-07). Se publica en `docs/piloto-artica/cierre.md` como cumple / no cumple sin
   cifras (ADR-004 §3), con: que un piloto no es el Go del Ciclo 2 ("2 de 3 pilotos"); qué
-  se considera transferible a Vigo/Pontevedra y qué no (ADR-003 §5); las horas del
+  se considera transferible al resto del nicho (Galicia, Asturias, León) y qué no (ADR-003 §5 reinterpretado por ADR-008 §5); las horas del
   fundador. Las cifras van al informe privado de cierre a la clínica. *Evidencia*: el
   verificador recalcula desde los datos privados.
 - **CA-8 (continuidad) [Humano]**: Dado el cierre, cuando se entregue el informe final,
@@ -76,12 +80,12 @@ honesto sobre H1 y H3, incluido decir "no ha funcionado" a un cliente de confian
 
 ## Entidades y reglas afectadas
 - Dominio: Action, AttributionEvent, Weighted SoV, Share of voice, Position.
-- RN-02–RN-04, RN-07, RN-09. D-3, D-4, D-6. ADR-003, ADR-004.
+- RN-02–RN-04, RN-07, RN-09. D-3, D-4, D-6. ADR-003, ADR-004, ADR-005, ADR-008.
 - Depende de SPEC-007, SPEC-008 (opcional), SPEC-009, SPEC-010 y SPEC-011.
 
 ## Fuera de alcance
 - Automatizar la medición semanal o el informe (Ciclo 3).
-- Un segundo cliente piloto (se reevalúa al cerrar EPIC-002, ADR-003 §2).
+- Un segundo cliente piloto: no entra en esta épica; la prospección del nicho nuevo va en su propia épica (ADR-008; ~~ADR-003 §2~~, derogado).
 
 ## Notas para el gate humano
 - **Pendiente de detalle** hasta SPEC-011 y SPEC-008 CA-5: lista de acciones, cadencia del

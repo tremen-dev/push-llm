@@ -41,3 +41,9 @@ ADR-style. Newest at the bottom. To change a decision, add a superseding entry; 
 ## D-008 — Documentation language
 **Date:** 2026-09-23. **Status:** accepted.
 **Decision:** foundational and spec documents in English for agent consumption; customer-facing material in Galician/Spanish.
+
+## D-009 — Niche moves to A Mariña first, then Galicia, Asturias and León; Vigo and Pontevedra parked
+**Date:** 2026-09-29. **Status:** decided by the human (Alberto Fojo); formal record in `docs/adr/ADR-008-nicho-geografico-a-marina-primero-despues-galicia-asturias-y-leon-supera-d-2.md` (pending approval at the time of writing).
+**Context:** the first real customer (Clínica Ártica, Viveiro) is in A Mariña, and in areas with little supply the competition to appear in AI answers is lower. A Mariña is a small market, so volume has to come from the rest of Galicia, Asturias and León.
+**Decision:** supersedes the geographic part and the speciality order of D-002. Primary niche = private healthcare clinics in general, A Mariña first, then the rest of Galicia, Asturias and the province of León. Vigo and Pontevedra are parked, not abandoned. Hospitals phase two, physio only via agencies and private education in year 2 stay as in D-002. ADR-003 and ADR-005 are superseded in part (see ADR-008 §5–§6).
+**Consequence:** EPIC-001 (Cycle 0 in Vigo) is closed unfinished; EPIC-002 (Clínica Ártica pilot) is the main validation. The documents `02-icp-and-niche.md` and `03-local-market-vigo-pontevedra.md` remain as history of the old niche.

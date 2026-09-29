@@ -45,9 +45,29 @@ el gasto.
      activas y continúas con `--resume`.
 
 ## Custodia de las claves
-- Guárdalas en tu **gestor de contraseñas** (Bitwarden, 1Password, el de
-  Chrome…). **Nunca** en un fichero dentro del repo, que es **público**.
-- No se escriben en ningún sitio: las pegas en la terminal cuando el probe las
-  pide (`Read-Host` en PowerShell; ver `probe/README.md`) y solo existen
-  mientras esa terminal está abierta.
-- Si una clave acaba donde no debe, **bórrala** desde su consola y crea otra.
+Regla: ADR-006 (claves en un `.env` local ignorado por git) y ADR-007 (`.env.example`
+versionado como plantilla sin valores). Actualizado el 2026-09-29.
+
+- **Dónde viven**: en un fichero `.env` en la **raíz de tu copia local del repo**
+  (junto a `.env.example`), una por línea: `ANTHROPIC_API_KEY=…`, `OPENAI_API_KEY=…`,
+  `GEMINI_API_KEY=…`. Para crearlo, copia `.env.example` como `.env` y rellena los
+  valores. `.env` está ignorado por git: **nunca** lo subas (tampoco con `git add -f`).
+  Ningún otro fichero del repo lleva claves (ni `probe/.env`, ni configs, ni scripts), y
+  `.env.example` se queda siempre con los valores vacíos. El repo es **público**.
+- **Cómo las usa el probe**: `run_probe.py` lee solo el `.env` de la raíz al arrancar
+  (no hace falta `Read-Host` ni ningún fragmento de PowerShell). Si una variable ya está
+  definida en la sesión o en tu entorno de usuario, manda esa y el `.env` no la toca.
+  Nunca escribe los valores en pantalla, en `results.csv` ni en `summary.md`. Sin `.env`,
+  sigue valiendo ponerlas solo en la sesión (ver `probe/README.md`).
+- **Copia y traslado a otra máquina**: guarda el contenido completo del `.env` como
+  **nota segura** en tu gestor de contraseñas (Bitwarden, 1Password, el de Chrome…) y,
+  en la otra máquina, pégalo en un `.env` nuevo en la raíz del repo. **Nunca** por email,
+  mensajería ni en una carpeta de nube sincronizada sin cifrar (OneDrive, Dropbox…); por
+  lo mismo, la copia del repo no debe estar dentro de una carpeta así, o el `.env`
+  viajaría con ella.
+- **Agentes**: ningún agente lee, abre ni copia el `.env`. Si un agente llega a ver una
+  clave, se trata como filtrada.
+- **Si una clave se filtra** (aparece en el historial de git, en un log, en un chat o la
+  ve un agente): **revócala** en su consola y crea otra; actualiza la nota segura y el
+  `.env`. Reescribir el historial no basta en un repo público. Los límites de gasto por
+  proveedor acotan el daño mientras tanto.

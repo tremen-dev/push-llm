@@ -2,12 +2,23 @@
 id: SPEC-003
 tipo: spec
 epica: EPIC-001
-estado: borrador
+estado: bloqueada
 aprobada-por:
 historial:
   - {estado: borrador, fecha: 2026-09-23, por: sdd-arquitecto}
+  - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
 ---
 # SPEC-003 — Extracto de hallazgos por clínica
+
+> **Bloqueada 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008).** El humano cierra
+> EPIC-001 y aparca Vigo y Pontevedra; no habrá ejecución completa del lote de Vigo, que era
+> la entrada de esta spec (SPEC-002 CA-4, retirado). No se implementa. **Rescatable** para
+> la épica de validación del nicho nuevo: el generador offline de extractos por clínica
+> (CA-1, CA-2, CA-8: reutiliza matching y análisis, sin llamadas, salida privada), el
+> contenido de la media página (CA-3, sin la nota de método fijada a Vigo), la frase gancho
+> con cifra real (CA-4), las reglas sin promesas ni descalificaciones (CA-6) y la variante
+> agencia (CA-7). Para reutilizarla hace falta un lote de medición del nicho nuevo (catálogo
+> y marcas por zona) y reescribir la spec sobre ese lote.
 
 > Trabajo de **agente**: requiere **código nuevo en `probe/`** (un generador de
 > extractos que lee el fichero de resultados de SPEC-001/002). No es código de

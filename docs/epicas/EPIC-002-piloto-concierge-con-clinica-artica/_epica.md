@@ -7,6 +7,17 @@ historial:
 ---
 # EPIC-002 — Piloto concierge con Clínica Ártica
 
+> **Nota 2026-09-29 (sdd-arquitecto) — cambio de nicho (ADR-008).** El humano ha movido el
+> nicho a A Mariña primero (después Galicia, Asturias y León) y aparcado Vigo y Pontevedra.
+> Este piloto **deja de ser una excepción a D-2**: es el primer cliente del nicho y la
+> validación principal. Donde este texto habla de "excepción al nicho", "fuera del nicho
+> D-2" o "ampliar el nicho oficial a Lugo / A Mariña", vale ADR-008: la excepción y sus
+> prohibiciones (ADR-003 §2 y §6, ADR-005 §2 y §3) quedan derogadas; siguen vigentes el lote
+> aparte, los niveles `AV`/`AR`/`AG` sin mezclar, el Go solo con `AV` y el nivel Galicia sin
+> prometer (ADR-003 §1, §3, §4; ADR-005 §1, §4, §6). La prospección de otras clínicas del
+> nicho va en su propia épica, no en esta. El fondo del piloto no cambia.
+> Texto de la épica sin tocar: lo actualiza sdd-producto si lo cree necesario.
+
 ## Objetivo
 Llevar a cabo el primer **piloto concierge de pago** con un cliente real:
 **Clínica Ártica** (medicina estética; sede única en Viveiro, Lugo;
@@ -49,6 +60,19 @@ Premisas del humano (2026-09-28):
 4. **Criterio Go del piloto (Ciclo 2)**, a unas 12 semanas del inicio de las
    acciones: **+15 puntos de SoV ponderado** sobre su set de prompts **y ≥ 1
    paciente atribuido** al canal IA.
+   **Alcance geográfico en tres niveles** (decidido por el humano el
+   2026-09-29), cada uno medido como indicador **separado**:
+   - **Núcleo** (Viveiro y A Mariña): es el criterio Go (+15 pts, estable en
+     las dos pasadas "después").
+   - **Área de influencia** (Ferrolterra, norte de Lugo, occidente de
+     Asturias): objetivo "de no aparecer a aparecer con cierta regularidad".
+     No es criterio Go.
+   - **Galicia**, solo para tratamientos por los que el paciente se desplaza
+     (trasplante capilar DHI, blefaroplastia): objetivo "aparecer alguna vez".
+     No es criterio Go y no se promete a la clínica. Ahí compiten cadenas con
+     varias sedes (Novoa, Avance Capilar, Medical Hair, Hospital Capilar,
+     Villoria…); dominar ese nivel es un objetivo de un año, no de un piloto
+     de 12 semanas.
 5. **Registro de acciones → efecto**: cada acción queda fechada y se anota
    semanalmente si movió alguna respuesta en algún asistente. Según
    `05-lean-plan.md`, este registro "es el producto futuro".

@@ -1,13 +1,13 @@
 # Probe kit (Cycle 0 baseline)
 
-Runs every prompt in `prompts.csv` N times against each configured provider (web search on, user location Vigo), stores the raw answer and its usage/cost metadata per row in `results.csv`, and writes `summary.md` with the analysis against the hypothesis in `../03-local-market-vigo-pontevedra.md` §2.
+Runs every prompt of a **batch** in `prompts.csv` N times against each configured provider (web search on, user location of the batch; default batch: Vigo/Pontevedra), stores the raw answer and its usage/cost metadata per row in `results.csv`, and writes `summary.md` with the analysis against the hypothesis in `../03-local-market-vigo-pontevedra.md` §2.
 
 ## Files
 
 - `run_probe.py` — CLI (probe, resume, offline analysis).
-- `probe_config.json` — **configuration, not code**: model id per provider, runs per provider, prices (USD per M input/output tokens and per web search, with date and source), USD/EUR rate, usage weights (RN-04), web search tool version, effort. Values follow the `sdd-probe` dictamen in the SPEC-001 ledger. **Re-check each app's default model before every run.**
+- `probe_config.json` — **configuration, not code**: model id per provider, runs per provider, prices (USD per M input/output tokens and per web search, with date and source), USD/EUR rate, usage weights (RN-04), web search tool version, effort. Values follow the **vigente** `sdd-probe` dictamen, the most recent dated one (today the SPEC-002 ledger, 2026-09-29; `tests/test_config.py` checks it). **Re-check each app's default model before every run.**
 - `providers.py` (adapters), `matching.py` (RN-01 matching + RN-11 short acronyms), `analysis.py` (coverage, weighted aggregate, leader, directories), `settings.py` (config loader).
-- `prompts.csv`: 44 prompts (es + gl) across dental, fertility, ophthalmology, aesthetic, physio, hospital. `brands.csv`: 43 clinics/hospitals + 9 directories with aliases (columns `specialty, brand, city, type, aliases, exact_aliases`; see *Brand matching* below).
+- `prompts.csv`: 44 prompts of the Vigo batch (es + gl) across dental, fertility, ophthalmology, aesthetic, physio, hospital, plus the 24 prompts of the Clínica Ártica pilot batch (`AV`, `AR`, `AG`; see *Batches*). `brands.csv`: clinics/hospitals and directories with aliases; which of them take part in a run is decided by the batch (columns `specialty, brand, city, type, aliases, exact_aliases`; see *Brand matching* below).
 - `tests/` — offline tests (no keys, no network).
 
 ## Install (Windows PowerShell)
@@ -15,26 +15,46 @@ Runs every prompt in `prompts.csv` N times against each configured provider (web
 ```powershell
 cd probe
 py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+.\.venv\Scripts\python -m pip install -r requirements.txt
 ```
+
+No `Activate.ps1` needed (avoids the PowerShell execution policy): call `.\.venv\Scripts\python` directly. Where this README writes `python run_probe.py`, PowerShell users can write `.\.venv\Scripts\python run_probe.py`.
 
 bash: `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`.
 
-## Keys and output directory — never in a repo file
+## Keys and output directory — keys in the git-ignored `.env`, outputs outside the repo
 
-Keys live only in the shell session (or your user environment), never in a file inside the repo. Raw outputs go to the private space of ADR-001 (`$PUSHLLM_PRIVADO/probe`), outside the repo.
+Rule: ADR-006 (keys in a local `.env` ignored by git) and ADR-007 (`.env.example` is the only versioned `.env*`, a template with empty values). Raw outputs go to the private space of ADR-001 (`$PUSHLLM_PRIVADO/probe`), outside the repo.
 
-PowerShell (current session only):
+**`.env` at the repo root (recommended).** Copy `.env.example` (repo root) to `.env` in the same folder and fill in `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` (optionally `PUSHLLM_PRIVADO` and the `*_MODEL` overrides). `run_probe.py` loads that file by itself on start — no `Read-Host`, no PowerShell snippet:
+
+- only `<repo root>/.env` is read (never `probe/.env`); no file → nothing changes;
+- `NAME=value` per line; `#` comment lines, blank lines, `export NAME=value` and quoted values are accepted; a line with an empty value (`OPENAI_API_KEY=`) is not loaded;
+- a variable already set in the session or the user environment is **never** overwritten: the session wins;
+- values are never written to the console, `results.csv` or `summary.md`; only the names loaded are reported on stderr (`loaded from .env: … (values not shown)`).
+
+Keep the `.env` content as a secure note in your password manager to move it to another machine; never by email, chat or an unencrypted synced folder (and keep the working tree out of such folders). No agent reads, opens or copies the `.env`. If a key leaks (git history, a log, a chat, an agent saw it): **revoke it** in its console and create a new one (ADR-006 §4–§6).
+
+Checks before a real run (CA-1 of SPEC-002; no key values in any output), from the repo root:
+
+```powershell
+git check-ignore -v .env                 # must print a .gitignore rule
+git log --all --oneline -- .env          # must be empty
+git status --porcelain                   # must not list .env
+git ls-files | Select-String '\.env'     # only .env.example
+```
+
+`PUSHLLM_PRIVADO` is a user environment variable on the usual machine. Commands that pass `--out "$env:PUSHLLM_PRIVADO\..."` need it in the session or user environment, because PowerShell expands it **before** Python reads the `.env` (if it is empty, the probe refuses the resulting `--out`). A `PUSHLLM_PRIVADO` set only in `.env` works for the commands without `--out`.
+
+**Session only (alternative, no file).** PowerShell:
 
 ```powershell
 $env:ANTHROPIC_API_KEY = Read-Host "Anthropic key"
 $env:OPENAI_API_KEY    = Read-Host "OpenAI key"
 $env:GEMINI_API_KEY    = Read-Host "Gemini key"
-$env:PUSHLLM_PRIVADO   = "D:\ruta\privada\fuera\del\repo"
 ```
 
-bash (current session only; `read -s` keeps them out of the shell history):
+bash (`read -s` keeps them out of the shell history):
 
 ```bash
 read -rs ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY
@@ -43,28 +63,60 @@ read -rs GEMINI_API_KEY && export GEMINI_API_KEY
 export PUSHLLM_PRIVADO=/ruta/privada/fuera/del/repo
 ```
 
-Output directory precedence: `--out DIR` > `$PUSHLLM_PRIVADO/probe` > `probe/out/` (gitignored fallback). Providers are enabled by the presence of their key. Model ids can be overridden per run with `CLAUDE_MODEL`, `OPENAI_MODEL`, `GEMINI_MODEL`.
+Output directory precedence: `--out DIR` > `$PUSHLLM_PRIVADO/<batch output_subdir>` (`probe` for the Vigo batch, `piloto-artica/probe` for the pilot batch) > `probe/out/` (gitignored fallback). Providers are enabled by the presence of their key. Model ids can be overridden per run with `CLAUDE_MODEL`, `OPENAI_MODEL`, `GEMINI_MODEL`.
 
 ## Commands
 
+From `probe\` (PowerShell, venv installed as above, keys in the repo-root `.env`):
+
 ```powershell
+# Offline check first (no keys, no network): all green
+.\.venv\Scripts\python -m pytest -q tests
+
 # Smoke: 4 prompts x 1 run x 3 providers = 12 calls (separate dir so the full run starts clean)
-python run_probe.py --only D01,E01,F01,O01 --runs 1 --out "$env:PUSHLLM_PRIVADO\probe-smoke"
+.\.venv\Scripts\python run_probe.py --only D01,E01,F01,O01 --runs 1 --out "$env:PUSHLLM_PRIVADO\probe-smoke"
 
 # Full run: 44 prompts x 3 runs x 3 providers = 396 calls (runs per provider from probe_config.json)
-python run_probe.py
+.\.venv\Scripts\python run_probe.py
 
 # Resume a cut run: only calls (prompt, provider, run) without a status=ok row; previous rows are kept
-python run_probe.py --resume
+.\.venv\Scripts\python run_probe.py --resume
 
 # Offline analysis: recount summary.md from results.csv with the current brands.csv, no provider calls
-python run_probe.py --analyze
-
-# Tests (from the repo root)
-python -m pytest probe/tests
+.\.venv\Scripts\python run_probe.py --analyze
 ```
 
-The same commands work in bash (`--out "$PUSHLLM_PRIVADO/probe-smoke"`). Without `--resume`, the probe refuses to overwrite an existing `results.csv`.
+Tests from the repo root: `python -m pytest probe/tests`. The same commands work in bash (`python run_probe.py …`, `--out "$PUSHLLM_PRIVADO/probe-smoke"`). Without `--resume`, the probe refuses to overwrite an existing `results.csv`.
+
+## Batches (SPEC-008, ADR-003, ADR-005)
+
+A batch is configuration, not code. The default config `probe_config.json` **is the Vigo/Pontevedra batch** (EPIC-001, SPEC-002): user location Vigo, local cities Vigo and Pontevedra, prompts `D`, `F`, `O`, `E`, `P`, `H`, its listed member brands, output `$PUSHLLM_PRIVADO/probe`. Running without `--config` behaves exactly as before.
+
+`batches/viveiro.json` is the **Clínica Ártica pilot batch**. It `extends` `probe_config.json` (models, prices, weights and currency are inherited) and replaces `user_location` (Viveiro, Galicia, ES) and `batch`:
+
+- prompts: ids `AVnn` (core: Viveiro and A Mariña), `ARnn` (area of influence) and `AGnn` (Galicia), the same ids and literal texts as `docs/piloto-artica/prompts-baseline.md`; the level is the id prefix. Brand questions `AM` are not in the probe.
+- brands: only those listed in `batch.brands` take part (membership, not city). Pilot competitors based in Vigo or Pontevedra are listed there and **not** in the Vigo batch, so they never change the Vigo results.
+- `summary.md` reports each level apart: the client's answers per provider, the weighted SoV (RN-03) **only for `AV`**, and only "x of n" counts for `AR` and `AG`. No figure adds up levels.
+- runs: per level in `batch.levels` (`AV` 2, `AR` 1, `AG` 1), so the plain command is the safe baseline of the SPEC-008 cost dictamen (39 prompt-runs per provider). `--runs N` overrides every selected level; `--levels AV` (or `AR,AG`) selects levels.
+- `summary.md` ends with "observations to review by hand": sentences naming a clinic next to "sin médico", "esteticista", "no sanitario"… (`batch.review_terms`). Not a metric.
+- output: `$PUSHLLM_PRIVADO/piloto-artica/probe/` (private, ADR-001/ADR-004).
+
+`--only` must name prompts of the chosen batch; other ids are refused. `--out` empty or a drive root (e.g. `PUSHLLM_PRIVADO` unset) is refused. The baseline goes **after** pass 1 of the manual baseline (SPEC-007), which freezes the question set; the smoke can run before. From `probe/` (PowerShell, keys in the repo-root `.env`, `PUSHLLM_PRIVADO` set as a user variable):
+
+```powershell
+# Pilot smoke: one prompt per level x 1 run x 3 providers = 9 calls
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --only AV01,AR01,AG01 --runs 1 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke"
+
+# Pilot baseline, runs per level (AV 2, AR/AG 1): 39 prompt-runs x 3 providers = 117 calls
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json
+
+# ...or, if the smoke cost per prompt-run is <= 0.19 EUR (SPEC-008 ledger): AV with 3 runs, then AR/AG with 1
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AV --runs 3
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --levels AR,AG --resume
+
+# Offline recount of the pilot batch (no calls)
+.\.venv\Scripts\python run_probe.py --config batches/viveiro.json --analyze
+```
 
 ## Output
 
