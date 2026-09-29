@@ -68,15 +68,26 @@ Premisas del humano (2026-09-28):
    búsquedas de marca en Search Console, y la pregunta "¿cómo nos conociste?"
    en recepción o en la reserva, con opción de IA.
 4. **Criterio Go del piloto (Ciclo 2)**, a unas 12 semanas del inicio de las
-   acciones: **+15 puntos de SoV ponderado** sobre su set de prompts **y ≥ 1
+   acciones, medido con el probe: **crecer fuera, defender dentro, y ≥ 1
    paciente atribuido** al canal IA.
-   **Alcance geográfico en tres niveles** (decidido por el humano el
-   2026-09-29), cada uno medido como indicador **separado**:
-   - **Núcleo** (Viveiro y A Mariña): es el criterio Go (+15 pts de SoV
-     ponderado **medido con el probe**, estable en dos mediciones "después").
-   - **Área de influencia** (Ferrolterra, norte de Lugo, occidente de
-     Asturias): objetivo "de no aparecer a aparecer con cierta regularidad".
-     No es criterio Go.
+   > **Redefinido por el humano el 2026-09-29, antes de la primera acción.**
+   > Motivo: en el baseline oficial (SPEC-008 CA-7, 29-sep), el SoV ponderado
+   > del núcleo **supera el umbral de techo de CA-10 (≥ 85 %)**, así que
+   > "+15 pts en el núcleo" deja de ser alcanzable. El área de influencia
+   > tiene margen de crecimiento y en Galicia la clínica no aparece. Las
+   > cifras están en el espacio privado (ADR-004). El dato comercial es
+   > claro: Ártica ya es la clínica que la IA recomienda en su comarca, y el
+   > crecimiento está fuera.
+
+   **Alcance geográfico en tres niveles**, cada uno medido como indicador
+   **separado**:
+   - **Área de influencia** (Ferrolterra, norte e interior de Lugo, occidente
+     de Asturias): **es el criterio Go (crecer)**. El umbral de subida, las
+     preguntas y los runs los fija sdd-metricas. Hoy son 5 preguntas × 1 run,
+     demasiado ruido para decidir con ellas.
+   - **Núcleo** (Viveiro y A Mariña): **condición de defensa** del Go. No
+     debe caer de forma significativa respecto al baseline oficial; el
+     umbral lo fija sdd-metricas.
    - **Galicia**, solo para tratamientos por los que el paciente se desplaza
      (trasplante capilar DHI, blefaroplastia): objetivo "aparecer alguna vez".
      No es criterio Go y no se promete a la clínica. Ahí compiten cadenas con
