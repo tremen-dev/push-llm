@@ -18,7 +18,10 @@
    afecta poco, porque la pregunta ya nombra el lugar.
 3. Usa siempre la **cuenta gratuita** de cada app (lo que ve la mayoría de pacientes). Una
    cuenta de pago solo como observación aparte, con `plan_cuenta` = `pago`: no cuenta.
-4. Reserva 60–90 min seguidos. Si no te da, termina al día siguiente (máximo 2 días).
+4. Es **una sola pasada con los tres niveles** del set (`AV`, `AR`, `AG`) y las `AM`:
+   76 consultas, 95–140 min más 25–30 min de CSV y capturas. Si no te da, termina al día
+   siguiente (máximo 2 días seguidos): el corte cae entre bloques (nunca dentro de un
+   bloque app × nivel), se anota en desviaciones y la pasada 2 se corta igual.
 
 ## Cómo abrir una sesión limpia
 - **ChatGPT** (app): sesión iniciada con la cuenta gratuita. Ajustes → Personalización:
@@ -36,15 +39,16 @@
   (p. ej. el nombre del modelo o "Rápido"); si no enseña nada, `no se muestra`.
 
 ## Cómo preguntar
-1. Orden: primero todas las `AV` y luego las `AM` en ChatGPT; lo mismo en Gemini; por
-   último las `AV` en Google. Dentro de cada app, en el **orden del set**.
+1. Orden por app, igual en todas las pasadas: en ChatGPT, bloques AV, AR, AG y AM; lo
+   mismo en Gemini; por último Google con AV, AR y AG (nunca AM). Dentro de cada bloque,
+   en el **orden del set**.
 2. Copia y pega el **texto literal** de la pregunta. **Una pregunta por conversación
    nueva**. No repreguntes ni pidas aclaraciones.
 3. Espera a que la respuesta termine del todo.
 
 ## Qué capturar
-- Una **captura** de la respuesta completa: si no cabe, captura desplazada (o varias,
-  desplazándote). Que la pregunta se vea en la primera.
+- Una **captura** de la respuesta completa (captura desplazada o varias, desplazándote).
+  Que la pregunta se vea en la primera.
 - Si la respuesta tiene botón de fuentes, ábrelo y captúralo también.
 - Google: el resumen de IA desplegado ("Mostrar más"). Si no aparece resumen, captura la
   parte de arriba de los resultados igualmente.
@@ -62,7 +66,7 @@
 Obligatorios (los rellenas tú; se pueden copiar de la cabecera de sesión):
 - `fecha_hora_local`: AAAA-MM-DD HH:MM (sirve la hora de la captura).
 - `pasada`: `p1` o `p2` (en el cierre, lo que diga SPEC-012).
-- `id_pregunta`: `AV01`…, `AM01`….
+- `id_pregunta`: `AV01`…, `AR01`…, `AG01`…, `AM01`….
 - `app`: `chatgpt`, `gemini`, `google` (o `claude` si se usa como observación).
 - `modo`: `temporal`, `normal` o `incognito`.
 - `sesion_iniciada`: `si` / `no`.

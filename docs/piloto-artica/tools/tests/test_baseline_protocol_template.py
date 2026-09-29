@@ -97,3 +97,21 @@ def test_protocol_fixed_municipality_vilaboa(protocol, snippet):
 
 def test_protocol_no_longer_asks_for_viveiro_as_measurement_place(protocol):
     assert "mide desde viveiro o a mariña" not in _flat(protocol)
+
+
+@pytest.mark.parametrize("snippet", [
+    # amendment 2026-09-29 (ADR-005): one pass with the three levels, AV block first
+    "una sola pasada con los tres niveles",
+    "av, ar, ag y am",                       # block order in chatgpt and gemini
+    "av, ar y ag",                            # block order in google
+    "el corte cae entre bloques",            # 2-day split rule
+    "76 consultas", "95–140 min",
+])
+def test_protocol_three_levels_block_order(protocol, snippet):
+    assert snippet in _flat(protocol)
+
+
+def test_protocol_block_order_av_first(protocol):
+    flat = _flat(protocol)
+    i = flat.index("av, ar, ag y am")
+    assert flat.index("av", i) < flat.index("ar", i) < flat.index("ag", i) < flat.index("am", i)

@@ -76,6 +76,46 @@ def _check(rows: list[dict]) -> None:
             raise ValueError(f"artica_nombrada vacía o inválida en fila válida: {key}")
 
 
+LEVELS = ("AR", "AG")
+LEVEL_APPS = ("chatgpt", "gemini", "google")
+AR_MIN_STABLE_CELLS = 2   # CA-2 (g): "aparece con cierta regularidad"
+
+
+def count_level(rows: list[dict], prefix: str, aliases: dict[str, str]) -> dict:
+    """Indicator of a non-core level (CA-2 g-j, ADR-005 §4): counts "x de n" per app and
+    pass, never percentages nor weighted, never mixed with the core."""
+    main = [r for r in rows if r["id_pregunta"].startswith(prefix) and _is_main(r)
+            and r["respuesta_valida"] == "si"]
+    apps, cells = {}, defaultdict(lambda: [0, 0])
+    instead, domains = Counter(), Counter()
+    for app in LEVEL_APPS:
+        rs = [r for r in main if r["app"] == app]
+        by_pass = defaultdict(lambda: [0, 0])
+        for r in rs:
+            by_pass[r["pasada"]][0] += r["artica_nombrada"] == "si"
+            by_pass[r["pasada"]][1] += 1
+            c = cells[(app, r["id_pregunta"])]
+            c[0] += r["artica_nombrada"] == "si"
+            c[1] += 1
+        apps[app] = {
+            "by_pass": {p: tuple(v) for p, v in sorted(by_pass.items())},
+            "positions": sorted(int(float(r["posicion_artica"])) for r in rs
+                                if r["artica_nombrada"] == "si" and r["posicion_artica"]),
+        }
+        if app == "google":
+            apps[app]["with_overview"] = sum(r["resumen_ia"] == "si" for r in rs)
+    for r in main:
+        if r["artica_nombrada"] == "no":
+            instead.update({_canonical(c, aliases) for c in _split(r["clinicas_nombradas"])})
+        domains.update({d.lower().removeprefix("www.") for d in _split(r["dominios_citados"])})
+    stable = [k for k, (m, n) in cells.items() if n >= 2 and m == n]
+    mentions = sum(m for m, _ in cells.values())
+    indicator = (len(stable) >= AR_MIN_STABLE_CELLS) if prefix == "AR" else mentions >= 1
+    return {"apps": apps, "stable_cells": stable, "mentions": mentions,
+            "valid": sum(n for _, n in cells.values()), "indicator": indicator,
+            "instead": dict(instead.most_common()), "domains": domains.most_common()}
+
+
 def count(rows: list[dict], aliases: dict[str, str] | None = None) -> dict:
     aliases = aliases or {}
     _check(rows)
@@ -150,6 +190,7 @@ def count(rows: list[dict], aliases: dict[str, str] | None = None) -> dict:
                          for k, (m, n) in sorted(obs.items())],
         "location_sensitivity": [{"municipio": m, "app": a, "mentions": k, "valid": n}
                                  for (m, a), (k, n) in sorted(places.items())],
+        "levels": {lv: count_level(rows, lv, aliases) for lv in LEVELS},
         "brand_rows": [r for r in rows if r["id_pregunta"].startswith("AM")],
         "adjective_flags": sum(ADJECTIVE_FLAG in r["observaciones"] for r in main),
         "doctor_only_flags": sum(DOCTOR_ONLY_FLAG in r["observaciones"] for r in main),
@@ -165,7 +206,7 @@ def render(res: dict, sources: list[str]) -> str:
            "Privado (ADR-004). Generado con `docs/piloto-artica/tools/count_baseline.py` "
            "según el dictamen de CA-2 del ledger de SPEC-007.", "",
            "Fuentes: " + ", ".join(f"`{s}`" for s in sources), "",
-           "## Por app (solo cuentas gratuitas, preguntas AV)", "",
+           "## Núcleo (AV) — Por app (solo cuentas gratuitas; único nivel del criterio Go)", "",
            "| App | Válidas | Excluidas | Con la clínica | SoV bruto | Por pasada | Posición media |",
            "|---|---|---|---|---|---|---|"]
     for app, c in res["apps"].items():
@@ -191,6 +232,28 @@ def render(res: dict, sources: list[str]) -> str:
     out += ["", "## Estabilidad por pregunta (pasadas con la clínica / pasadas válidas)", "",
             "| App | Pregunta | Con la clínica |", "|---|---|---|"]
     out += [f"| {a} | {q} | {m} de {n} |" for (a, q), (m, n) in sorted(res["stability"].items())]
+    names = {"AR": ("Área de influencia (AR)", "aparece con cierta regularidad "
+                    f"(≥ {AR_MIN_STABLE_CELLS} casillas pregunta × app con la clínica en las "
+                    "dos pasadas)"),
+             "AG": ("Galicia (AG)", "aparece alguna vez (≥ 1 respuesta válida con la clínica)")}
+    for lv, lres in res["levels"].items():
+        title, definition = names[lv]
+        out += ["", f"## {title}", "",
+                "Indicador aparte (ADR-005 §4): recuentos \"x de n\", sin ponderar y sin "
+                "sumarse al núcleo.", "",
+                f"- {definition}: **{'sí' if lres['indicator'] else 'no'}** "
+                f"({lres['mentions']} de {lres['valid']} respuestas válidas con la clínica)"]
+        for app, a in lres["apps"].items():
+            passes = ", ".join(f"{p}: {m} de {n}" for p, (m, n) in a["by_pass"].items()) or "sin filas"
+            extra = f"; con resumen de IA: {a['with_overview']}" if "with_overview" in a else ""
+            pos = ", ".join(str(x) for x in a["positions"]) or "—"
+            out.append(f"- {app}: {passes}{extra}; puestos: {pos}")
+        stable = ", ".join(f"{a} {q}" for a, q in sorted(lres["stable_cells"])) or "—"
+        out.append(f"- Casillas con la clínica en las dos pasadas: {stable}")
+        top = "; ".join(f"{n} ({k})" for n, k in list(lres["instead"].items())[:10]) or "—"
+        out.append(f"- En su lugar: {top}")
+        doms = "; ".join(f"{d} ({k})" for d, k in lres["domains"][:10]) or "—"
+        out.append(f"- Dominios citados: {doms}")
     out += ["", "## Observaciones (no cuentan: Claude, cuentas de pago)", ""]
     out += [f"- {a} ({plan}): {o['mentions']} de {o['valid']} ({_pct(o['sov'])})"
             for o in res["observations"] for a, plan in [o["key"]]] or ["- —"]

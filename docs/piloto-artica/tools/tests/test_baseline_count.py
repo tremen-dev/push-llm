@@ -183,3 +183,84 @@ def test_rows_from_another_municipality_are_location_sensitivity_observations(ro
 
 def test_main_municipality_is_vilaboa():
     assert cb.MAIN_MUNICIPIO == "Vilaboa"
+
+
+# ------------------------------------------------ amendment 2026-09-29: levels AR / AG (ADR-005)
+@pytest.fixture
+def level_rows():
+    return [
+        # AR01 chatgpt: clinic in both passes -> stable cell
+        row("p1", "AR01", "chatgpt", "si", clinics="Clínica Norte;Clínica Lejana", pos="1",
+            domains="doctoralia.es"),
+        row("p2", "AR01", "chatgpt", "si", clinics="Clínica Lejana;Clínica Norte", pos="2"),
+        # AR01 gemini: only p1
+        row("p1", "AR01", "gemini", "si", clinics="Clínica Norte", pos="1"),
+        row("p2", "AR01", "gemini", "no", clinics="Cadena Sede Ferrol"),
+        # AR02 google: overview with clinic in both passes -> stable cell
+        row("p1", "AR02", "google", "si", resumen="si", clinics="Clínica Norte", pos="1"),
+        row("p2", "AR02", "google", "si", resumen="si", clinics="Clínica Norte", pos="1"),
+        row("p1", "AR03", "google", "no", resumen="no"),
+        # AG: never
+        row("p1", "AG01", "chatgpt", "no", clinics="Cadena Sede Vigo;Clínica Lejana",
+            domains="topdoctors.es"),
+        row("p2", "AG01", "chatgpt", "no", clinics="Cadena Sede Coruña"),
+        row("p1", "AG01", "google", "no", resumen="si", clinics="Clínica Lejana"),
+        # paid plan in a level: observation, not counted
+        row("p1", "AG02", "chatgpt", "si", plan="pago", clinics="Clínica Norte", pos="1"),
+    ]
+
+
+CHAIN = dict(ALIASES, **{"cadena sede ferrol": "Cadena", "cadena sede vigo": "Cadena",
+                         "cadena sede coruna": "Cadena"})
+
+
+def test_core_unchanged_when_level_rows_removed(rows, level_rows):
+    with_levels = cb.count(rows + level_rows, CHAIN)
+    without = cb.count(rows, CHAIN)
+    for key in ("apps", "weighted", "google", "domains", "stability"):
+        assert with_levels[key] == without[key], key
+
+
+def test_level_counts_per_app_and_pass(rows, level_rows):
+    ar = cb.count(rows + level_rows, CHAIN)["levels"]["AR"]
+    assert ar["apps"]["chatgpt"]["by_pass"] == {"p1": (1, 1), "p2": (1, 1)}
+    assert ar["apps"]["gemini"]["by_pass"] == {"p1": (1, 1), "p2": (0, 1)}
+    assert ar["apps"]["google"]["by_pass"] == {"p1": (1, 2), "p2": (1, 1)}
+    assert ar["apps"]["google"]["with_overview"] == 2   # p1 AR02, p2 AR02
+
+
+def test_level_positions_are_listed_not_averaged(rows, level_rows):
+    ar = cb.count(rows + level_rows, CHAIN)["levels"]["AR"]
+    assert ar["apps"]["chatgpt"]["positions"] == [1, 2]
+
+
+def test_regularity_definition_ar(rows, level_rows):
+    ar = cb.count(rows + level_rows, CHAIN)["levels"]["AR"]
+    assert sorted(ar["stable_cells"]) == [("chatgpt", "AR01"), ("google", "AR02")]
+    assert ar["indicator"] is True          # >= 2 stable cells
+
+
+def test_regularity_needs_two_stable_cells(rows, level_rows):
+    fewer = [r for r in level_rows if not (r["id_pregunta"] == "AR02")]
+    assert cb.count(rows + fewer, CHAIN)["levels"]["AR"]["indicator"] is False
+
+
+def test_galicia_indicator_is_at_least_once(rows, level_rows):
+    res = cb.count(rows + level_rows, CHAIN)
+    assert res["levels"]["AG"]["indicator"] is False       # paid-plan row does not count
+    level_rows[7]["artica_nombrada"] = "si"
+    assert cb.count(rows + level_rows, CHAIN)["levels"]["AG"]["indicator"] is True
+
+
+def test_chains_are_one_brand_in_levels(rows, level_rows):
+    ag = cb.count(rows + level_rows, CHAIN)["levels"]["AG"]
+    assert ag["instead"] == {"Clínica Lejana": 2, "Cadena": 2}
+    assert ag["domains"] == [("topdoctors.es", 1)]
+
+
+def test_render_levels_as_counts_without_percentages(rows, level_rows):
+    md = cb.render(cb.count(rows + level_rows, CHAIN), sources=["p1.csv"])
+    for heading in ("## Área de influencia (AR)", "## Galicia (AG)"):
+        section = md.split(heading, 1)[1].split("\n## ", 1)[0]
+        assert "%" not in section
+        assert " de " in section

@@ -27,6 +27,10 @@
    (columnas `alias,canonico`) y usa siempre el nombre canónico.
 
 ## 1. Filtrar
+- **Niveles** (ADR-005): el nivel sale del prefijo del id. Las secciones 2 a 6 son solo del
+  **núcleo** (`AV`), el único que cuenta para el criterio Go, su estabilidad y el aviso de
+  techo (CA-8). `AR` y `AG` van en la sección 7 y **nunca** se suman, promedian ni ponderan
+  con el núcleo: el ponderado del núcleo sale igual si se borran sus filas.
 - **Cuenta** para las cifras principales: preguntas `AV`, `app` = `chatgpt`, `gemini` o
   `google`, `plan_cuenta` = `gratuito` o `sin_sesion`, `municipio` = `Vilaboa`.
 - **No cuenta** (se informa aparte, como observación): cuentas de pago, Claude,
@@ -60,12 +64,30 @@ dominio de `dominios_citados` (sin `www.`), de más a menos.
 Para cada app y pregunta `AV`: en cuántas pasadas sale la clínica de cuántas válidas
 ("0 de 2", "1 de 2", "2 de 2"). Sirve para leer el ruido (dictamen de CA-2, punto f).
 
-## 7. Preguntas de marca
+## 7. Niveles `AR` (área de influencia) y `AG` (Galicia)
+Mismos filtros que el núcleo (cuentas gratuitas, Vilaboa, respuestas válidas). Por nivel:
+- Por app (ChatGPT, Gemini y Google) y por pasada: **"x de n"** respuestas válidas con la
+  clínica (en Google, dentro del resumen de IA, y cuántas búsquedas tuvieron resumen).
+  **Sin porcentajes ni ponderado**: con 4–5 preguntas por nivel, una respuesta mueve
+  más de 10 puntos.
+- Puestos de la clínica cuando sale (lista, sin media).
+- Casillas pregunta × app con la clínica en las dos pasadas del periodo.
+- Indicador:
+  - `AR` "aparece con cierta regularidad" = al menos **2 casillas** pregunta × app con la
+    clínica en las dos pasadas del periodo ("antes": p1 y p2; "después": las dos de
+    SPEC-012).
+  - `AG` "aparece alguna vez" = al menos **1 respuesta válida** con la clínica en el
+    periodo, en cualquier app.
+- Clínicas que aparecen en su lugar y dominios citados del nivel. Una cadena con varias
+  sedes cuenta como **una marca** (nombre canónico de la marca en `alias-canonicos.csv`);
+  la sede, si la respuesta la dice, va a `observaciones`.
+
+## 8. Preguntas de marca
 Por cada fila `AM`: qué dice el asistente de la clínica (dirección, servicios, precios) y
 si es correcto frente a la web de la clínica y la foto técnica.
 
-## 8. Resultado
-`recuento-antes.md` con las secciones 2 a 7, fecha y ficheros usados. Con el script:
+## 9. Resultado
+`recuento-antes.md` con las secciones 2 a 8, fecha y ficheros usados. Con el script:
 
 ```
 python docs/piloto-artica/tools/count_baseline.py P1.csv P2.csv \
