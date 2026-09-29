@@ -9,6 +9,16 @@ historial:
 ---
 # SPEC-011 — Diagnóstico por palancas y plan de acciones de Clínica Ártica
 
+> **Nota 2026-09-29 (c) (sdd-arquitecto): URLs consultadas de Claude (SPEC-013, B1).** Claude
+> consulta URLs pero no las cita. El probe las guarda en una columna nueva,
+> `searched_urls`, y `cited_urls` sigue siendo solo "citadas". Decisión del humano: en el
+> análisis de fuentes, Claude cuenta como **"consultadas", no como "citadas"**. Propuesta
+> pendiente del dictamen de sdd-metricas (SPEC-013 CA-7): el peso de citación de CA-1
+> (§4, RN-04) y el orden de RN-08 se calculan solo con `cited_urls`, y las consultadas
+> de Claude aparecen como indicador aparte por fuente, sin peso en el ranking.
+> `searched_urls` está vacía en OpenAI y Gemini ("no medido"). CA-1 se ajustará en la
+> revisión completa de esta spec, con el dictamen. Sigue en `borrador`.
+
 > **Nota 2026-09-29 (b) (sdd-arquitecto) — nuevo instrumento.** El probe es ya el
 > instrumento de medición (EPIC-002, criterios 1 y 4): su baseline oficial (SPEC-008 CA-7)
 > es la fuente principal de dominios citados de ChatGPT, Gemini y Claude en los tres

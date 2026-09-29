@@ -17,6 +17,16 @@ historial:
 ---
 # SPEC-008 — Catálogo de Viveiro y A Mariña en el probe
 
+> **Nota 2026-09-29 (c) (sdd-arquitecto): SPEC-013 en caso B1. No cambia ningún CA ni
+> requiere re-aprobación.** El diagnóstico de SPEC-013 (CA-2) mostró que Claude consulta URLs
+> pero no las cita. Por decisión del humano (B1), el probe añade la columna
+> `searched_urls` al final de `results.csv`, con las URLs consultadas por Claude.
+> `cited_urls` de Claude puede seguir vacía. Donde esta spec dice "`cited_urls` de Claude"
+> (CA-7, Entidades), léase "fuentes de Claude, citadas o consultadas (`searched_urls`)". La
+> dependencia no cambia: CA-7 sigue esperando a SPEC-013 en `hecho`. El baseline empieza
+> en un directorio nuevo y sale con la columna. No se usa `--resume` sobre humos
+> antiguos, que no tienen la columna.
+
 > **Enmienda 2026-09-29 (b) (sdd-arquitecto) — el probe es el instrumento del criterio Go.**
 > Decisión del humano (Alberto Fojo, 2026-09-29), recogida por sdd-producto en EPIC-002,
 > criterios 1 y 4: el probe mide los tres niveles y su baseline (CA-7) pasa a ser **el

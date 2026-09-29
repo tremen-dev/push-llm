@@ -7,8 +7,8 @@ epica: EPIC-FIX
 
 ## Resumen
 - Fase: <!-- refleja el estado de la spec; la fuente de verdad es el frontmatter de la spec -->
-- Rama: `ft/SPEC-013-respuesta-cruda-del-proveedor-y-citas-de-claude-en-el-probe` (apilada
-  sobre `ft/SPEC-002-…`, aún sin merge)
+- Rama: `ft/SPEC-013-respuesta-cruda-y-citas-de-claude` (apilada sobre `ft/SPEC-002-…`, aún
+  sin merge)
 
 ## Matriz de criterios de aceptación
 <!-- Escritores: sdd-implementador rellena Implementado y Test; sdd-verificador rellena Verif. y Estado. Nunca al revés. -->
@@ -22,6 +22,7 @@ epica: EPIC-FIX
 | CA-4 | | | | ❌ |
 | CA-5 | | | | ❌ |
 | CA-6 | | | | ❌ |
+| CA-7 | | | | ❌ |
 
 ## Veredicto del verificador
 <!-- GREEN/RED + fecha + resumen. Lo escribe SOLO sdd-verificador. -->
@@ -31,6 +32,14 @@ epica: EPIC-FIX
 
 ## Salvedades / follow-ups
 <!-- IDs F-SPEC-013-1, F-SPEC-013-2… con destino (spec futura o EPIC-MEJORA). -->
+- **F-SPEC-013-1** (sdd-arquitecto, 2026-09-29): `searched_urls` de OpenAI. La API Responses
+  solo da las fuentes consultadas con `include=["web_search_call.action.sources"]`, que
+  cambia la petición. Destino: spec futura en EPIC-FIX o EPIC-002, con dictamen de sdd-probe
+  (D-5) y de sdd-metricas.
+- **F-SPEC-013-2** (sdd-arquitecto, 2026-09-29): qué significa `cited_urls` en Gemini. Hoy
+  son todos los `grounding_chunks`, y los citados de verdad son los que referencia
+  `grounding_supports`. Puede mezclar consultadas y citadas. Destino: el mismo que
+  F-SPEC-013-1, con dictamen de sdd-metricas.
 
 ## Cómo retomar (handoff)
 <!-- Estado real del trabajo para la siguiente sesión: qué está hecho, qué falta, dónde seguir. -->
@@ -56,3 +65,13 @@ epica: EPIC-FIX
   `.\.venv\Scripts\python run_probe.py --providers claude --only D01 --runs 1 --out "$env:PUSHLLM_PRIVADO\diagnostico\spec-013"`
   (1 llamada, comprobado offline); después sdd-implementador sigue con CA-3 (fixture
   sanitizado con la forma anotada en CA-2) y CA-4.
+- **2026-09-29 (sdd-arquitecto, enmienda (b))**: CA-2 ejecutado por el orquestador (forma
+  en la spec, § "Evidencia de CA-2": caso B, 0 citas, 10 `web_search_result` con `url`,
+  0,0729 €, 1 búsqueda). **Queda por pasar al ledger** (sdd-implementador) la fila de CA-2
+  con esos datos. El humano eligió **B1**. La spec pasa de `en-progreso` a `bloqueada` y a
+  `borrador`, y espera **re-aprobación**. Cambian CA-1 (texto sobre columnas), CA-3
+  (B1: `searched_urls` al final de `results.csv`, solo en Claude; compatibilidad con CSV
+  antiguos), CA-4, CA-6, y hay un CA-7 nuevo (dictamen de sdd-metricas). CA-1 sigue valiendo
+  tal cual. Tras la re-aprobación: sdd-implementador hace CA-3/CA-4 (la aserción de columnas
+  de `test_raw_responses.py` (a) pasará a incluir `searched_urls`: citarlo); el orquestador
+  pide el dictamen de CA-7 a sdd-metricas y después la llamada de CA-6.
