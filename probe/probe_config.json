@@ -93,8 +93,9 @@
       "weight": 0.10,
       "web_search_tool": "web_search_20260209",
       "max_searches": 5,
-      "effort": "low",
-      "max_tokens": 4000,
+      "effort": "medium",
+      "_effort_comment": "medium as in the Claude apps (Sonnet 5.5 default there), decided by the human 2026-09-29 (F-SPEC-002-4, D-5): https://www.unite.ai/anthropic-releases-claude-sonnet-5-5-at-unchanged-sonnet-5-pricing/ (2026-09-28). max_tokens bounds thinking + answer per request (thinking counts toward it: https://platform.claude.com/docs/en/build-with-claude/effort); 16000 leaves room for adaptive thinking at medium and stays under the anthropic SDK non-streaming limit (21333).",
+      "max_tokens": 16000,
       "price": {
         "input_usd_per_mtok": 2.0,
         "output_usd_per_mtok": 10.0,

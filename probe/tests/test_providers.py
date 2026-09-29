@@ -29,6 +29,7 @@ def test_claude_ok_collects_usage_urls_and_served_model():
     assert kw["tools"][0]["max_uses"] == CFG["providers"]["claude"]["max_searches"]
     assert kw["tools"][0]["user_location"]["city"] == "Vigo"
     assert kw["output_config"] == {"effort": CFG["providers"]["claude"]["effort"]}
+    assert kw["max_tokens"] == CFG["providers"]["claude"]["max_tokens"]  # config, not code
 
 
 def test_claude_pause_turn_accumulates_usage_and_text():

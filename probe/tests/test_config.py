@@ -85,10 +85,26 @@ def test_spec002_ca2_config_dictamen_date_is_the_vigente_one():
     assert settings.load_config()["dictamen_date"] == vigente()[0]
 
 
-def test_spec002_ca2_effort_low_in_claude_and_openai_api_default_in_gemini():
+def test_spec002_ca2_effort_medium_claude_low_openai_api_default_gemini():
+    # F-SPEC-002-4, decided by the human 2026-09-29: Claude as in the app (medium, D-5).
     rows = dictamen_rows()
-    assert rows["claude"]["effort"] == rows["openai"]["effort"] == "low"
-    assert settings.load_config()["providers"]["gemini"]["effort"] is None
+    assert (rows["claude"]["effort"], rows["openai"]["effort"]) == ("medium", "low")
+    cfg = settings.load_config()
+    assert (cfg["providers"]["claude"]["effort"], cfg["providers"]["openai"]["effort"]) == (
+        "medium", "low")
+    assert cfg["providers"]["gemini"]["effort"] is None
+
+
+# anthropic 1.8.0 refuses a non-streaming request whose max_tokens implies > 10 min:
+# 3600 s * max_tokens / 128000 > 600 s  ->  max_tokens <= 21333 (_calculate_nonstreaming_timeout).
+SDK_NONSTREAMING_MAX_TOKENS = 21_333
+
+
+def test_spec002_ca2_claude_max_tokens_leaves_room_for_adaptive_thinking():
+    # Thinking counts toward max_tokens (platform.claude.com/docs/en/build-with-claude/effort,
+    # "Recommended effort levels for Claude Sonnet 5.5"); 4000 was sized for low effort.
+    mt = settings.load_config()["providers"]["claude"]["max_tokens"]
+    assert 16_000 <= mt <= SDK_NONSTREAMING_MAX_TOKENS
 
 
 def test_spec002_ca2_viveiro_batch_inherits_vigente_models_and_prices():

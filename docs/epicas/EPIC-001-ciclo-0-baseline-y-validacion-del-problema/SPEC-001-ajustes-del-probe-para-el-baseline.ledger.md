@@ -121,7 +121,7 @@ RN-02, RN-03, RN-04, D-6. Fuentes: `docs/fundacion/reglas.md`, `07-mvp-product-s
 - **F-SPEC-001-2** (URLs de Gemini): `grounding_chunks[].web.uri` son redirecciones `vertexaisearch.cloud.google.com`; resolver a la URL final hace falta para SPEC-003 / Ciclo 1. Destino: SPEC-003.
 - **F-SPEC-001-3** (modelo OpenAI transitorio): GPT-6 Luna anunciado el 2026-09-22 para Free/Go, aún no en Chat. Re-verificar el default justo antes de SPEC-002 y, si cambió, actualizar `probe_config.json` (o `OPENAI_MODEL`). Destino: SPEC-002.
 - **F-SPEC-001-4** (RN-01, pregunta al humano): "IVI"/"MIA" solos no cuentan; el resumen informa el sesgo aparte. ¿Excepción a RN-01 para alias cortos inequívocos? Cambio de regla: lo decide el humano.
-- **F-SPEC-001-5** (effort): no hay fuente pública del effort de las apps de consumo; se usa `low` en Claude y OpenAI por coste. Pregunta al humano.
+- **F-SPEC-001-5** (effort): no hay fuente pública del effort de las apps de consumo; se usa `low` en Claude y OpenAI por coste. Pregunta al humano. **Superado para Claude (2026-09-29)**: con Sonnet 5.5 hay fuente pública (effort `medium` en las apps de Claude) y el humano decidió `medium` en Claude (F-SPEC-002-4, ledger de SPEC-002). OpenAI sigue en `low` (sin fuente pública) y Gemini con el default de la API.
 - **F-SPEC-001-6** (alias ambiguos por texto): "Clínica Villoria" (nombre de marca de oftalmología) en una respuesta de estética cuenta para oftalmología, no para L'Essence; "De Castro" puede dar falsos positivos (apellido común). Revisión manual de SPEC-002 CA-6.
 - **F-SPEC-001-7** (comportamiento añadido): sin `--resume`, el probe se niega a sobrescribir un `results.csv` existente (protege el No-negociable de guardar respuestas en bruto). No lo pedía la spec.
 

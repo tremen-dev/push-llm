@@ -45,7 +45,7 @@ repite (CA-2, ≤ 2 días).
 
 | Proveedor | Modelo | Búsqueda web | Effort | Fuente |
 |---|---|---|---|---|
-| claude | `claude-sonnet-5-5` | `web_search_20260209` | `low` | simonwillison.net/2026/Sep/28/claude-sonnet-5-5 ("now the model used for the free tier on claude.ai", 2026-09-28); anthropic.com/claude/sonnet ("Anyone can chat with Claude using Sonnet 5.5 on Claude.ai, available on web, iOS, and Android"); platform.claude.com/docs/en/models/sonnet-5-5/overview (lanzado 2026-09-28; Sonnet 5 pasa a *legacy*) |
+| claude | `claude-sonnet-5-5` | `web_search_20260209` | `medium` | simonwillison.net/2026/Sep/28/claude-sonnet-5-5 ("now the model used for the free tier on claude.ai", 2026-09-28); anthropic.com/claude/sonnet ("Anyone can chat with Claude using Sonnet 5.5 on Claude.ai, available on web, iOS, and Android"); platform.claude.com/docs/en/models/sonnet-5-5/overview (lanzado 2026-09-28; Sonnet 5 pasa a *legacy*) |
 | openai | `gpt-5.6-luna` | `web_search` | `low` | releasebot.io/updates/openai/chatgpt (notas de ChatGPT hasta 2026-09-28: GPT-6 Luna solo en Work y Codex, ninguna nota lo lleva a Chat); 9to5mac.com/2026/09/22/openai-upgrading-chatgpt-and-codex-with-two-more-gpt-6-models ("In ChatGPT, the models are available in Work and Codex, but not Chat"; Free/Go solo en la app de escritorio); macrumors.com/2026/08/06/chatgpt-free-unlimited-text-chats (GPT-5.6 Luna default de Free/Go desde 2026-08-06) |
 | gemini | `gemini-3.6-flash` | `google_search` | — | gemini.google/release-notes (2026-07-21, 3.6 Flash para todos los usuarios; última nota 2026-09-10 sin cambio de modelo); layer3labs.io/guides/how-to-use-gemini-3-8-flash (act. 2026-09-06: 3.8 Flash en la app solo con AI Pro/Ultra); ai.google.dev/gemini-api/docs/models (`gemini-3.6-flash` estable, sin fecha de retirada) |
 
@@ -90,6 +90,42 @@ repite (CA-2, ≤ 2 días).
   `probe_config.json` sin copiarlos, así que usa los mismos modelos y precios
   (`test_config.py::test_spec002_ca2_viveiro_batch_inherits_vigente_models_and_prices`).
 
+**Adenda 2026-09-29 — effort de Claude `medium` (decisión humana).** El humano (Alberto
+Fojo) resolvió F-SPEC-002-4 el 2026-09-29: el effort de Claude pasa a **`medium`**, como en
+la app (D-5: medir lo que ve el paciente). Fuente: unite.ai/anthropic-releases-claude-sonnet-5-5-at-unchanged-sonnet-5-pricing
+(2026-09-28: "Defaults are Medium in Claude Code and the Claude apps and High on the Claude
+Platform, which is also the API default"). OpenAI sigue en `low` y Gemini con el default de
+la API. La tabla de arriba ya refleja `medium` en Claude. Esto supera F-SPEC-001-5 para
+Claude. El punto "Effort — se mantiene" de más arriba queda sustituido por esta adenda.
+- **`max_tokens` de Claude: 4000 → 16000** (configuración, `probe_config.json`). Fuente:
+  platform.claude.com/docs/en/build-with-claude/effort, "Recommended effort levels for
+  Claude Sonnet 5.5": "Set `max_tokens` with room for thinking and the reply. Thinking counts
+  toward `max_tokens` even when the thinking content isn't returned", y
+  platform.claude.com/docs/en/build-with-claude/thinking: el pensamiento se factura como
+  tokens de salida. 4000 estaba pensado para `low`; con `medium` el pensamiento adaptativo
+  puede comerse el hueco de la respuesta (filas `empty` o cortadas). Techo: el SDK fijado
+  (anthropic 1.8.0) rechaza sin streaming un `max_tokens` > 21 333 (10 min estimados), y el
+  adaptador no hace streaming; 16000 queda por debajo. `max_tokens` es un tope por petición,
+  no un gasto: solo se paga lo que se genera. Tests:
+  `test_config.py::test_spec002_ca2_effort_medium_claude_low_openai_api_default_gemini`,
+  `::test_spec002_ca2_claude_max_tokens_leaves_room_for_adaptive_thinking`,
+  `test_providers.py::test_claude_ok_collects_usage_urls_and_served_model` (el adaptador pasa
+  `max_tokens` de la config).
+- **Efecto estimado en el coste por llamada de Claude** (supuestos del dictamen CA-5 de
+  SPEC-008; no hay cifra pública de tokens de pensamiento por nivel, se estima): el
+  pensamiento a `medium` añade salida, estimada en +1k tokens (típico) y +3k (alto) sobre
+  0,8k y 1,5k: +0,010 $ y +0,030 $ por llamada (10 $/M de salida). Claude pasa de 0,078 $ a
+  ~0,088 $ (típico) y de 0,145 $ a ~0,175 $ (alto). Por pregunta × ejecución con los tres
+  proveedores: 0,141 $ → ~0,151 $ (**≈ 0,133 €**) típico y 0,257 $ → ~0,287 $
+  (**≈ 0,252 €**) alto (1 EUR = 1,1378 USD). Peor caso acotado por el tope: 40k de entrada +
+  16k de salida + 5 búsquedas = 0,29 $ por petición de Claude. Completa del lote Vigo (132
+  preguntas × ejecución): ~17,5 € típico / ~33 € alto; el alto roza el tope de 30 € de CA-3,
+  que **el humo decide** con la extrapolación medida (Σ `cost_eur` ÷ 4 × 132).
+- **Umbral `c ≤ 0,19 €` de SPEC-008: sigue valiendo** como regla, porque se aplica al coste
+  **medido** en el humo, que ya incluirá el pensamiento a `medium`. El típico estimado
+  (0,133 €) sigue por debajo; el alto (0,252 €) sigue por encima, igual que antes. Lo único
+  que cambia es la probabilidad: es algo más fácil caer en la rama de 2 runs en `AV`.
+
 ## Salvedades / follow-ups
 <!-- IDs F-SPEC-002-1, F-SPEC-002-2… con destino (spec futura o EPIC-MEJORA). -->
 - **F-SPEC-002-1** (2026-09-29, enmienda de CA-1 / ADR-006; → sdd-implementador, tras la
@@ -128,7 +164,8 @@ repite (CA-2, ≤ 2 días).
   (F-SPEC-002-1 (c)); cita ADR-006 y ADR-007. Sin cambios de código en SPEC-008.
 - **F-SPEC-002-3** (2026-09-29; → humano): negar a los agentes la lectura de `.env` en la
   configuración local de permisos (ADR-006, consecuencias). Fuera del alcance de los roles.
-- **F-SPEC-002-4** (2026-09-29, dictamen sdd-probe de CA-2; → humano / sdd-arquitecto):
+- **F-SPEC-002-4** — **RESUELTO 2026-09-29 por el humano: Claude `medium`** (ver adenda del
+  dictamen; `max_tokens` 4000 → 16000). Texto original (2026-09-29, dictamen sdd-probe de CA-2; → humano / sdd-arquitecto):
   con Sonnet 5.5 Anthropic publica que el effort por defecto de las apps de Claude es
   `medium` (API: `high`) y que los niveles están recalibrados. El effort `low` aceptado el
   2026-09-24 (F-SPEC-001-5) se eligió "sin fuente pública del effort de las apps", y esa
@@ -169,6 +206,8 @@ if (-not $env:PUSHLLM_PRIVADO) { throw "PUSHLLM_PRIVADO no está definida" }
 .\.venv\Scripts\python run_probe.py --config batches/viveiro.json --only AV01,AR01,AG01 --runs 1 --out "$env:PUSHLLM_PRIVADO\piloto-artica\probe-smoke"
 ```
 
+- Claude va con effort `medium` y `max_tokens` 16000 (adenda del dictamen): en el humo,
+  mira también que ninguna fila de Claude salga `empty` o cortada.
 - La primera línea de stderr debe decir `loaded from .env: ANTHROPIC_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY (values not shown)`
   (solo las que no estén ya en la sesión); si sale `skip <proveedor>: … not set`, falta esa
   clave en el `.env`.
