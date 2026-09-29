@@ -12,10 +12,15 @@
     "title": "Resumen del probe — piloto Clínica Ártica (lote Viveiro)",
     "prompt_prefixes": ["AV", "AR", "AG"],
     "levels": [
-      {"prefix": "AV", "label": "núcleo: Viveiro y A Mariña (único nivel del criterio Go)", "core": true},
-      {"prefix": "AR", "label": "área de influencia (indicador aparte, no cuenta para el Go)"},
-      {"prefix": "AG", "label": "Galicia (indicador aparte, sin objetivo)"}
+      {"prefix": "AV", "label": "núcleo: Viveiro y A Mariña (único nivel del criterio Go)", "core": true, "runs": 2},
+      {"prefix": "AR", "label": "área de influencia (indicador aparte, no cuenta para el Go)", "runs": 1},
+      {"prefix": "AG", "label": "Galicia (indicador aparte, sin objetivo)", "runs": 1}
     ],
+    "_runs_comment": "Runs per level (SPEC-008 CA-5, cadence accepted by the human 2026-09-29): the plain command is the safe baseline (AV 2 runs, AR/AG 1 run). --runs overrides every selected level; use --levels AV --runs 3 when the smoke cost allows it.",
+    "review_terms": ["sin medico", "sin medicos", "no medico", "no medicos", "no es medico",
+                     "no es un medico", "no tiene medico", "no tienen medico",
+                     "no tiene medicos", "no tienen medicos", "esteticista", "esteticistas",
+                     "no sanitario", "no sanitaria", "no es sanitario", "no es un centro sanitario"],
     "client_brand": "Clínica Ártica",
     "local_cities": ["Viveiro", "Burela", "Foz", "Ribadeo", "Cervo", "Xove", "O Vicedo", "Ourol",
                      "Alfoz", "Lourenzá", "Mondoñedo", "O Valadouro", "Barreiros", "Trabada",
@@ -34,6 +39,7 @@
       "Clínica Novoa",
       "Clínica Dr. Torres",
       "Clínica Villoria L'Essence",
+      "Clínica Villoria",
       "Clínica Ulloa",
       "Clínica Dr. Cerqueiro",
       "Clínica Marta Prieto",

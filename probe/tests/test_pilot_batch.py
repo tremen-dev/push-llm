@@ -121,8 +121,34 @@ def test_ca2_no_alias_shared_between_two_brands_of_the_pilot_batch(vcfg):
     seen = {}
     for b in members:
         for p in b["patterns"]:
+            if p in JUSTIFIED_SHARED_IN_PILOT:
+                continue
             assert p not in seen, (p, seen.get(p), b["brand"])
             seen[p] = b["brand"]
+
+
+# "villoria": both existing Villoria rows are pilot members (finding 2 of the interim
+# verification); resolved by specialty, see SPEC-008 ledger "Colisiones de alias".
+JUSTIFIED_SHARED_IN_PILOT = {"villoria"}
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("Para los párpados, Clínica Villoria en Vigo.", ["Clínica Villoria"]),
+    ("Clínica Villoria L'Essence hace blefaroplastia.", ["Clínica Villoria L'Essence"]),
+    ("Villoria, en Vigo.", ["Clínica Villoria L'Essence"]),
+])
+def test_ca2_villoria_mentions_go_to_the_right_row_in_pilot_batch(vcfg, text, expected):
+    got = [b["brand"] for b in matching.find_mentions(text, _members(vcfg), "aesthetic",
+                                                      "Viveiro")]
+    assert got == expected
+
+
+@pytest.mark.parametrize("text", ["Mira xn--clinicavirxedamaria-d4b.com",
+                                  "Web: clinicavirxedamariña.com", "Clínica Virxe da Mariña"])
+def test_ca2_virxe_da_marina_domain_forms(vcfg, text):
+    got = [b["brand"] for b in matching.find_mentions(text, _members(vcfg), "aesthetic",
+                                                      "Viveiro")]
+    assert got == ["Clínica Virxe da Mariña"]
 
 
 def test_ca2_no_new_exact_aliases():
@@ -329,18 +355,130 @@ def test_ca4_every_brand_belongs_to_some_batch(default_cfg, vcfg):
 
 # ---------------------------------------------------------------- CA-6
 
-def test_ca6_readme_documents_pilot_batch_with_working_commands():
+PY_CMD = re.compile(r"^(?:\.\\\.venv\\Scripts\\)?python(?:\.exe)? run_probe\.py (.*)$")
+MAX_CALLS_PER_PROVIDER = 54  # CA-5 baseline: AV 15 x 3 runs + AR/AG 9 x 1 run
+LEDGER = (REPO_DIR / "docs" / "epicas" / "EPIC-002-piloto-concierge-con-clinica-artica"
+          / "SPEC-008-catalogo-de-viveiro-y-a-marina-en-el-probe.ledger.md")
+
+
+def _commands(text):
+    out = []
+    for ln in text.splitlines():
+        m = PY_CMD.match(ln.strip())
+        if m:
+            out.append([a.strip('"') for a in m.group(1).split()])
+    return out
+
+
+def _assert_commands_within_budget(cmds, tmp_path):
+    """Run each command offline (fake provider, --out redirected): none exceeds the budget."""
+    out = tmp_path / "run"
+    for argv in cmds:
+        if "--analyze" in argv:
+            continue
+        argv = list(argv)
+        if "--out" in argv:
+            i = argv.index("--out")
+            del argv[i:i + 2]
+        if "--config" in argv:  # the commands are run from probe/
+            i = argv.index("--config") + 1
+            argv[i] = str(PROBE_DIR / argv[i])
+        extra = [] if "--resume" in argv else ["--resume"]
+        ask = FakeAsk()
+        run_probe.main([*argv, *extra, "--out", str(out), "--sleep", "0",
+                        "--providers", "openai"], env=KEYS, ask=ask)
+        assert len(ask.calls) <= MAX_CALLS_PER_PROVIDER, (argv, len(ask.calls))
+
+
+def test_ca6_readme_documents_pilot_batch_with_working_commands(tmp_path):
     readme = (PROBE_DIR / "README.md").read_text(encoding="utf-8")
     section = readme.split("## Batches", 1)[1].split("\n## ", 1)[0]
     assert "is the Vigo/Pontevedra batch" in section
     assert "piloto-artica/probe" in section
-    cmds = [ln for ln in section.splitlines() if ln.startswith("python run_probe.py")]
+    cmds = _commands(section)
     assert len(cmds) >= 3
-    for cmd in cmds:
-        argv = cmd.split()[2:]
-        args = run_probe.parse_args([a.strip('"') for a in argv])
+    for argv in cmds:
+        args = run_probe.parse_args(argv)
         assert (PROBE_DIR / args.config).resolve() == VIVEIRO.resolve()
-        if args.only:
-            ids = {p["id"] for p in run_probe.batch_prompts(
-                read_csv(PROBE_DIR / "prompts.csv"), settings.batch(settings.load_config(VIVEIRO)))}
-            assert set(args.only.split(",")) <= ids
+    _assert_commands_within_budget(cmds, tmp_path)
+
+
+def test_ca6_ledger_human_commands_within_budget_and_use_venv_python(tmp_path):
+    steps = LEDGER.read_text(encoding="utf-8").split("## Instrucciones para el humano", 1)[1]
+    steps = steps.split("\n## ", 1)[0]
+    assert "Activate.ps1" not in steps and "pasada 1" in steps
+    run_lines = [ln for ln in steps.splitlines()
+                 if "run_probe.py" in ln and not ln.lstrip().startswith("#")
+                 and not ln.lstrip().startswith("-")]
+    assert run_lines and all(ln.strip().startswith(".\\.venv\\Scripts\\python") for ln in run_lines)
+    cmds = _commands(steps)
+    assert len(cmds) == len(run_lines)
+    _assert_commands_within_budget(cmds, tmp_path)
+
+
+# ---------------------------------------------------------------- CA-5 (runs per level)
+
+def test_ca5_simple_pilot_command_uses_runs_per_level(tmp_path):
+    ask = FakeAsk()
+    run_probe.main(["--config", str(VIVEIRO), "--out", str(tmp_path), "--sleep", "0",
+                    "--providers", "openai"], env=KEYS, ask=ask)
+    runs = {}
+    for r in read_csv(tmp_path / "results.csv"):
+        runs.setdefault(r["prompt_id"][:2], set()).add(r["run"])
+    assert runs == {"AV": {"1", "2"}, "AR": {"1"}, "AG": {"1"}}
+    assert len(ask.calls) == 15 * 2 + 9
+
+
+def test_ca5_levels_option_selects_levels_and_runs_override(tmp_path):
+    ask = FakeAsk()
+    run_probe.main(["--config", str(VIVEIRO), "--out", str(tmp_path), "--sleep", "0",
+                    "--providers", "openai", "--levels", "AV", "--runs", "3"], env=KEYS, ask=ask)
+    ids = {r["prompt_id"] for r in read_csv(tmp_path / "results.csv")}
+    assert {i[:2] for i in ids} == {"AV"} and len(ask.calls) == 45
+
+
+@pytest.mark.parametrize("argv", [["--config", str(VIVEIRO), "--levels", "AX"],
+                                  ["--levels", "AV"]])
+def test_ca5_unknown_level_or_batch_without_levels_is_refused(tmp_path, argv):
+    with pytest.raises(SystemExit):
+        run_probe.main([*argv, "--out", str(tmp_path), "--sleep", "0"], env=KEYS,
+                       ask=FakeAsk())
+
+
+# ---------------------------------------------------------------- CA-8 (--out guard)
+
+@pytest.mark.parametrize("out", ["", "  ", "C:\\", "/"])
+def test_ca8_out_empty_or_root_is_refused(out):
+    ask = FakeAsk()
+    with pytest.raises(SystemExit):
+        run_probe.main(["--config", str(VIVEIRO), "--out", out, "--only", "AV01",
+                        "--runs", "1", "--sleep", "0"], env=KEYS, ask=ask)
+    assert ask.calls == []
+
+
+@pytest.mark.parametrize("out,windows,bad", [
+    ("\\piloto-artica\\probe-smoke", True, True),  # "$env:PUSHLLM_PRIVADO\..." with empty var
+    ("D:\\privado\\piloto-artica\\probe-smoke", True, False),
+    ("C:\\", True, True),
+    ("C:", True, True),
+    ("/home/u/privado/probe-smoke", False, False),
+    ("/", False, True),
+    ("", False, True),
+])
+def test_ca8_unsafe_out_rules(out, windows, bad):
+    assert run_probe.unsafe_out(out, windows=windows) is bad
+
+
+# ---------------------------------------------------------------- review observations
+
+def test_review_observations_list_brand_with_no_doctor_terms(vcfg):
+    rows = [analysis_row("AV01", "openai", 1, "ok",
+                         "Luxury Clínica es un centro de estética sin médico. Clínica Ártica sí."),
+            analysis_row("AV02", "openai", 1, "ok", "Clínica Ártica tiene médica titulada."),
+            analysis_row("AR01", "gemini", 1, "ok", "Gaia Pro Aging: personal no sanitario.")]
+    res = analysis.analyze(rows, _members(vcfg), vcfg)
+    assert [(o["prompt_id"], o["brands"]) for o in res["review"]] == [
+        ("AV01", ["Luxury Clínica Médico Estética"]), ("AR01", ["Gaia Pro Aging"])]
+    md = analysis.render_summary(res, vcfg)
+    obs = md.split("## Observaciones para revisar a mano", 1)[1]
+    assert "no es una métrica" in obs and "AV01" in obs and "AV02" not in obs

@@ -12,6 +12,7 @@ level and only "x de n" counts outside the core (sdd-metricas (g)-(j), SPEC-007 
 from __future__ import annotations
 
 import csv
+import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -192,6 +193,8 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
     directories = {lv["prefix"]: Counter() for lv in levels}
     cost = {lv["prefix"]: defaultdict(float) for lv in levels}
     short_alias, valid = Counter(), Counter()
+    terms = [matching.norm(t) for t in b.get("review_terms", [])]
+    review = []
 
     for r in rows:
         lv = _level_of(r.get("prompt_id", ""), levels)
@@ -218,6 +221,7 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
             (directories if h["type"] == "directory" else named)[lv][h["brand"]] += 1
         if matching.short_alias_hits(r.get("answer", ""), brands, hits):
             short_alias[lv] += 1
+        review += _review_hits(r, lv, brands, terms)
 
     for lv_cells in cells.values():
         for cell in lv_cells.values():
@@ -235,7 +239,30 @@ def analyze_levels(rows: list[dict], brands: list[dict], cfg: dict) -> dict:
             "named": {k: dict(v) for k, v in named.items()},
             "directories": {k: dict(v) for k, v in directories.items()},
             "short_alias": dict(short_alias), "valid": dict(valid),
-            "cost_eur": {k: dict(v) for k, v in cost.items()}}
+            "cost_eur": {k: dict(v) for k, v in cost.items()}, "review": review}
+
+
+SENTENCE_RE = re.compile(r"(?<=[.!?;])\s+|\n+")
+
+
+def _review_hits(row: dict, level: str, brands: list[dict], terms: list[str]) -> list[dict]:
+    """Sentences of a valid answer that name a clinic next to a "no doctor" expression
+    (human decision 2026-09-29, SPEC-008 ledger). Only for manual review, never counted."""
+    if not terms:
+        return []
+    out = []
+    for sentence in SENTENCE_RE.split(row.get("answer", "") or ""):
+        padded = f" {matching.norm(sentence)} "
+        found = [t for t in terms if f" {t} " in padded]
+        if not found:
+            continue
+        clinics = [b["brand"] for b in matching.find_mentions(sentence, brands)
+                   if b["type"] != "directory"]
+        if clinics:
+            out.append({"level": level, "prompt_id": row.get("prompt_id"),
+                        "provider": row.get("provider"), "run": row.get("run"),
+                        "brands": clinics, "terms": found})
+    return out
 
 
 def _of(n, d):
@@ -290,5 +317,16 @@ def render_levels(res: dict, cfg: dict) -> str:
             out.append(f"| {lv['prefix']} | {prov} | {eur:.2f} |")
             total += eur
     out.append(f"| lote | total | {total:.2f} |")
+    if b.get("review_terms"):
+        out += ["", "## Observaciones para revisar a mano (no es una métrica)", "",
+                "Frases de respuestas válidas que nombran una clínica junto a expresiones como "
+                "\"sin médico\", \"esteticista\" o \"no sanitario\". Coincidencia literal: puede "
+                "haber falsos positivos (p. ej. la frase habla de otra clínica); leer la "
+                "respuesta completa. Decisión del humano del 2026-09-29 (ledger de SPEC-008).",
+                "", "| Nivel | Pregunta | Proveedor | Run | Clínicas en la frase | Expresión |",
+                "|---|---|---|---|---|---|"]
+        for o in res.get("review", []):
+            out.append(f"| {o['level']} | {o['prompt_id']} | {o['provider']} | {o['run']} | "
+                       f"{'; '.join(o['brands'])} | {'; '.join(o['terms'])} |")
     out += _ignored_note(res)
     return "\n".join(out) + "\n"

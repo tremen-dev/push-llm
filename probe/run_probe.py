@@ -26,7 +26,7 @@ import os
 import sys
 import time
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 import analysis
 import matching
@@ -48,6 +48,23 @@ def output_dir(option: str | None, env, batch: dict | None = None) -> Path:
     return HERE / "out" if sub == "probe" else HERE / "out" / sub
 
 
+def unsafe_out(option: str, windows: bool = os.name == "nt") -> bool:
+    """True for an --out that is empty, a drive or filesystem root, or (Windows) rooted
+    without a drive, e.g. "$env:PUSHLLM_PRIVADO\\x" with the variable empty -> "\\x"."""
+    s = (option or "").strip()
+    if not s:
+        return True
+    p = PureWindowsPath(s) if windows else PurePosixPath(s)
+    if windows and p.root and not p.drive:
+        return True
+    return bool(p.anchor) and len(p.parts) <= 1
+
+
+def level_runs(batch: dict) -> dict[str, int]:
+    """Runs per level prefix declared in the batch (SPEC-008 CA-5); empty if none."""
+    return {lv["prefix"]: lv["runs"] for lv in batch.get("levels", []) if lv.get("runs")}
+
+
 def batch_prompts(prompts: list[dict], batch: dict) -> list[dict]:
     """Prompts whose id is one of the batch prefixes followed by digits (e.g. D01, AV01)."""
     in_batch = settings.prompt_matcher(batch)
@@ -59,6 +76,8 @@ def parse_args(argv):
     ap.add_argument("--runs", type=int, default=None, help="runs per prompt (default: config per provider)")
     ap.add_argument("--providers", default="claude,openai,gemini")
     ap.add_argument("--only", default="", help="comma list of prompt ids")
+    ap.add_argument("--levels", default="",
+                    help="comma list of level prefixes of a level batch (e.g. AV or AR,AG)")
     ap.add_argument("--out", default=None, help="output directory (default: $PUSHLLM_PRIVADO/probe or probe/out)")
     ap.add_argument("--config", default=None,
                     help="config or batch file (default: probe_config.json = Vigo batch)")
@@ -80,6 +99,9 @@ def write_summary(out: Path, cfg: dict, brands) -> None:
 
 def main(argv=None, env=None, ask=None):
     args = parse_args(argv)
+    if args.out is not None and unsafe_out(args.out):
+        sys.exit(f"refusing --out {args.out!r}: empty or a drive/filesystem root "
+                 "(is PUSHLLM_PRIVADO set?)")
     env = os.environ if env is None else env
     ask = ask or providers.ask
     cfg = settings.load_config(args.config)
@@ -103,12 +125,21 @@ def main(argv=None, env=None, ask=None):
         if outside:
             sys.exit(f"not in batch {batch['name']}: {','.join(outside)}")
         prompts = [p for p in prompts if p["id"] in keep]
+    per_level = level_runs(batch)
+    if args.levels:
+        wanted = set(args.levels.split(","))
+        known = {lv["prefix"] for lv in batch.get("levels", [])}
+        if not known or wanted - known:
+            sys.exit(f"--levels {args.levels}: batch {batch['name']} has levels "
+                     f"{','.join(sorted(known)) or 'none'}")
+        match = settings.prompt_matcher(sorted(wanted))
+        prompts = [p for p in prompts if match(p["id"])]
 
     active = []
     for name in args.providers.split(","):
         pcfg = cfg["providers"][name]
         if env.get(pcfg["api_key_env"]):
-            active.append((name, settings.resolve_model(name, cfg, env), args.runs or pcfg["runs"]))
+            active.append((name, settings.resolve_model(name, cfg, env), pcfg["runs"]))
         else:
             print(f"skip {name}: {pcfg['api_key_env']} not set", file=sys.stderr)
     if not active:
@@ -128,7 +159,9 @@ def main(argv=None, env=None, ask=None):
         if new_file:
             w.writeheader()
         for p in prompts:
-            for name, model, runs in active:
+            level = next((k for k in per_level if settings.prompt_matcher([k])(p["id"])), None)
+            for name, model, default_runs in active:
+                runs = args.runs or per_level.get(level) or default_runs
                 for run in range(1, runs + 1):
                     if (p["id"], name, str(run)) in done:
                         continue
