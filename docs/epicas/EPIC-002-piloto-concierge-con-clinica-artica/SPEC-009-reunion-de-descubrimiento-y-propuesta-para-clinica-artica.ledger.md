@@ -16,16 +16,16 @@ epica: EPIC-002
 <!-- Un CA está ✅ solo cuando Implementado + Test + Verif. aplicables están en verde. Una salvedad se marca ⚠️, nunca ✅. -->
 | CA | Implementado (fichero) | Test (fichero/caso) | Verif. | Estado |
 |---|---|---|---|---|
-| CA-1 | `docs/piloto-artica/reunion/guion.md` (plantilla, 6 bloques con texto literal, 44 min); versión personalizada en privado `reunion/guion-artica.md` (44 min) | `docs/piloto-artica/tools/tests/test_meeting_kit.py`: `test_ca1_minutes_add_up_to_at_most_45`, `test_ca1_required_blocks_in_order`, `test_ca1_every_block_has_literal_text`, `test_ca1_block_contents`, `test_ca1_block_parser_on_synthetic_text`; privado: `meeting_docs.py check --solo --privado` → OK | | ❌ |
-| CA-2 | `guion.md` bloque 3: P1–P16 (privado: P1–P18, sin repetir lo ya respondido en la llamada del 28/09 del otro proyecto) | `test_ca2_at_least_12_questions`, `test_ca2_coverage_checklist` (16 temas de CA-2, mapa en `meeting_docs.QUESTION_TOPICS`), `test_ca2_no_hypothetical_questions`, `test_ca2_hypothetical_detector` | | ❌ |
-| CA-3 | `reunion/propuesta.md` (enmienda (e): 395 palabras la plantilla; 443 rellenada en privado; literal de Galicia en el objetivo, ChatGPT/Gemini/Claude en el callout, precio de ADR-010, pregunta en recepción no obligatoria); `meeting_docs.py` (`proposal_issues`, `GALICIA_LITERAL`, `ASSISTANTS`, `_galicia_issues`); PDF con `doc.css` (`meeting_docs.py build` + `build_pdf.mjs`): portada (título nuevo) + **1 página** de propuesta + anexos; borrador en privado `reunion/propuesta/propuesta-borrador.pdf` | `test_ca3_proposal_passes_its_checklist`, `test_ca3_proposal_fits_in_one_page`, `test_ca3_prices_equal_adr010`, `test_ca3_old_price_wording_is_flagged`, `test_ca3_no_galicia_no_percent_no_points` (Galicia una vez, literal, sección), `test_ca3_galicia_outside_the_literal_or_twice_is_flagged`, `test_ca3_galicia_literal_is_not_a_promise`, `test_ca3_names_the_assistants`, `test_ca3_reception_question_is_not_an_obligation`, `test_ca3_no_free_option_or_discount`, `test_ca3_checklist_detects_a_bad_proposal`, `test_ca3_word_count_ignores_markup_and_comments`, `test_filled_checks_apply_to_the_filled_proposal`, `test_build_document_is_self_contained_and_filled` (portada) | | ❌ |
-| CA-4 | `reunion/acuerdos.md` (anexo 1: a–e de la spec + f cookies, g al terminar, del dictamen; enmienda (e): (a) email o medio con persistencia, (c) explicación llana de repositorio público, (d) conteo opcional con su consecuencia); `reunion/encargo-tratamiento.md` (anexo 2, sin cambios); `guion.md` bloque 5 (conteo opcional) | `test_ca4_agreements_cover_a_to_e_and_dictamen` (claves nuevas en `AGREEMENT_CHECKS`), `test_ca4_amendment_e_wording`, `test_ca4_traceability_to_adr004_and_dictamen` | | ❌ |
-| CA-5 | `reunion/apoyo.md` (12 objeciones con respuesta literal, 6 frases para volver a hechos; "¿Cuánto cuesta?" con el modelo de ADR-010); privado `reunion/apoyo-artica.md` (14 objeciones, mismo cambio) | `test_ca5_at_least_8_objections_including_the_required_ones`, `test_ca5_every_objection_has_a_literal_answer`, `test_ca5_required_answers_say_what_the_spec_asks` (exige prepago, cuarto mes y sin permanencia), `test_ca5_at_least_4_back_to_facts_phrases` | | ❌ |
-| CA-6 | Dictamen de `sdd-sanidad-regulacion` en este ledger (sección "Dictamen sdd-sanidad-regulacion (CA-6)") con tabla condición → cambio; cambios en `acuerdos.md`, `encargo-tratamiento.md`, `guion.md`, `apoyo.md` y hoja de hallazgo privada; los de SPEC-010/SPEC-011 como follow-ups | `test_ca6_processor_contract_has_article_28_content`, `test_ca6_proposal_and_agreements_reference_the_processor_contract`, `test_ca4_agreements_cover_a_to_e_and_dictamen` (claves "dictamen: …") | | ❌ |
-| CA-7 | [Humano] pendiente: instrucciones en "Pasos humanos" | — | | ❌ |
-| CA-8 | [Humano] pendiente | — | | ❌ |
-| CA-9 | [Humano] Enviada el 2026-10-03 (PDF del texto de `c12832b`); respuesta, aceptación de acuerdos, encargo firmado y primer cobro: pendientes | — | | ❌ |
-| CA-10 | Todas las plantillas de `docs/piloto-artica/reunion/` (enmienda (e): `GALICIA_PROMISE_RE` sin cambios; el literal de ampliación no lo dispara) | `test_ca10_no_jargon_or_personal_data[*]` (6 ficheros), `test_ca3_galicia_literal_is_not_a_promise`, `test_ca10_detector`, `test_ca10_allows_negative_guarantees_markers_and_plan_numbers`, `test_ca10_private_person_names_absent_from_repo` (lee los nombres de `valores.json` privado; se salta sin `PUSHLLM_PRIVADO`); `meeting_docs.py check` → OK | | ❌ |
+| CA-1 | `docs/piloto-artica/reunion/guion.md` (plantilla, 6 bloques con texto literal, 44 min); versión personalizada en privado `reunion/guion-artica.md` (44 min) | `docs/piloto-artica/tools/tests/test_meeting_kit.py`: `test_ca1_minutes_add_up_to_at_most_45`, `test_ca1_required_blocks_in_order`, `test_ca1_every_block_has_literal_text`, `test_ca1_block_contents`, `test_ca1_block_parser_on_synthetic_text`; privado: `meeting_docs.py check --solo --privado` → OK | pytest verde; `check` y `check --solo --privado` OK; minutaje 3+7+18+7+6+3 = 44; 6 bloques en orden, todos con texto literal (2026-10-03) | ✅ |
+| CA-2 | `guion.md` bloque 3: P1–P16 (privado: P1–P18, sin repetir lo ya respondido en la llamada del 28/09 del otro proyecto) | `test_ca2_at_least_12_questions`, `test_ca2_coverage_checklist` (16 temas de CA-2, mapa en `meeting_docs.QUESTION_TOPICS`), `test_ca2_no_hypothetical_questions`, `test_ca2_hypothetical_detector` | 16 preguntas, cobertura de los 16 temas, sin hipotéticas (tests y lectura de P1–P16) (2026-10-03) | ✅ |
+| CA-3 | `reunion/propuesta.md` (enmienda (e): 395 palabras la plantilla; 443 rellenada en privado; literal de Galicia en el objetivo, ChatGPT/Gemini/Claude en el callout, precio de ADR-010, pregunta en recepción no obligatoria); `meeting_docs.py` (`proposal_issues`, `GALICIA_LITERAL`, `ASSISTANTS`, `_galicia_issues`); PDF con `doc.css` (`meeting_docs.py build` + `build_pdf.mjs`): portada (título nuevo) + **1 página** de propuesta + anexos; borrador en privado `reunion/propuesta/propuesta-borrador.pdf` | `test_ca3_proposal_passes_its_checklist`, `test_ca3_proposal_fits_in_one_page`, `test_ca3_prices_equal_adr010`, `test_ca3_old_price_wording_is_flagged`, `test_ca3_no_galicia_no_percent_no_points` (Galicia una vez, literal, sección), `test_ca3_galicia_outside_the_literal_or_twice_is_flagged`, `test_ca3_galicia_literal_is_not_a_promise`, `test_ca3_names_the_assistants`, `test_ca3_reception_question_is_not_an_obligation`, `test_ca3_no_free_option_or_discount`, `test_ca3_checklist_detects_a_bad_proposal`, `test_ca3_word_count_ignores_markup_and_comments`, `test_filled_checks_apply_to_the_filled_proposal`, `test_build_document_is_self_contained_and_filled` (portada) | Plantilla y propuesta privada rellenada (449 palabras ≤ 450): "Galicia" 1 vez, literal, sección del objetivo, no dispara `GALICIA_PROMISE_RE`; ChatGPT/Gemini/Claude; 450 € + IVA prepago / 199 €/mes + IVA / sin permanencia; sin "Pago mensual, 3 meses" ni "Precios sin IVA"; sin % ni "puntos"; "Informe de situación actual" y "Veis cada texto…" presentes; PDF con valores ficticios: propuesta en 1 página, también al peor caso de 450 palabras (`_qa/SPEC-009/`) (2026-10-03) | ✅ |
+| CA-4 | `reunion/acuerdos.md` (anexo 1: a–e de la spec + f cookies, g al terminar, del dictamen; enmienda (e): (a) email o medio con persistencia, (c) explicación llana de repositorio público, (d) conteo opcional con su consecuencia); `reunion/encargo-tratamiento.md` (anexo 2, sin cambios); `guion.md` bloque 5 (conteo opcional) | `test_ca4_agreements_cover_a_to_e_and_dictamen` (claves nuevas en `AGREEMENT_CHECKS`), `test_ca4_amendment_e_wording`, `test_ca4_traceability_to_adr004_and_dictamen` | (a) email/medio con persistencia, (b), (c) explicación llana, (d) opcional + consecuencia, (e) aprobación + recibe cada texto antes, (f) cookies, (g) al terminar; trazabilidad en el comentario de cabecera (2026-10-03) | ✅ |
+| CA-5 | `reunion/apoyo.md` (12 objeciones con respuesta literal, 6 frases para volver a hechos; "¿Cuánto cuesta?" con el modelo de ADR-010); privado `reunion/apoyo-artica.md` (14 objeciones, mismo cambio) | `test_ca5_at_least_8_objections_including_the_required_ones`, `test_ca5_every_objection_has_a_literal_answer`, `test_ca5_required_answers_say_what_the_spec_asks` (exige prepago, cuarto mes y sin permanencia), `test_ca5_at_least_4_back_to_facts_phrases` | 12 objeciones con respuesta literal (incluye las 10 obligatorias), "¿Cuánto cuesta?" con ADR-010, 6 frases de hechos; privado OK (2026-10-03) | ✅ |
+| CA-6 | Dictamen de `sdd-sanidad-regulacion` en este ledger (sección "Dictamen sdd-sanidad-regulacion (CA-6)") con tabla condición → cambio; cambios en `acuerdos.md`, `encargo-tratamiento.md`, `guion.md`, `apoyo.md` y hoja de hallazgo privada; los de SPEC-010/SPEC-011 como follow-ups | `test_ca6_processor_contract_has_article_28_content`, `test_ca6_proposal_and_agreements_reference_the_processor_contract`, `test_ca4_agreements_cover_a_to_e_and_dictamen` (claves "dictamen: …") | Dictamen con fecha, conclusión C1–C10, fuentes y tabla condición → cambio; fila C3 actualizada con el conteo opcional y F-SPEC-009-8 (2026-10-03) | ✅ |
+| CA-7 | [Humano] pendiente: instrucciones en "Pasos humanos" | — | Sin registro del humano (2026-10-03) | ❌ |
+| CA-8 | [Humano] pendiente | — | Sin registro del humano (2026-10-03) | ❌ |
+| CA-9 | [Humano] Enviada el 2026-10-03 (PDF del texto de `c12832b`); respuesta, aceptación de acuerdos, encargo firmado y primer cobro: pendientes | — | Solo registrado el envío (2026-10-03); faltan respuesta, aceptación, encargo y cobro | 🚧 |
+| CA-10 | Todas las plantillas de `docs/piloto-artica/reunion/` (enmienda (e): `GALICIA_PROMISE_RE` sin cambios; el literal de ampliación no lo dispara) | `test_ca10_no_jargon_or_personal_data[*]` (6 ficheros), `test_ca3_galicia_literal_is_not_a_promise`, `test_ca10_detector`, `test_ca10_allows_negative_guarantees_markers_and_plan_numbers`, `test_ca10_private_person_names_absent_from_repo` (lee los nombres de `valores.json` privado; se salta sin `PUSHLLM_PRIVADO`); `meeting_docs.py check` → OK | `check` OK sobre los 6 ficheros; grep manual sin jerga, sin Galicia prometida, garantías todas negativas; `git diff main...HEAD` sin cifras de visibilidad, emails/teléfonos de la clínica ni nombres de personas de la clínica; test de nombres privados ejecutado (no saltado) (2026-10-03) | ✅ |
 
 ## Registro del implementador (2026-09-30, sdd-implementador)
 Solo veredictos y rutas (ADR-004 §2). Commit de la implementación: `fdef4d8`.
@@ -308,12 +308,40 @@ fecha de envío) y vacía la lista.
 
 ## Veredicto del verificador
 <!-- GREEN/RED + fecha + resumen. Lo escribe SOLO sdd-verificador. -->
+**GREEN (parte de agente) — 2026-10-03, sdd-verificador.** Verificación intermedia sobre
+`fdef4d8`…`ded50b4` (`git diff main...HEAD`). CA-1, CA-2, CA-3, CA-4, CA-5, CA-6 y CA-10 ✅.
+**El cierre total espera a los CA humanos**: CA-7 ❌ y CA-8 ❌ (sin registro), CA-9 🚧 (solo el
+envío). La spec sigue en `en-progreso` a propósito; no se transiciona.
+- Gates: pytest `docs/piloto-artica/tools/tests` con `PUSHLLM_PRIVADO` definido → 351 passed,
+  0 skipped; `ruff check docs/piloto-artica/tools` → limpio; `meeting_docs.py check` → OK;
+  `check --solo --privado` sobre `guion-artica.md` y `apoyo-artica.md` → OK.
+- CA-3 sobre la propuesta privada rellenada: `word_count` 449 (≤ 450); comprobaciones de la
+  enmienda (e) superadas; `proposal_issues` y `ca10_issues` sin incidencias. Una página: HTML
+  generado con `test_meeting_kit.VALUES` fuera del repo y PDF con `build_pdf.mjs` (Playwright):
+  6 páginas, la propuesta ocupa solo la 2 y el anexo 1 empieza en la 3; repetido rellenando hasta
+  450 palabras (peor caso) con el mismo resultado y hueco libre. El PDF privado no se ha
+  inspeccionado visualmente (sin capturas de datos del cliente).
+- Observaciones (no bloquean):
+  1. `guion.md` bloque 5 ("Una: que me aviséis por escrito, antes…") no repite el medio de
+     CA-4 (a) (email o medio con persistencia). Compatible (el medio es escrito), pero si se
+     quiere coherencia literal con el anexo 1, cambiar en la próxima pasada del humano (CA-7).
+  2. Historial de la rama: un ejemplo de test de `fdef4d8` llevaba un conteo del tipo
+     "x de n", sustituido por uno sintético en `64c825c`; la rama ya está en `origin`. El diff
+     neto está limpio. Si ese conteo no era sintético, conviene squash-merge para que el commit
+     no entre en `main` (decisión del humano, ADR-004 §6).
 
 ## Evidencia visual
 <!-- Tabla CA → captura en _qa/SPEC-009/. Informe HTML opcional: _qa/SPEC-009/informe.html -->
 El PDF de la propuesta rellenada es privado (ADR-004): no hay capturas en `_qa/`. Para revisar el
 maquetado sin datos del cliente, basta generar el HTML con valores ficticios (los de
 `test_meeting_kit.VALUES`) en una carpeta temporal fuera del repo.
+
+| CA | Captura (HTML con valores ficticios de `test_meeting_kit.VALUES`, sin datos del cliente) |
+|---|---|
+| CA-3 | `_qa/SPEC-009/CA-3-portada-ficticia.png` (portada: título y correo de contacto) |
+| CA-3 | `_qa/SPEC-009/CA-3-propuesta-una-pagina-ficticia.png` (propuesta en una página) |
+| CA-3 | `_qa/SPEC-009/CA-3-propuesta-450-palabras-peor-caso.png` (relleno hasta 450 palabras: sigue en una página) |
+| CA-4 | `_qa/SPEC-009/CA-4-anexo1-acuerdos-ficticio.png` (anexo 1, (a)–(d)) |
 
 ## Salvedades / follow-ups
 <!-- IDs F-SPEC-009-1, F-SPEC-009-2… con destino (spec futura o EPIC-MEJORA). -->
