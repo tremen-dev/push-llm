@@ -105,6 +105,17 @@ ADR-011 aprobados.
   entregable: sin cambios. Ningún check ni test buscaba el término. Propuesta rellenada sigue
   ≤ 450 palabras; PDF regenerado y revisado a ojo: propuesta en una página. pytest, `ruff` y
   ambos `check` en verde.
+- **Ajuste de texto pedido por el humano (2026-10-03, sin cambio de CA): la clínica ve cada
+  texto antes de publicarlo**. `propuesta.md`, punto de acciones de "Qué incluye": añade "Veis
+  cada texto antes de publicarlo y podéis cambiarlo.". Para caber en ≤ 450 palabras se recorta:
+  "las tres cosas" → "tres cosas"; "El piloto empieza" → "Empieza"; "Accesos con el permiso
+  mínimo" → "Accesos con permiso mínimo"; "Al terminar": "no hay permanencia" → "sin
+  permanencia" y "Con esta propuesta van dos anexos" → "Van dos anexos". `acuerdos.md` (e):
+  añade "La clínica recibe cada texto antes de publicarlo y puede proponer cambios o mejoras."
+  (`AGREEMENT_CHECKS` (e) sigue pasando). `apoyo.md` sin objeción de ese tipo: sin cambios.
+  Ningún check vigila las frases nuevas (sin test nuevo). Propuesta rellenada ≤ 450 palabras;
+  PDF regenerado y revisado a ojo: propuesta en una página. pytest, `ruff` y ambos `check` en
+  verde.
 
 ## Decisión del humano sobre el precio (2026-10-03, enmienda (e)) — registro exigido por CA-3
 Registra sdd-arquitecto. El humano (Alberto Fojo), al revisar `propuesta-borrador.pdf` el

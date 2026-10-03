@@ -34,7 +34,7 @@ Aceptáis aparecer con vuestro nombre: **sí / no** (se puede decir que no y hac
 - Si por error llega un fichero con datos de pacientes, se borra y se pide de nuevo el conteo.
 
 ## e) Nada se publica sin vuestra aprobación
-Ningún texto, ficha o cambio se publica sin aprobación escrita de la clínica y sin la revisión normativa previa: que se ajuste a la autorización sanitaria, que lleve el número de registro sanitario donde toque, sin testimonios de pacientes ni promesas de resultado y sin publicidad de medicamentos que necesitan receta. Precios y fotos de antes y después, solo si la revisión lo admite.
+Ningún texto, ficha o cambio se publica sin aprobación escrita de la clínica y sin la revisión normativa previa: que se ajuste a la autorización sanitaria, que lleve el número de registro sanitario donde toque, sin testimonios de pacientes ni promesas de resultado y sin publicidad de medicamentos que necesitan receta. Precios y fotos de antes y después, solo si la revisión lo admite. La clínica recibe cada texto antes de publicarlo y puede proponer cambios o mejoras.
 
 ## f) Cookies
 La analítica solo mide a quien la acepta en el aviso de cookies de la web. La clínica mantiene ese aviso (es el responsable de su web) y tremen.dev no instala nada que funcione antes del consentimiento. Por eso la medición contará menos visitas de las que hay; se dirá así en cada informe.
