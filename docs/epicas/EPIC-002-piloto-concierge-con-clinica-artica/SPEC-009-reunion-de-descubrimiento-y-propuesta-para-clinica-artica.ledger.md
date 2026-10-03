@@ -24,7 +24,7 @@ epica: EPIC-002
 | CA-6 | Dictamen de `sdd-sanidad-regulacion` en este ledger (sección "Dictamen sdd-sanidad-regulacion (CA-6)") con tabla condición → cambio; cambios en `acuerdos.md`, `encargo-tratamiento.md`, `guion.md`, `apoyo.md` y hoja de hallazgo privada; los de SPEC-010/SPEC-011 como follow-ups | `test_ca6_processor_contract_has_article_28_content`, `test_ca6_proposal_and_agreements_reference_the_processor_contract`, `test_ca4_agreements_cover_a_to_e_and_dictamen` (claves "dictamen: …") | | ❌ |
 | CA-7 | [Humano] pendiente: instrucciones en "Pasos humanos" | — | | ❌ |
 | CA-8 | [Humano] pendiente | — | | ❌ |
-| CA-9 | [Humano] pendiente | — | | ❌ |
+| CA-9 | [Humano] Enviada el 2026-10-03 (PDF del texto de `c12832b`); respuesta, aceptación de acuerdos, encargo firmado y primer cobro: pendientes | — | | ❌ |
 | CA-10 | Todas las plantillas de `docs/piloto-artica/reunion/` (enmienda (e): `GALICIA_PROMISE_RE` sin cambios; el literal de ampliación no lo dispara) | `test_ca10_no_jargon_or_personal_data[*]` (6 ficheros), `test_ca3_galicia_literal_is_not_a_promise`, `test_ca10_detector`, `test_ca10_allows_negative_guarantees_markers_and_plan_numbers`, `test_ca10_private_person_names_absent_from_repo` (lee los nombres de `valores.json` privado; se salta sin `PUSHLLM_PRIVADO`); `meeting_docs.py check` → OK | | ❌ |
 
 ## Registro del implementador (2026-09-30, sdd-implementador)
@@ -292,6 +292,20 @@ fecha de envío) y vacía la lista.
 4. Regla: sin aceptación escrita y primer cobro, **no empieza** SPEC-010 ni ninguna acción; sin
    el encargo firmado, ningún acceso a herramientas de la clínica (C1).
 
+## Registro de pasos humanos
+<!-- Lo que el humano comunica de CA-7, CA-8 y CA-9, sin datos de la clínica ni nombres (ADR-004). -->
+- **CA-9, envío** — 2026-10-03, por el humano. Enviada la propuesta con los dos anexos (PDF
+  regenerado el mismo día: portada + propuesta + anexo 1 acuerdos + anexo 2 encargo; texto del
+  commit `c12832b`). Pendiente: respuesta (acepta / negocia / rechaza) y fecha; aceptación de
+  los acuerdos y consentimiento de nombre; contrato de encargo firmado; primer cobro; si la
+  clínica entregará el conteo semanal (sí/no).
+  - Salvedad (a): el PDF enviado se generó con `--borrador`, y `valores.json` privado aún tenía
+    en `_pendiente` las claves `tratamientos`, `fecha_envio`, `responsable_nombre`,
+    `responsable_nif` y `encargado_nif`. La versión definitiva para firmar requiere vaciar
+    `_pendiente` (F-SPEC-009-2) y regenerar sin `--borrador` (paso 1 de CA-9).
+  - Salvedad (b): en este ledger no consta registro de CA-7 (ensayo) ni de CA-8 (reunión); el
+    humano no los ha comunicado. Lo que se registra aquí es solo el envío.
+
 ## Veredicto del verificador
 <!-- GREEN/RED + fecha + resumen. Lo escribe SOLO sdd-verificador. -->
 
@@ -349,8 +363,10 @@ maquetado sin datos del cliente, basta generar el HTML con valores ficticios (lo
 - **Hecho (agente)**: CA-1 a CA-6 y CA-10 implementados con tests (`test_meeting_kit.py`, 63 casos
   de SPEC-009 en la suite de `docs/piloto-artica/tools/tests`), `ruff` limpio, dictamen CA-6 en
   este ledger, copias personalizadas y PDF borrador en privado.
-- **Falta (humano)**: vaciar `_pendiente` de `valores.json` (F-SPEC-009-2), CA-7 ensayo, CA-8
-  reunión, CA-9 envío en ≤ 5 días hábiles, aceptación, encargo firmado y primer cobro.
+- **Hecho (humano)**: CA-9 envío de la propuesta el 2026-10-03 (ver "Registro de pasos humanos").
+- **Falta (humano)**: vaciar `_pendiente` de `valores.json` (F-SPEC-009-2) y regenerar sin
+  `--borrador` para la versión que se firme; respuesta, aceptación, encargo firmado y primer
+  cobro (CA-9), y registro de CA-7/CA-8 si se hicieron.
 - **Estado de la spec**: `en-progreso` a propósito: los CA humanos no están hechos. Cuando lo
   estén, sdd-implementador pasa la spec a `en-revision` y sdd-verificador verifica.
 - **Comprobar**: `python -m pytest -q docs/piloto-artica/tools/tests` (con `PUSHLLM_PRIVADO`
