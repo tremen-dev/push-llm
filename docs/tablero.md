@@ -1,7 +1,7 @@
 <!-- GENERADO por tremen-sdd (scripts/tablero.mjs). NO EDITAR A MANO. -->
 # Tablero
 
-Actualizado: 2026-09-29
+Actualizado: 2026-10-03
 
 ## EPIC-001 — ciclo-0-baseline-y-validacion-del-problema (bloqueada)
 
@@ -20,7 +20,7 @@ Actualizado: 2026-09-29
 |---|---|---|
 | SPEC-007 — baseline-antes-manual-de-clinica-artica-desde-el-movil | hecho | 2026-09-29 (sdd-verificador) |
 | SPEC-008 — catalogo-de-viveiro-y-a-marina-en-el-probe | hecho | 2026-09-29 (sdd-verificador) |
-| SPEC-009 — reunion-de-descubrimiento-y-propuesta-para-clinica-artica | aprobada | 2026-09-29 (Alberto Fojo) |
+| SPEC-009 — reunion-de-descubrimiento-y-propuesta-para-clinica-artica | en-progreso | 2026-10-03 (sdd-implementador) |
 | SPEC-010 — instalacion-de-la-atribucion-del-piloto | borrador | 2026-09-28 (sdd-arquitecto) |
 | SPEC-011 — diagnostico-por-palancas-y-plan-de-acciones-de-clinica-artica | borrador | 2026-09-28 (sdd-arquitecto) |
 | SPEC-012 — ejecucion-medicion-semanal-y-cierre-del-piloto | borrador | 2026-09-28 (sdd-arquitecto) |
@@ -44,10 +44,12 @@ Actualizado: 2026-09-29
 | ADR-007 | aprobada | plantilla-env-example-versionada-como-unica-excepcion-a-la-regla-de-adr-006 | 2026-09-29 (Alberto Fojo) |
 | ADR-008 | aprobada | nicho-geografico-a-marina-primero-despues-galicia-asturias-y-leon-supera-d-2 | 2026-09-29 (Alberto Fojo) |
 | ADR-009 | aprobada | criterio-go-del-piloto-crecer-en-el-area-de-influencia-y-defender-el-nucleo-supera-en-parte-adr-005-y-adr-008 | 2026-09-29 (Alberto Fojo) |
+| ADR-010 | aprobada | modelo-de-pago-del-piloto-450-prepago-los-3-primeros-meses-y-199-mes-sin-permanencia-a-partir-del-cuarto-supera-en-parte-d-7 | 2026-10-03 (Alberto Fojo) |
+| ADR-011 | aprobada | galicia-en-la-propuesta-solo-como-ampliacion-posible-sin-objetivo-ni-cifras-supera-en-parte-adr-009-3 | 2026-10-03 (Alberto Fojo) |
 
 ## Resumen
 
 - hecho: 6
 - bloqueada: 3
-- aprobada: 1
+- en-progreso: 1
 - borrador: 3
