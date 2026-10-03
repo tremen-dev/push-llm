@@ -1,13 +1,13 @@
-# Pacientes desde la IA, también fuera de A Mariña
+# Atracción de clientes en asistentes de IA
 
 <!-- lede -->
-Piloto de 12 semanas para {clinica}, independiente de cualquier otro servicio de tremen.dev.
+Piloto de 12 semanas para {clinica}.
 
 ## Punto de partida y objetivo
-Hoy ya sois la clínica que la IA recomienda en A Mariña{matiz_punto_de_partida}. El objetivo es aparecer también en vuestra área de influencia (Ferrolterra, norte e interior de Lugo y occidente de Asturias) sin perder la comarca, cuando alguien pregunta por {tratamientos}, y saber cuántos pacientes llegan por ahí.
+Hoy ya sois la clínica que la IA recomienda en A Mariña{matiz_punto_de_partida}. El objetivo es aparecer también en vuestra área de influencia (Ferrolterra, norte e interior de Lugo y occidente de Asturias), con margen para ampliarla al resto de Galicia, sin perder la comarca, cuando alguien pregunta por {tratamientos}, y saber cuántos pacientes llegan por ahí.
 
 <!-- callout -->
-**No se garantiza.** Nadie puede pagar por salir en las respuestas de ChatGPT o Gemini, y cada asistente cambia sin avisar. Sí se puede corregir y completar lo que leen sobre vosotros, y medirlo.
+**No se garantiza.** Nadie puede pagar por salir en las respuestas de ChatGPT, Gemini o Claude, y cada asistente cambia sin avisar. Sí se puede corregir y completar lo que leen sobre vosotros, y medirlo.
 
 <!-- cols -->
 ## Qué incluye
@@ -20,7 +20,7 @@ Hoy ya sois la clínica que la IA recomienda en A Mariña{matiz_punto_de_partida
 ## Qué aportáis vosotros
 - Contenidos: tratamientos, profesionales, fotos y preguntas de pacientes.
 - Aprobación por escrito de todo lo que se publique.
-- La pregunta "¿cómo nos has conocido?" en recepción y en la reserva, con la opción "un asistente de IA".
+- Si queréis (no es obligatorio), la pregunta "¿cómo nos has conocido?" en recepción, con la opción "un asistente de IA".
 - Accesos con el permiso mínimo a la analítica, Search Console, la ficha de Google y la web.
 
 <!-- col -->
@@ -36,12 +36,9 @@ Los cambios tardan entre 4 y 12 semanas en notarse. No se garantiza aparecer ni 
 ## Precio y duración
 12 semanas desde la primera acción; la medición se instala antes.
 
-| Opción | Precio |
-|---|---|
-| 3 meses, pago por adelantado | 450 € + IVA |
-| Pago mensual, 3 meses | 199 €/mes + IVA |
+**450 € + IVA** por los 3 primeros meses, pagados por adelantado. A partir del cuarto mes, **199 €/mes + IVA**, y lo podéis dejar en cualquier momento: sin permanencia.
 
-Precios sin IVA: la factura suma el IVA vigente. El piloto empieza con los acuerdos aceptados y el primer pago.
+El piloto empieza con los acuerdos aceptados y el primer pago.
 <!-- /cols -->
 
 ## Al terminar

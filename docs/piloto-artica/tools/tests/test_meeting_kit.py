@@ -120,19 +120,75 @@ def test_ca3_proposal_fits_in_one_page():
     assert md.word_count(read(PROPUESTA)) <= md.PROPOSAL_MAX_WORDS
 
 
-def test_ca3_prices_equal_d7():
+def test_ca3_prices_equal_adr010():
     text = read(PROPUESTA)
     assert "450 € + IVA" in text and "199 €/mes + IVA" in text
     amounts = set(re.findall(r"(\d[\d.]*)\s*€", text))
     assert amounts == {"450", "199"}
+    t = md.norm_text(text)
+    for phrase in ("pagados por adelantado", "a partir del cuarto mes", "en cualquier momento"):
+        assert phrase in t, phrase
+    assert "pago mensual, 3 meses" not in t
+    assert "precios sin iva" not in t
+
+
+def test_ca3_old_price_wording_is_flagged():
+    base = read(PROPUESTA)
+    assert any("mensual" in i for i in md.proposal_issues(base + "\nPago mensual, 3 meses.\n"))
+    assert any("Precios sin IVA" in i for i in md.proposal_issues(
+        base + "\nPrecios sin IVA: la factura suma el IVA vigente.\n"))
+    no_prepay = base.replace("pagados por adelantado", "")
+    assert any("adelantado" in i for i in md.proposal_issues(no_prepay))
 
 
 def test_ca3_no_galicia_no_percent_no_points():
+    """Amendment (e), ADR-011: "Galicia" exactly once, inside the expansion literal, in the
+    objective section, right after the three zones."""
     text = read(PROPUESTA)
-    assert "galicia" not in md.norm_text(text)
+    t = md.norm_text(text)
+    assert t.count("galicia") == 1
+    objective = next(body for head, body in md._sections(text)
+                     if "objetivo" in md.norm_text(head))
+    zones = md.norm_text("(Ferrolterra, norte e interior de Lugo y occidente de Asturias), "
+                         + md.GALICIA_LITERAL)
+    assert zones in md.norm_text(objective)
     for line in text.splitlines():
         if "%" in line or re.search(r"\bpuntos\b", line, re.I):
             assert "IVA" in line and "€" in line, line
+
+
+def test_ca3_galicia_outside_the_literal_or_twice_is_flagged():
+    base = read(PROPUESTA)
+    twice = base + "\n## Qué esperar\nY en Galicia.\n"
+    assert any("Galicia" in i for i in md.proposal_issues(twice))
+    other_wording = base.replace(md.GALICIA_LITERAL, "y en toda Galicia")
+    assert any("Galicia" in i for i in md.proposal_issues(other_wording))
+
+
+def test_ca3_galicia_literal_is_not_a_promise():
+    """CA-10: the promise detector is not relaxed; the literal must not trigger it."""
+    assert md.ca10_issues(read(PROPUESTA)) == []
+    assert md.ca10_issues("aparecer en Ferrolterra, " + md.GALICIA_LITERAL + ".") == []
+
+
+def test_ca3_names_the_assistants():
+    t = md.norm_text(read(PROPUESTA))
+    for name in ("chatgpt", "gemini", "claude"):
+        assert re.search(rf"\b{name}\b", t), name
+    for other in ("perplexity", "ai overviews", "copilot", "modo ia"):
+        assert other not in t, other
+    without = read(PROPUESTA).replace("Claude", "otro")
+    assert any("Claude" in i for i in md.proposal_issues(without))
+
+
+def test_ca3_reception_question_is_not_an_obligation():
+    """Amendment (e), coherent with CA-4 (d): the weekly count is optional."""
+    contrib = next(body for head, body in md._sections(read(PROPUESTA))
+                   if "aportais" in md.norm_text(head))
+    line = next(ln for ln in contrib.splitlines() if "conocido" in ln)
+    assert re.search(r"si quer|opcional|no obligatori", md.norm_text(line)), line
+    block = next(b for b in md.guion_blocks(read(GUION)) if "acuerdos" in md.norm_text(b.title))
+    assert re.search(r"si quer\w+ dar|opcional", md.norm_text(block.body))
 
 
 def test_ca3_no_free_option_or_discount():
@@ -161,6 +217,21 @@ def test_ca4_agreements_cover_a_to_e_and_dictamen():
     for key, patterns in md.AGREEMENT_CHECKS.items():
         for p in patterns:
             assert re.search(p, t), f"{key}: falta {p!r}"
+
+
+def _agreement(letter: str) -> str:
+    text = read(ACUERDOS)
+    return md.norm_text(re.split(r"^## [a-z]\)", text.split(f"## {letter})", 1)[1], flags=re.M)[0])
+
+
+def test_ca4_amendment_e_wording():
+    d = _agreement("d")
+    assert "opcional" in d and "no se podra medir" in d
+    a = _agreement("a")
+    assert "email" in a and "persistencia" in a and "con fecha" not in a
+    c = _agreement("c")
+    assert "cualquiera puede" in c and "historial de versiones" in c
+    assert c.index("cualquiera puede") < c.index("que se publica")
 
 
 def test_ca4_traceability_to_adr004_and_dictamen():
@@ -198,6 +269,9 @@ def test_ca5_required_answers_say_what_the_spec_asks():
     marina = ans("perdemos lo que ya tenemos")
     assert "cada semana" in marina and "no se garantiza" in marina
     assert "450" in ans("cuánto cuesta") and "por escrito" in ans("cuánto cuesta")
+    price = ans("cuánto cuesta")              # ADR-010
+    assert "adelantado" in price and "cuarto mes" in price and "permanencia" in price
+    assert "o 199" not in price
 
 
 def test_ca5_at_least_4_back_to_facts_phrases():
@@ -327,6 +401,9 @@ def test_build_document_is_self_contained_and_filled():
     assert "pagedjs" in html and "data-doc-ready" in html
     body = html.split("</head>", 1)[1]
     assert body.count('<section class="page') == 3   # proposal + two annexes
+    cover = body.split('<section class="page', 1)[0]
+    assert "Atracción de clientes en asistentes de IA" in cover
+    assert "independiente" not in md.norm_text(cover)
 
 
 def test_build_refuses_pending_values_unless_draft():

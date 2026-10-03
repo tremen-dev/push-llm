@@ -147,6 +147,25 @@ def _negative_guarantees_only(text: str) -> list[str]:
     return bad
 
 
+# Amendment (e), ADR-011: the only mention of Galicia allowed in the proposal.
+GALICIA_LITERAL = "con margen para ampliarla al resto de Galicia"
+# Amendment (e), D-5: the assistants the probe measures, named in the proposal.
+ASSISTANTS = ("ChatGPT", "Gemini", "Claude")
+
+
+def _galicia_issues(text: str, secs: list[tuple[str, str]], obj: int | None) -> list[str]:
+    """Exactly one "Galicia", inside GALICIA_LITERAL, in the objective section."""
+    t = norm_text(text)
+    hits = t.count("galicia")
+    if hits == 0:
+        return [f"falta en el objetivo el literal: {GALICIA_LITERAL}"]
+    if hits > 1:
+        return [f"menciona Galicia {hits} veces (solo vale una, en el literal de ampliación)"]
+    if obj is None or norm_text(GALICIA_LITERAL) not in norm_text(secs[obj][1]):
+        return ["menciona Galicia fuera del literal de ampliación de la sección del objetivo"]
+    return []
+
+
 def proposal_issues(text: str) -> list[str]:
     t = norm_text(text)
     issues = []
@@ -169,11 +188,19 @@ def proposal_issues(text: str) -> list[str]:
     if "como sabremos si funciona" not in t:
         issues.append("falta 'cómo sabremos si funciona'")
     for need in ("entre 4 y 12 semanas", "12 semanas desde la primera acción", "450 € + iva",
-                 "199 €/mes + iva", "iva", "permanencia"):
+                 "199 €/mes + iva", "iva", "permanencia",
+                 # ADR-010 (amendment (e)): prepaid first three months, then monthly, no lock-in.
+                 "pagados por adelantado", "a partir del cuarto mes", "en cualquier momento"):
         if norm_text(need) not in t:
             issues.append(f"falta: {need}")
-    if "galicia" in t:
-        issues.append("menciona Galicia")
+    for old, label in (("pago mensual, 3 meses", "opción mensual de entrada (Pago mensual, 3 meses)"),
+                       ("precios sin iva", "frase retirada: Precios sin IVA")):
+        if old in t:
+            issues.append(label)
+    for name in ASSISTANTS:
+        if not re.search(rf"\b{norm_text(name)}\b", t):
+            issues.append(f"falta el asistente: {name}")
+    issues += _galicia_issues(text, secs, obj)
     for line in text.splitlines():
         if ("%" in line or re.search(r"\bpuntos\b", line, re.I)) and not (
                 "IVA" in line and "€" in line):
@@ -189,14 +216,15 @@ def proposal_issues(text: str) -> list[str]:
 # ---------------------------------------------------------------- CA-4 agreements, CA-6
 
 AGREEMENT_CHECKS = {
-    "(a) avisar de cambios": [r"avis\w+ por escrito", r"con fecha", r"antes de cualquier cambio",
-                              r"agencia"],
+    "(a) avisar de cambios": [r"email", r"persistencia|whatsapp|telegram",
+                              r"antes de cualquier cambio", r"agencia"],
     "(b) accesos": [r"analitica", r"search console", r"google business profile|ficha de google",
                     r"gestor de la web", r"(rol|permiso) minimo", r"revoca"],
     "(c) nombre en el repositorio": [r"repositorio publico", r"que se publica", r"que no se publica",
-                                     r"historial", r"no se borra"],
+                                     r"historial", r"no se borra", r"cualquiera puede (leer|ver)"],
     "(d) sin datos de pacientes": [r"ningun dato (personal )?de pacientes",
-                                   r"conteos? semanal", r"prefiero no"],
+                                   r"conteos? semanal", r"prefiero no", r"opcional",
+                                   r"no se podra medir"],
     "(e) aprobacion y revision": [r"aprobacion (escrita|por escrito)", r"revision normativa"],
     "dictamen: encargo": [r"encargo del tratamiento", r"antes de (dar|cualquier) acceso"],
     "dictamen: cookies": [r"cookies", r"consentimiento"],

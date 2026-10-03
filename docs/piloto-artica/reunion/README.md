@@ -6,7 +6,7 @@ Plantillas **sin datos de la clínica** (ADR-004): ni cifras, ni hallazgos concr
 |---|---|---|
 | `guion.md` | Guion literal de la reunión, 44 min, con 16 preguntas sobre hechos pasados | CA-1, CA-2 |
 | `apoyo.md` | Objeciones con respuesta literal y frases para volver a hechos | CA-5 |
-| `propuesta.md` | Propuesta de una página, precio de D-7 | CA-3 |
+| `propuesta.md` | Propuesta de una página, precio de ADR-010 | CA-3 |
 | `acuerdos.md` | Anexo 1: acuerdos para poder medir | CA-4 |
 | `encargo-tratamiento.md` | Anexo 2: contrato de encargo del tratamiento (artículo 28 del RGPD) | CA-6 |
 

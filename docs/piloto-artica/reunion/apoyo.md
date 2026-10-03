@@ -36,7 +36,7 @@ tal cual. Reglas de SPEC-004 CA-6 (frases de apoyo) sin copiar sus ficheros. -->
 > La comarca se sigue midiendo cada semana. No perderla es una de las tres condiciones para decir que el piloto ha funcionado; si una acción la empeora, se para y se revisa. Eso no se garantiza, pero se vigila desde el primer día.
 
 ### ¿Cuánto cuesta?
-> 450 € + IVA por tres meses pagados por adelantado, o 199 €/mes + IVA. Te lo mando por escrito con todo el detalle.
+> 450 € + IVA por los tres primeros meses, pagados por adelantado. A partir del cuarto mes, 199 €/mes + IVA, sin permanencia: lo podéis dejar cuando queráis. Te lo mando por escrito con todo el detalle.
 
 ### ¿Esto va junto con lo otro que nos propusiste?
 > No. Son decisiones separadas: podéis decir que sí a una, a otra, a las dos o a ninguna. Lo único que comparten es la forma de medir de dónde llegan los pacientes.

@@ -60,7 +60,7 @@ va en cursiva es una nota para ti, no se lee. Minutaje total: 44 min. -->
 > Una: que me aviséis por escrito, antes, de cualquier cambio en la web, la ficha, los directorios o las campañas, aunque lo haga vuestra agencia.
 > Dos: acceso a la analítica, a Search Console, a la ficha de Google y al gestor de la web, con el permiso mínimo y con un usuario mío, que podéis quitar cuando queráis. Antes firmamos un contrato de encargo de datos, que os doy redactado.
 > Tres: si queréis, aparecer con vuestro nombre en el repositorio público donde documento el método. Nunca con cifras, capturas ni datos de nadie. Si un día lo retiráis, deja de aparecer, pero lo ya publicado queda en el historial.
-> Cuatro: yo no recibo ningún dato de pacientes. Solo el número de respuestas por semana a "¿cómo nos has conocido?".
+> Cuatro: yo no recibo ningún dato de pacientes. Si queréis darlo, y es opcional, solo el número de respuestas por semana a "¿cómo nos has conocido?"; sin él, no podré medir por esa vía si llega algún paciente.
 > Cinco: nada se publica sin vuestra aprobación por escrito y sin una revisión de la normativa de publicidad sanitaria.
 
 ## 6. Cierre — 3 min
