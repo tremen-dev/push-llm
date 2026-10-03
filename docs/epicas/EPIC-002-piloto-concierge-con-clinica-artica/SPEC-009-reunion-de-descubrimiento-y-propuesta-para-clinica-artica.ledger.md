@@ -99,6 +99,12 @@ ADR-011 aprobados.
   cualquier otro medio con persistencia (WhatsApp, Telegram, etc.)") para conservar la clave
   `antes de cualquier cambio` que la lista cerrada pedía mantener; la redacción propuesta la
   partía en dos.
+- **Ajuste de texto pedido por el humano (2026-10-03, sin cambio de CA)**: en "Qué incluye" de
+  `propuesta.md`, el primer punto ("Foto de partida") pasa a "Informe de situación actual,
+  entregado antes de empezar: …". `guion.md`, `apoyo.md` y sus copias privadas no lo citan como
+  entregable: sin cambios. Ningún check ni test buscaba el término. Propuesta rellenada sigue
+  ≤ 450 palabras; PDF regenerado y revisado a ojo: propuesta en una página. pytest, `ruff` y
+  ambos `check` en verde.
 
 ## Decisión del humano sobre el precio (2026-10-03, enmienda (e)) — registro exigido por CA-3
 Registra sdd-arquitecto. El humano (Alberto Fojo), al revisar `propuesta-borrador.pdf` el

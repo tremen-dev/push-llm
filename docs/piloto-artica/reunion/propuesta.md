@@ -11,7 +11,7 @@ Hoy ya sois la clínica que la IA recomienda en A Mariña{matiz_punto_de_partida
 
 <!-- cols -->
 ## Qué incluye
-- Foto de partida: qué contestan hoy los asistentes y qué dicen de vosotros.
+- Informe de situación actual, entregado antes de empezar: qué contestan hoy los asistentes y qué dicen de vosotros.
 - Medición de los pacientes que llegan, desde el primer día y antes de tocar nada.
 - Diagnóstico: qué falta en las páginas y directorios que leen.
 - Las acciones, hechas por tremen.dev: fichas, directorios, textos y datos de la web.
