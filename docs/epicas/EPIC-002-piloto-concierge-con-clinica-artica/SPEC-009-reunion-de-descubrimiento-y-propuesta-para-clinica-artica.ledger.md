@@ -122,13 +122,13 @@ Registra sdd-arquitecto. El humano (Alberto Fojo), al revisar `propuesta-borrado
 2026-10-03 y **antes del envío**, modifica D-7 para esta propuesta: desaparece la opción
 "199 €/mes" de entrada; el cliente lee **450 € + IVA por los 3 primeros meses, pagados por
 adelantado; a partir del cuarto mes, 199 €/mes + IVA, y se puede dejar en cualquier momento
-(sin permanencia)**. Formalizado en **ADR-010** (borrador; supera en parte D-7) y recogido en
+(sin permanencia)**. Formalizado en **ADR-010** (`aprobada` 2026-10-03; supera en parte D-7) y recogido en
 SPEC-009 CA-3 y CA-9 (enmienda (e)). Sin opción gratuita ni descuento. Cierra F-SPEC-009-2
 puntos 2 y 3. El registro del implementador de 2026-09-30 ("Desviaciones de D-7: ninguna")
 describía la propuesta anterior y queda como historia.
 
 Mismo día y misma revisión, el humano decidió además: Galicia en la propuesta solo como
-ampliación posible (**ADR-011**, borrador; SPEC-009 CA-3 y CA-10); conteo semanal de recepción
+ampliación posible (**ADR-011**, `aprobada` 2026-10-03; SPEC-009 CA-3 y CA-10); conteo semanal de recepción
 **opcional** para la clínica (CA-4 (d); condición C3 del dictamen de abajo se lee ahora "si la
 clínica entrega el conteo"; consecuencia en F-SPEC-009-8); y los cambios de texto 5–9 de la
 enmienda (e) (portada, asistentes nombrados, medio del aviso, explicación de "repositorio

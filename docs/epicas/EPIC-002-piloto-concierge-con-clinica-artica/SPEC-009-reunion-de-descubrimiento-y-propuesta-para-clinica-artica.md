@@ -26,10 +26,10 @@ historial:
 > borrador de la propuesta (ledger, 2026-09-30) y decidió cuatro cambios que tocan CA y cinco
 > que no. **Cambian CA**: (1) CA-3 y CA-10: Galicia aparece en la propuesta **solo** como
 > ampliación posible del área de influencia ("…con margen para ampliarla al resto de
-> Galicia"), nunca como objetivo ni con cifras (**ADR-011**, borrador, supera en parte ADR-009
+> Galicia"), nunca como objetivo ni con cifras (**ADR-011**, `aprobada` 2026-10-03, supera en parte ADR-009
 > §3); (2) CA-3 y CA-9: el modelo de pago pasa a **450 € + IVA por los 3 primeros meses, por
 > adelantado; a partir del cuarto mes 199 €/mes + IVA, sin permanencia** (**ADR-010**,
-> borrador, supera en parte D-7; cierra F-SPEC-009-2 punto 3); (3) CA-3: desaparece la frase
+> `aprobada` 2026-10-03, supera en parte D-7; cierra F-SPEC-009-2 punto 3); (3) CA-3: desaparece la frase
 > "Precios sin IVA: la factura suma el IVA vigente" (cierra F-SPEC-009-2 punto 2); (4) CA-4
 > (d): la entrega del conteo semanal de "¿cómo nos has conocido?" pasa a ser **opcional**
 > para la clínica, con la consecuencia dicha en CA-4 y en el ledger (condición C3 del
@@ -332,8 +332,8 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   CA-11) son criterio interno y no se cuentan. (3) Nueva objeción en CA-5 ("¿perdemos
   A Mariña?"). (4) ~~Galicia sigue fuera de la propuesta con el mismo test de búsqueda.~~
   Sustituido por la enmienda (e): una sola mención literal, como ampliación posible.
-- **Enmienda (e), 2026-10-03 — a mirar para re-aprobar** (con ADR-010 y ADR-011, en
-  `borrador`; se aprueban o devuelven junto con esta spec):
+- **Enmienda (e), 2026-10-03 — a mirar para re-aprobar** (con ADR-010 y ADR-011, ambos
+  `aprobada` el 2026-10-03 por Alberto Fojo junto con esta spec):
   (1) **Alcance de ADR-010**: tal como está escrito, el modelo nuevo (450 € prepago los 3
   primeros meses; después 199 €/mes sin permanencia) sustituye a la fórmula de D-7 como
   **ancla de pilotos**, no solo para Clínica Ártica. Si lo quieres acotado a EPIC-002, dilo y

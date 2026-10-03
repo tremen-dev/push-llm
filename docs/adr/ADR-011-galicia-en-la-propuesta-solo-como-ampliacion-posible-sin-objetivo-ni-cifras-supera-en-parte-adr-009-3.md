@@ -14,7 +14,7 @@ aprobada-por: Alberto Fojo
   de influencia "puede ampliarse al resto de Galicia". Propone este ADR sdd-arquitecto
   (2026-10-03), que fija **qué parte de ADR-009 §3 se supera, qué sigue vigente de ADR-005
   §6 y el único uso permitido de la palabra "Galicia" en la propuesta**. Aprueba: humano
-  (pendiente).
+  (Alberto Fojo), 2026-10-03.
 - Specs relacionadas: SPEC-009 (CA-3 y CA-10, enmienda (e)), SPEC-008 y SPEC-012 (nivel `AG`
   sin cambio), SPEC-007 (set congelado, sin cambio).
 - **Supera en parte ADR-009 §3**: solo la frase "no aparece en la propuesta". **ADR-005 §6

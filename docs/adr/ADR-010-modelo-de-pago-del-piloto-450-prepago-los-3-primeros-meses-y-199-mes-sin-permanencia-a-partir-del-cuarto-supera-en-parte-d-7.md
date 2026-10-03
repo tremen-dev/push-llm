@@ -15,7 +15,7 @@ aprobada-por: Alberto Fojo
   adelantado, y después 199 €/mes + IVA sin permanencia. Propone este ADR sdd-arquitecto
   (2026-10-03), que fija **qué parte de D-7 se supera y qué sigue vigente**, y registra la
   decisión donde SPEC-009 CA-3 exige que viva toda desviación de D-7 (ledger de SPEC-009,
-  además de aquí). Aprueba: humano (pendiente). Matiz a confirmar en el gate: el alcance
+  además de aquí). Aprueba: humano (Alberto Fojo), 2026-10-03. Matiz a confirmar en el gate: el alcance
   (§4) propone que el modelo nuevo sea el **ancla de pilotos** que sustituye a la fórmula de
   D-7, no solo el precio de la propuesta a Clínica Ártica; si el humano lo quiere acotado al
   piloto, se deja D-7 vigente para pilotos futuros y este ADR vale solo para EPIC-002.
