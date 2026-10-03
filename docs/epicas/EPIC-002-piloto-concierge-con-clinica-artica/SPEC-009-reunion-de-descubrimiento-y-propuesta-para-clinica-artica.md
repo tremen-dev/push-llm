@@ -2,7 +2,7 @@
 id: SPEC-009
 tipo: spec
 epica: EPIC-002
-estado: aprobada
+estado: en-progreso
 aprobada-por: Alberto Fojo
 historial:
   - {estado: borrador, fecha: 2026-09-28, por: sdd-arquitecto}
@@ -13,8 +13,42 @@ historial:
   - {estado: bloqueada, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: borrador, fecha: 2026-09-29, por: sdd-arquitecto}
   - {estado: aprobada, fecha: 2026-09-29, por: Alberto Fojo}
+  - {estado: en-progreso, fecha: 2026-09-29, por: sdd-implementador}
+  - {estado: bloqueada, fecha: 2026-10-03, por: sdd-arquitecto}
+  - {estado: borrador, fecha: 2026-10-03, por: sdd-arquitecto}
+  - {estado: aprobada, fecha: 2026-10-03, por: Alberto Fojo}
+  - {estado: en-progreso, fecha: 2026-10-03, por: sdd-implementador}
 ---
 # SPEC-009 — Reunión de descubrimiento y propuesta para Clínica Ártica
+
+> **Enmienda 2026-10-03 (e) (sdd-arquitecto) — revisión del PDF borrador por el humano.
+> Requiere re-aprobación humana.** El humano (Alberto Fojo, 2026-10-03) revisó el PDF
+> borrador de la propuesta (ledger, 2026-09-30) y decidió cuatro cambios que tocan CA y cinco
+> que no. **Cambian CA**: (1) CA-3 y CA-10: Galicia aparece en la propuesta **solo** como
+> ampliación posible del área de influencia ("…con margen para ampliarla al resto de
+> Galicia"), nunca como objetivo ni con cifras (**ADR-011**, borrador, supera en parte ADR-009
+> §3); (2) CA-3 y CA-9: el modelo de pago pasa a **450 € + IVA por los 3 primeros meses, por
+> adelantado; a partir del cuarto mes 199 €/mes + IVA, sin permanencia** (**ADR-010**,
+> borrador, supera en parte D-7; cierra F-SPEC-009-2 punto 3); (3) CA-3: desaparece la frase
+> "Precios sin IVA: la factura suma el IVA vigente" (cierra F-SPEC-009-2 punto 2); (4) CA-4
+> (d): la entrega del conteo semanal de "¿cómo nos has conocido?" pasa a ser **opcional**
+> para la clínica, con la consecuencia dicha en CA-4 y en el ledger (condición C3 del
+> dictamen; follow-up F-SPEC-009-8). Además CA-3 añade que la propuesta **nombra los
+> asistentes** que se miden, y CA-4 (a) y (c) recogen los cambios 7 y 8 de abajo (medio del
+> aviso; explicación llana de "repositorio público"). **Solo aplicación, sin cambio de CA**
+> (lista cerrada para sdd-implementador): (5) portada: título "Atracción de clientes en
+> asistentes de IA", subtítulo sin la coletilla "independientemente de…", correo de
+> "Preparada por" = alberto@tremen.dev (clave `email_contacto` de `valores.json`, privado);
+> (6) nombrar los asistentes (ChatGPT, Gemini y Claude: los del probe, D-5, SPEC-008); (7)
+> anexo 1 (a): "avisa por escrito y con fecha" → "por email o cualquier otro medio con
+> persistencia (WhatsApp, Telegram, etc.)"; (8) anexo 1 (c): explicación en lenguaje llano
+> de qué es un repositorio público; (9) anexo 2: sin cambios salvo los derivados. **Aviso de
+> espacio**: la propuesta rellenada está en ~440 palabras de 450; asistentes + Galicia +
+> pago nuevo suman más de lo que quita "Precios sin IVA…" y la tabla de dos filas, así que el
+> implementador tendrá que recortar en otro sitio para seguir en una página. CA-1, CA-2, CA-5
+> (salvo la respuesta "¿Cuánto cuesta?" de `apoyo.md`, que dice el modelo nuevo), CA-6, CA-7 y
+> CA-8 no cambian. La spec pasa `en-progreso` → `bloqueada` → `borrador` y espera nueva
+> aprobación; con ella se aprueban ADR-010 y ADR-011 o se devuelven.
 
 > **Enmienda 2026-09-29 (d) (sdd-arquitecto) — la propuesta cuenta el objetivo nuevo
 > (ADR-009, aprobado). Cierra F-SPEC-009-1. Requiere re-aprobación humana.** El humano
@@ -120,49 +154,79 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   bloque de expectativas no hay preguntas hipotéticas ("¿pagarías…?", "¿te
   interesaría…?"). *Evidencia*: checklist de cobertura; búsqueda de patrones prohibidos
   fuera de ese bloque, sin coincidencias.
-- **CA-3 (propuesta de una página) [Agente]**: Dado D-7, cuando se publique la plantilla
+- **CA-3 (propuesta de una página) [Agente]**: Dado D-7 superado en parte por ADR-010,
+  cuando se publique la plantilla
   `docs/piloto-artica/reunion/propuesta.md`, entonces cabe en una página (≤ 450 palabras)
   y contiene, en lenguaje de clínica: **punto de partida y objetivo** (enmienda (d),
   ADR-009), con este sentido y sin cifras: "ya sois la clínica que la IA recomienda en
   A Mariña; el objetivo es aparecer también en el área de influencia (Ferrolterra, norte e
   interior de Lugo, occidente de Asturias) sin perder la comarca, cuando alguien pregunta
-  por {tratamientos}, y saber cuántos pacientes llegan por ahí"; el objetivo va
-  acompañado, en la misma sección o inmediatamente después, de que **no se garantiza**; qué
+  por {tratamientos}, y saber cuántos pacientes llegan por ahí"; por la enmienda (e)
+  (ADR-011), las tres zonas van seguidas, en la misma frase, de la ampliación posible con
+  este literal: **"con margen para ampliarla al resto de Galicia"**; el objetivo va
+  acompañado, en la misma sección o inmediatamente después, de que **no se garantiza**;
+  **qué asistentes** se miden, por su nombre (enmienda (e)): ChatGPT, Gemini y Claude, los
+  tres del probe (D-5; lote de SPEC-008), sin nombrar ninguno que no se mida; qué
   incluye (foto de partida, medición de pacientes desde el
   día uno, diagnóstico, acciones ejecutadas por Tremendev, medición semanal, informe cada
   15 días, reunión de cierre); qué aporta la clínica (contenidos, aprobación, pregunta en
-  recepción, accesos); duración de 12 semanas desde la primera acción; **precio exacto de
-  D-7** en sus dos opciones (450 € por 3 meses prepago o 199 €/mes) con el tratamiento del
-  IVA explícito; expectativas (movimiento en 4–12 semanas, sin garantía de aparecer ni de
+  recepción —por la enmienda (e) coherente con CA-4 (d): la entrega del conteo es opcional y
+  la propuesta no la presenta como obligación—, accesos); duración de 12 semanas desde la
+  primera acción; **precio exacto de ADR-010** (enmienda (e)), que el cliente lee así, con el
+  IVA explícito junto a cada importe: **450 € + IVA por los 3 primeros meses, pagados por
+  adelantado; a partir del cuarto mes, 199 €/mes + IVA, y se puede dejar en cualquier
+  momento (sin permanencia)**; no existe opción mensual durante los 3 primeros meses ni la
+  frase "Precios sin IVA: la factura suma el IVA vigente"; expectativas (movimiento en 4–12
+  semanas, sin garantía de aparecer ni de
   número de pacientes, también en el área de influencia); "cómo sabremos si funciona", en
   palabras llanas y sin umbrales numéricos, con las tres condiciones de ADR-009 (que os
   recomienden más en el área de influencia que al empezar; que en A Mariña no se pierda lo
   que ya tenéis; y que llegue al menos un paciente por esta vía); qué pasa al terminar
-  (renovar o no, sin permanencia). Por la enmienda de 2026-09-29 (ADR-005 §6, ADR-009 §3):
-  el nivel Galicia **no aparece** en la propuesta como objetivo, entregable ni expectativa.
+  (renovar o no, sin permanencia). Por la enmienda de 2026-09-29 (ADR-005 §6, ADR-009 §3) y
+  la enmienda (e) (ADR-011): el nivel Galicia **no aparece** en la propuesta como objetivo,
+  entregable, condición ni expectativa; la **única** aparición permitida de la palabra
+  "Galicia" es el literal de ampliación de arriba, una vez, en la sección del objetivo.
   La enmienda (d) sustituye la regla anterior "el área de influencia, si aparece, solo como
   dato que se informa, sin objetivo": ahora es el objetivo, sin garantía. La propuesta no
   incluye ninguna cifra de visibilidad de la clínica (ADR-004); el punto de partida es un
   veredicto en palabras. No hay
-  opción gratuita ni descuento sobre D-7; cualquier desviación exige decisión del humano
-  registrada en el ledger antes del envío. *Evidencia*: conteo de palabras; checklist
-  (objetivo con las tres zonas del área de influencia y "sin perder la comarca"; "no se
-  garantiza" junto al objetivo; las tres condiciones de "cómo sabremos"; 4–12 semanas);
-  cifras de precio iguales a D-7; búsqueda de "Galicia" en `propuesta.md`, sin
-  coincidencias; búsqueda de `%` y de "puntos" en `propuesta.md`, sin coincidencias fuera
-  del precio y el IVA.
+  opción gratuita ni descuento sobre el precio de ADR-010; cualquier desviación exige
+  decisión del humano
+  registrada en el ledger antes del envío (la de ADR-010 ya lo está, 2026-10-03). *Evidencia*: conteo de palabras; checklist
+  (objetivo con las tres zonas del área de influencia y "sin perder la comarca"; literal de
+  ampliación a Galicia en la misma frase; "no se
+  garantiza" junto al objetivo; ChatGPT, Gemini y Claude nombrados; las tres condiciones de
+  "cómo sabremos"; 4–12 semanas; "pagados por adelantado", "a partir del cuarto mes" y
+  "en cualquier momento" junto al precio);
+  cifras de precio iguales a ADR-010 (solo 450 y 199, con "+ IVA" cada una) y sin "Pago
+  mensual, 3 meses" ni "Precios sin IVA"; búsqueda de "Galicia" en `propuesta.md`:
+  **exactamente una** coincidencia, dentro del literal de ampliación y en la sección "Punto
+  de partida y objetivo"; búsqueda de `%` y de "puntos" en `propuesta.md`, sin coincidencias
+  fuera del precio y el IVA.
 - **CA-4 (acuerdos y consentimientos) [Agente]**: Dado que sin ellos no se puede medir ni
   publicar, cuando se publique `docs/piloto-artica/reunion/acuerdos.md` (anexo de la
-  propuesta, para firmar o aceptar por escrito), entonces recoge: (a) la clínica avisa por
-  escrito, con fecha, antes de cualquier cambio en web, fichas, directorios o campañas
-  durante el piloto, propio o de su agencia; (b) consentimiento de acceso a analítica,
+  propuesta, para firmar o aceptar por escrito), entonces recoge: (a) la clínica avisa
+  antes de cualquier cambio en web, fichas, directorios o campañas
+  durante el piloto, propio o de su agencia, **por email o cualquier otro medio con
+  persistencia (WhatsApp, Telegram, etc.)** (enmienda (e); sustituye a "por escrito, con
+  fecha": el medio persistente deja la fecha); (b) consentimiento de acceso a analítica,
   Search Console, Google Business Profile y gestor de la web, con el rol mínimo y
   revocable (ADR-004 §5); (c) consentimiento para aparecer con su nombre en el repositorio
-  público, explicando qué se publica y qué no (ADR-004 §1–§3) y que el historial no se
+  público, explicando **primero, en lenguaje llano y para no técnicos, qué es un repositorio
+  público** (enmienda (e): un sitio en internet donde cualquiera puede leer los ficheros y su
+  historial de versiones), qué se publica y qué no (ADR-004 §1–§3) y que el historial no se
   borra si se revoca (§6); (d) que Tremendev no recibe datos de pacientes, solo conteos
-  semanales agregados (RN-09); (e) que ningún contenido se publica sin aprobación escrita
+  semanales agregados (RN-09); por la enmienda (e), **la entrega del conteo semanal de
+  "¿cómo nos has conocido?" es opcional para la clínica**: el acuerdo lo dice así y dice la
+  consecuencia, sin inventar alternativa: si la clínica no entrega el conteo, la condición
+  "que llegue al menos un paciente por esta vía" de "cómo sabremos si funciona" **no se puede
+  medir por esa vía** (lo que se mida por otras vías lo fijan SPEC-010 y SPEC-012; follow-up
+  F-SPEC-009-8); si lo entrega, sigue siendo solo el conteo semanal por opción, sin día ni
+  tratamiento, con las condiciones C3 del dictamen de CA-6; (e) que ningún contenido se
+  publica sin aprobación escrita
   de la clínica y sin la revisión normativa de SPEC-011 CA-7; y lo que añada el dictamen de
-  CA-6. *Evidencia*: checklist; trazabilidad a ADR-004 y al dictamen.
+  CA-6. *Evidencia*: checklist (incluye "opcional" y la consecuencia en (d), el medio
+  persistente en (a) y la explicación llana en (c)); trazabilidad a ADR-004 y al dictamen.
 - **CA-5 (apoyo y objeciones de cliente cálido) [Agente]**: Dado un fundador que se
   bloquea, cuando se publique `docs/piloto-artica/reunion/apoyo.md` (una página), entonces
   contiene respuestas literales a ≥ 8 objeciones, incluidas: "¿me garantizas salir el
@@ -199,27 +263,39 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   y a SPEC-007 CA-5.
 - **CA-9 (propuesta enviada, aceptada y cobrada) [Humano]**: Dado la reunión, cuando se
   envíe la propuesta (≤ 5 días hábiles después) con los acuerdos de CA-4, entonces el
-  ledger registra: fecha de envío; respuesta (acepta opción prepago / acepta mensual /
-  negocia / rechaza) con fecha; fecha de aceptación de los acuerdos y del consentimiento de
-  nombre (sin nombre de la persona que firma); fecha del primer cobro. El piloto **no
+  ledger registra: fecha de envío; respuesta (acepta / negocia / rechaza; enmienda (e),
+  ADR-010: ya no hay opción mensual de entrada) con fecha; fecha de aceptación de los
+  acuerdos y del consentimiento de
+  nombre (sin nombre de la persona que firma); si la clínica acepta entregar el conteo
+  semanal de recepción (sí/no, CA-4 (d)); fecha del primer cobro (los 3 primeros meses por
+  adelantado). El piloto **no
   empieza** (SPEC-010 ni primera acción) sin aceptación escrita y primer cobro.
   *Evidencia*: fechas en el ledger; documentos en el espacio privado.
 - **CA-10 (sin jerga ni datos personales) [Verificador]**: Dado D-3 y ADR-004, cuando se
   revisen los textos de `docs/piloto-artica/reunion/`, entonces no aparecen "AEO", "GEO",
   "SoV", "share of voice", "LLM", "visibilidad en IA" ni "posicionamiento garantizado",
-  ni una promesa de aparecer en el nivel Galicia (ADR-005 §6), ni (enmienda (d)) una
+  ni una promesa de aparecer en el nivel Galicia (ADR-005 §6; por la enmienda (e) y
+  ADR-011, el literal de ampliación de CA-3 no es promesa y es la única mención de Galicia
+  admitida en `propuesta.md`; en `guion.md` y `apoyo.md` Galicia solo aparece como hoy, en
+  una pregunta de conducta pasada y en una objeción respondida con "no te lo prometo"), ni
+  (enmienda (d)) una
   promesa o garantía de aparecer en el área de influencia o de mantener la comarca, ni
   cifras de visibilidad de la clínica (ADR-004), y
   no hay emails, teléfonos (salvo marcadores `{…}`) ni nombres de persona. *Evidencia*:
-  búsqueda por script, sin coincidencias; revisión de que toda mención de "garantiz…" o
+  búsqueda por script, sin coincidencias (el detector de promesas sobre Galicia no se relaja:
+  si el literal de ampliación lo disparase, se cambia la redacción del literal con decisión
+  del humano, no el detector); revisión de que toda mención de "garantiz…" o
   "aseguramos" en los textos es negativa ("no se garantiza").
 
 ## Entidades y reglas afectadas
 - Dominio: Clinic, Provider (como "asistente"), AttributionEvent, Action (qué hace cada
   parte).
-- D-3 (se vende pacientes, no visibilidad), D-7 (precio), D-8 (idioma), RN-07, RN-09.
+- D-3 (se vende pacientes, no visibilidad), D-5 (asistentes del probe), D-7 (precio;
+  superado en parte por ADR-010, enmienda (e)), D-8 (idioma), RN-07, RN-09.
 - ADR-003, ADR-004, ADR-005 (§6: el nivel Galicia no se promete), ADR-009 (Go "crecer en
-  `AR`, defender `AV`, ≥ 1 paciente"; la propuesta lo cuenta sin garantía, enmienda (d)). Reutiliza las reglas de SPEC-004 CA-3, CA-4, CA-6, CA-11 y CA-12 sin
+  `AR`, defender `AV`, ≥ 1 paciente"; la propuesta lo cuenta sin garantía, enmienda (d)),
+  ADR-010 (modelo de pago, enmienda (e)), ADR-011 (Galicia solo como ampliación posible,
+  enmienda (e)). Reutiliza las reglas de SPEC-004 CA-3, CA-4, CA-6, CA-11 y CA-12 sin
   copiar sus ficheros. Depende de SPEC-007 CA-5 y CA-10.
 
 ## Fuera de alcance
@@ -231,7 +307,8 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
 ## Notas para el gate humano
 - **Decisión a mirar**: el precio **no** se dice en la reunión; va en la propuesta escrita
   (tu decisión del 2026-09-28). Si en la reunión preguntan "¿cuánto cuesta?", el apoyo
-  responde con la horquilla de D-7 y "te lo mando por escrito con todo el detalle".
+  responde con el modelo de ADR-010 (enmienda (e); antes, la horquilla de D-7) y "te lo
+  mando por escrito con todo el detalle".
   Alternativa: decirlo en el cierre como en SPEC-004 CA-5.
 - **Pregunta abierta**: ¿los precios de D-7 son con o sin IVA? La propuesta tiene que
   decirlo.
@@ -253,4 +330,25 @@ previo), no sus ficheros: el guion, las preguntas, el cierre y las objeciones so
   frase se revisa antes de enviar. (2) "Cómo sabremos si funciona" nombra las tres
   condiciones de ADR-009 en llano y sin umbrales: los umbrales de `sdd-metricas` (SPEC-008
   CA-11) son criterio interno y no se cuentan. (3) Nueva objeción en CA-5 ("¿perdemos
-  A Mariña?"). (4) Galicia sigue fuera de la propuesta con el mismo test de búsqueda.
+  A Mariña?"). (4) ~~Galicia sigue fuera de la propuesta con el mismo test de búsqueda.~~
+  Sustituido por la enmienda (e): una sola mención literal, como ampliación posible.
+- **Enmienda (e), 2026-10-03 — a mirar para re-aprobar** (con ADR-010 y ADR-011, en
+  `borrador`; se aprueban o devuelven junto con esta spec):
+  (1) **Alcance de ADR-010**: tal como está escrito, el modelo nuevo (450 € prepago los 3
+  primeros meses; después 199 €/mes sin permanencia) sustituye a la fórmula de D-7 como
+  **ancla de pilotos**, no solo para Clínica Ártica. Si lo quieres acotado a EPIC-002, dilo y
+  se recorta §4 antes de aprobarlo. (2) **Literal de Galicia** (ADR-011 §1 y CA-3): "con
+  margen para ampliarla al resto de Galicia", una vez, pegado a las tres zonas. Si prefieres
+  otra redacción, tiene que seguir siendo una frase fija (es lo que hace el test
+  comprobable) y no disparar el detector de promesas de CA-10. (3) **Conteo opcional (CA-4
+  (d))**: la consecuencia que se escribe es solo "sin conteo, la condición 'al menos un
+  paciente' no se puede medir por esa vía". No se ha inventado una vía alternativa; queda
+  F-SPEC-009-8 para SPEC-010/SPEC-012. Mira también si la pregunta en recepción sigue en
+  "qué aportáis vosotros" de la propuesta (CA-3 la deja como aportación no obligatoria,
+  coherente con (d)) o prefieres quitarla de esa lista. (4) **Asistentes nombrados** (CA-3):
+  ChatGPT, Gemini y Claude, los del probe. Google (AI Overviews / Modo IA) solo se mira a
+  mano en `AR` (SPEC-007) y no se nombra para no prometer un canal que el probe no mide; si
+  quieres nombrarlo, hay que decir "a mano, sin compromiso". (5) **Medio del aviso (CA-4
+  (a))**: "por escrito, con fecha" pasa a "email o cualquier otro medio con persistencia
+  (WhatsApp, Telegram…)"; la fecha la da el medio. (6) **Espacio**: la propuesta rellenada
+  está en ~440 palabras de 450; el implementador tendrá que recortar en otro sitio.
