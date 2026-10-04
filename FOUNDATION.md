@@ -17,6 +17,7 @@
 - **D-5** (2026-09-23): El probe usa el modelo por defecto (gama media) de cada app de consumo, con búsqueda web y ubicación de la ciudad; el procesamiento interno usa el modelo más barato que supere un test etiquetado. (D-005)
 - **D-6** (2026-09-23): Toda métrica de visibilidad se pondera por cuota de uso del asistente; los pesos son configuración y se refrescan mensualmente; Google AI Overviews se trata como canal aparte. (D-006)
 - **D-7** (2026-09-23): Ancla de precio de pilotos: 3 meses a 450 € prepago o 199 €/mes; nunca gratis más allá del informe de una página. Pendiente de validar en el Ciclo 1. (D-007)
+  - **Superada en parte por ADR-010** (decisión del humano del 2026-10-03; ADR `aprobada` el 2026-10-03 por Alberto Fojo junto con la enmienda (e) de SPEC-009; ver DECISIONS.md D-010): la fórmula pasa a **450 € + IVA por los 3 primeros meses, por adelantado, y a partir del cuarto mes 199 €/mes + IVA sin permanencia**; desaparece la opción mensual de entrada. Siguen vigentes "nunca gratis más allá del informe de una página" y "pendiente de validar" (la propuesta a Clínica Ártica es la primera validación). Si el humano acota ADR-010 a EPIC-002, la fórmula original sigue como ancla para pilotos futuros.
 - **D-8** (2026-09-23): Documentos fundacionales (00–08) en inglés; material para clientes en gallego/castellano. Artefactos tremen-sdd (épicas, specs, ADRs) en español. (D-008)
 
 ## Alcance
